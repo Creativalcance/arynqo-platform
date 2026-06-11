@@ -1,65 +1,247 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  async function checkSession() {
+    const { data } = await supabase.auth.getSession();
+
+    if (data.session) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    setIsCheckingSession(false);
+  }
+
+  if (isCheckingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
+        <p className="text-sm font-medium text-slate-500">
+          A carregar ARYNQO...
+        </p>
       </main>
+    );
+  }
+
+  return (
+    <main className="overflow-hidden bg-[#F7F9FC]">
+      <section className="relative border-b border-neutral-200 bg-gradient-to-b from-white to-[#F7F9FC]">
+        <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+
+        <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 pb-24 pt-28 text-center lg:px-12">
+          <div className="rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-sm font-medium text-blue-700">
+            Plataforma inteligente de recrutamento e evolução profissional
+          </div>
+
+          <h1 className="mt-8 max-w-5xl text-6xl font-black tracking-[-0.06em] text-[#07111F] md:text-7xl">
+            Onde o talento se desenvolve.
+          </h1>
+
+          <p className="mt-8 max-w-3xl text-xl leading-relaxed text-neutral-600">
+            A ARYNQO liga estudantes, profissionais e empresas através de uma
+            experiência moderna, inteligente e premium de recrutamento.
+          </p>
+
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/vagas"
+              className="rounded-full bg-[#07111F] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
+            >
+              Explorar vagas
+            </Link>
+
+            <Link
+              href="/registo"
+              className="rounded-full border border-neutral-300 bg-white px-8 py-4 text-sm font-semibold transition hover:bg-neutral-100"
+            >
+              Criar conta
+            </Link>
+          </div>
+
+          <div className="mt-24 grid w-full max-w-6xl gap-6 lg:grid-cols-3">
+            <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+              <p className="text-sm font-medium text-blue-600">Estudantes</p>
+
+              <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
+                Começa a construir o teu futuro
+              </h2>
+
+              <p className="mt-4 leading-relaxed text-neutral-600">
+                Cria um perfil profissional moderno, descobre oportunidades
+                relevantes e dá os primeiros passos no mercado com mais clareza,
+                confiança e direção.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+              <p className="text-sm font-medium text-blue-600">
+                Profissionais
+              </p>
+
+              <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
+                Evolui para a próxima oportunidade
+              </h2>
+
+              <p className="mt-4 leading-relaxed text-neutral-600">
+                Valoriza a tua experiência, identifica novas possibilidades de
+                carreira e encontra oportunidades alinhadas com as tuas
+                competências e ambição.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-neutral-200 bg-[#07111F] p-8 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+              <p className="text-sm font-medium text-blue-300">
+                Empresas & Universidades
+              </p>
+
+              <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em]">
+                Liga talento, conhecimento e mercado
+              </h2>
+
+              <p className="mt-4 leading-relaxed text-blue-100">
+                Aproxima organizações, instituições de ensino e talento
+                qualificado através de uma plataforma preparada para
+                recrutamento, IA, empregabilidade e evolução profissional.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-12">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="rounded-[32px] border border-neutral-200 bg-white p-10 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+            <p className="text-sm font-medium text-blue-600">
+              Para estudantes e profissionais
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-[#07111F]">
+              Muito mais do que candidaturas
+            </h2>
+
+            <p className="mt-5 max-w-2xl leading-relaxed text-neutral-600">
+              A ARYNQO ajuda cada pessoa a transformar o seu percurso num perfil
+              profissional claro, atrativo e preparado para novas oportunidades.
+            </p>
+
+            <div className="mt-8 grid gap-5">
+              <FeatureItem text="Cria o teu perfil com um clique" />
+              <FeatureItem text="Perfil profissional moderno e inteligente" />
+              <FeatureItem text="Matching com as melhores vagas" />
+              <FeatureItem text="Candidaturas rápidas e simples" />
+              <FeatureItem text="Notificações em tempo real" />
+            </div>
+          </div>
+
+          <div className="rounded-[32px] border border-neutral-200 bg-[#07111F] p-10 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+            <p className="text-sm font-medium text-blue-300">
+              Para empresas e universidades
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold tracking-tight">
+              Recrutamento inteligente
+            </h2>
+
+            <p className="mt-5 max-w-2xl leading-relaxed text-blue-100">
+              Uma plataforma criada para aproximar talento, empresas e
+              instituições de ensino através de processos mais rápidos, dados
+              mais úteis e IA aplicada ao recrutamento.
+            </p>
+
+            <div className="mt-8 grid gap-5">
+              <DarkFeatureItem text="Cria o perfil da organização com um clique" />
+              <DarkFeatureItem text="Publicação de vagas em 90 segundos" />
+              <DarkFeatureItem text="Análise inteligente de perfis" />
+              <DarkFeatureItem text="Matching com candidatos qualificados" />
+              <DarkFeatureItem text="Gestão integrada de candidatos" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-neutral-200 bg-white">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 text-center md:grid-cols-3 lg:px-12">
+          <StatItem number="+12k" label="Candidatos" />
+          <StatItem number="+350" label="Empresas & Universidades" />
+          <StatItem number="+4.5k" label="Candidaturas" />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-28 lg:px-12">
+        <div className="rounded-[40px] bg-[#07111F] px-10 py-20 text-center text-white">
+          <p className="text-sm font-medium uppercase tracking-[0.3em] text-blue-300">
+            ARYNQO
+          </p>
+
+          <h2 className="mt-6 text-5xl font-black tracking-[-0.05em]">
+            The next step starts here.
+          </h2>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-blue-100">
+            Junta-te à nova plataforma de recrutamento, talento e evolução
+            profissional.
+          </p>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/registo"
+              className="rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-neutral-100"
+            >
+              Criar conta
+            </Link>
+
+            <Link
+              href="/vagas"
+              className="rounded-full border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+            >
+              Explorar vagas
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function FeatureItem({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-4">
+      <div className="h-3 w-3 rounded-full bg-[#1683FF]" />
+
+      <p className="font-medium text-neutral-700">{text}</p>
+    </div>
+  );
+}
+
+function DarkFeatureItem({ text }: { text: string }) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
+      <div className="h-3 w-3 rounded-full bg-[#4BB3FD]" />
+
+      <p className="font-medium text-blue-50">{text}</p>
+    </div>
+  );
+}
+
+function StatItem({ number, label }: { number: string; label: string }) {
+  return (
+    <div>
+      <h3 className="text-6xl font-black tracking-[-0.05em] text-[#07111F]">
+        {number}
+      </h3>
+
+      <p className="mt-4 text-lg text-neutral-600">{label}</p>
     </div>
   );
 }

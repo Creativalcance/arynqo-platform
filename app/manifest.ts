@@ -1,0 +1,24 @@
+import type { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "ARYNQO — Plataforma Inteligente de Talento",
+    short_name: "ARYNQO",
+    description:
+      "Plataforma inteligente de talento, matching e recrutamento com IA.",
+    start_url: "/app",
+    scope: "/",
+    display: "standalone",
+    background_color: "#050816",
+    theme_color: "#050816",
+    orientation: "portrait",
+    categories: ["business", "productivity", "education"],
+    icons: [
+      {
+        src: "/favicon.ico",
+        sizes: "any",
+        type: "image/x-icon",
+      },
+    ],
+  };
+}
