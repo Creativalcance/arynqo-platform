@@ -38,7 +38,7 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   insert into storage.objects(bucket_id,name) values('student-cvs','${id(3)}/cv.pdf'),('company-logos','${id(12)}/logo.png');
   insert into storage.buckets(id,public) values('student-cvs',false),('cvs',false),('company-logos',true);
   `);
-  await db.exec(await readFile(new URL('../supabase/migrations/20260929230644_protect_candidate_privacy.sql',import.meta.url),'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/20260929232747_protect_candidate_privacy.sql',import.meta.url),'utf8'));
   const login = async n => db.exec(`reset role;set role authenticated;set request.test_user='${id(n)}';`);
   const visible = async () => (await db.query('select * from student_profiles')).rows.length;
   await login(1); assert.equal(await visible(),0);

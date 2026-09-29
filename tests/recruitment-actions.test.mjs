@@ -31,7 +31,7 @@ test('recruitment writes enforce role, vacancy ownership, consent and deduplicat
  insert into jobs values('${id(21)}','${id(11)}',true),('${id(22)}','${id(12)}',true),('${id(23)}','${id(11)}',false),('${id(24)}','${id(11)}',true);
  insert into ai_matches values('${id(31)}','${id(21)}'),('${id(31)}','${id(24)}');
  `);
- await db.exec(await readFile(new URL('../supabase/migrations/20260929231900_validate_recruitment_actions.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/20260929232748_validate_recruitment_actions.sql',import.meta.url),'utf8'));
  const login=async n=>db.exec(`reset role;set role authenticated;set request.test_user='${id(n)}';`);
  const apply=job=>db.exec(`insert into applications(job_id,student_id) values('${id(job)}','${id(31)}')`);
  const action=(job,type='accepted',student=31)=>db.exec(`insert into company_candidate_actions(company_id,student_id,job_id,action_type) values('${id(11)}','${id(student)}','${id(job)}','${type}')`);

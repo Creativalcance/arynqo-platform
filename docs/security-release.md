@@ -4,7 +4,7 @@ This change closes unauthenticated API operations and self-assigned account priv
 
 ## Database
 
-Migration `20260929224858_secure_account_roles_and_api_events.sql` was applied to the Supabase project named **Plataforma RH** on 29 September 2026. Its version matches the remote migration history. The hosting environment's project association still needs verification before release.
+Migration `20260929224858_secure_account_roles_and_api_events.sql` was applied to the Supabase project named **Plataforma RH** on 29 September 2026. Its version matches the remote migration history. The production frontend's public Supabase URL was verified against this project on 30 September 2026 (Europe/Lisbon).
 
 Verified after migration:
 
@@ -47,9 +47,9 @@ Still pending: protection of private candidate fields, contact-request state tra
 
 Avoid rolling back the profile permission fix or restoring the destructive endpoint. If reverting application code, retain the database safeguards; the old server notification route already uses the service role and can continue creating notifications. Its arbitrary-message vulnerability remains until the corrected code is deployed.
 
-## Candidate privacy follow-up (prepared, not applied)
+## Candidate privacy follow-up (applied)
 
-Migration `20260929230644_protect_candidate_privacy.sql` must be applied with this frontend release. It has been validated in isolated PostgreSQL, but has **not** been applied to the connected project. Applying it before the updated pages would hide protected candidates in the old match listing.
+Migration `20260929232747_protect_candidate_privacy.sql` was applied after the frontend deployment completed. Its version matches the connected project history. Local PostgreSQL tests verified its behavior before application.
 
 - A match alone no longer grants full student row access. Full access requires an application to the company's vacancy, an accepted request while the candidate accepts requests, or an open profile matched to that company. An unrelated company receives no snapshot or CV.
 - `company_candidate_snapshots` is a bounded, authenticated company RPC. Protected previews contain only explicitly selected presentation fields; they exclude name, email, phone, biography, CV, generated summary and avatar. Complete profile details and identity remain available after authorization.
@@ -64,9 +64,9 @@ Validation for this follow-up: 11 total security tests passed, TypeScript passed
 
 Remaining security work includes authorization of company candidate actions, application creation/status validation, generated matching text potentially containing private details, historical request integrity, compromised-password protection, file content scanning, notification retries and complete authenticated user journeys. Real storage/bucket behavior and hosting environment association require verification before release.
 
-## Recruitment write validation (prepared, not applied)
+## Recruitment write validation (applied)
 
-Migration `20260929231900_validate_recruitment_actions.sql` follows the candidate privacy migration. It has not been applied remotely. It adds guards for direct Data API writes, not just browser controls:
+Migration `20260929232748_validate_recruitment_actions.sql` was applied immediately after the privacy migration. Its version matches the connected project history. It adds guards for direct Data API writes, not just browser controls:
 
 - Candidates may insert only their own student identifier and vacancy identifier. New applications start pending; client-supplied status, identifiers and timestamps are not accepted as writable fields. Vacancies must be active; the check takes a shared row lock to serialize against concurrent vacancy closure. The existing unique application constraint prevents repeated submissions.
 - Only the owning company role can change application status, within the existing pending/accepted/rejected values. Candidate, vacancy, ID and creation time are immutable. The interface checks the previously displayed status and requires a returned record, so stale or denied updates do not display success or trigger a notification. Switching between accepted/rejected remains supported by the existing interface; no new terminal-state requirement has been invented.
@@ -78,3 +78,12 @@ Migration `20260929231900_validate_recruitment_actions.sql` follows the candidat
 Validation: the suite now has 12 passing tests. The new isolated PostgreSQL test covers forged status/identity, inactive vacancies, repeated submissions, company isolation, exact-vacancy consent, protected shortlists, duplicate actions/preferences, immutable actions and rejection of fake applied preferences. TypeScript and synthetic production build passed. Full ESLint still reports 32 errors and 38 warnings with zero new diagnostic signatures. This does not establish live end-to-end behavior; no production data was rewritten and no deployment occurred.
 
 Product decisions still needed: premium-plan restrictions differ between the match and candidate detail interfaces; the new ownership and consent guards intentionally do not invent a billing rule. There is no user-facing audit trail for application status changes yet. Full browser testing, integration error recovery, generated matching text privacy and historical consent review remain pending.
+
+
+## Deployment confirmation (30 September 2026, Europe/Lisbon)
+
+The user authorized integration into main and then application of the outstanding migrations. GitHub merge commit `59f0bfc6a6e1f26f3086838a07e494856245f4a0` has a successful Vercel deployment status. The production login page JavaScript references Supabase project `kxpjiozlcuudffhucpdr`; no credentials were recorded in this check. Both follow-up migrations were applied to that project without rewriting candidate, application or contact records. Local filenames were aligned to the versions generated by the remote migration history.
+
+Live privilege inspection confirmed: clients cannot supply an initial application status or reassign its candidate; status updates remain granted subject to RLS and the trigger; company action updates are denied; anonymous snapshot execution is denied. All four validation triggers exist. Live configuration inspection also confirmed both unique indexes and the CV/logo bucket restrictions. These are configuration checks, not complete authenticated browser tests.
+
+Security advisors still flag `set_updated_at` without a fixed search path and disabled compromised-password protection. The two authenticated SECURITY DEFINER functions are intentional guarded company lookups: both have fixed search paths and caller checks; the preview RPC is bounded. The private quota table deliberately has no client policies. Three other pre-existing RLS tables without policies remain inaccessible to clients and need a product review. Full user journeys, real CV uploads/downloads and external communications remain unverified.
