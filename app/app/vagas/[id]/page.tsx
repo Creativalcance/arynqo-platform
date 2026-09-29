@@ -332,6 +332,7 @@ export default function AppVagaDetailPage() {
       return;
     }
 
+    if (isApplying) return;
     setIsApplying(true);
     setStatusMessage("");
 
@@ -345,7 +346,7 @@ export default function AppVagaDetailPage() {
       .single();
 
     if (error) {
-      setStatusMessage("Já te candidataste ou ocorreu um erro.");
+      setStatusMessage(error.code === "23505" ? "Já enviaste uma candidatura para esta vaga." : error.code === "P0001" ? "Não foi possível enviar a candidatura. Confirma que a vaga continua disponível." : "Não foi possível enviar a candidatura. Tenta novamente.");
       setIsApplying(false);
       return;
     }

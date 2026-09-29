@@ -769,7 +769,7 @@ is_relevant,
     action_type: actionType,
   });
 
-  if (error) {
+  if (error && error.code !== "23505") {
     alert(error.message);
     return;
   }

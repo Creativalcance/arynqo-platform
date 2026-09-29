@@ -332,7 +332,7 @@ export default function EmpresaCandidatoDetalhePage({
       action_type: actionType,
     });
 
-    if (error && !error.message.toLowerCase().includes("duplicate")) {
+    if (error && error.code !== "23505") {
       alert(error.message);
       setIsSavingAction(false);
       return;

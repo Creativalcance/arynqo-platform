@@ -412,10 +412,13 @@ export default function EmpresaCandidatosPage() {
     const { error } = await supabase
       .from("applications")
       .update({ status })
-      .eq("id", application.id);
+      .eq("id", application.id)
+      .eq("status", application.status)
+      .select("id, status")
+      .single();
 
     if (error) {
-      alert(error.message);
+      alert("Não foi possível atualizar a candidatura. Atualiza a lista e tenta novamente.");
       return;
     }
 
