@@ -1,5 +1,7 @@
 "use client";
 
+import { CandidateCVButton } from "@/app/components/CandidateCVButton";
+import { cvStorageLocation } from "@/lib/cv-storage";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useMemo, useState } from "react";
@@ -1273,13 +1275,34 @@ professional_experience_items: professionalExperienceItems,
     }
   }
 
+  async function removeCV() {
+    if (!cvUrl || !profileId || isUploadingCV) return;
+    setIsUploadingCV(true);
+    try {
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) throw new Error("Inicia sessão para continuar.");
+      const old = cvStorageLocation(cvUrl, data.user.id, process.env.NEXT_PUBLIC_SUPABASE_URL!);
+      const { error } = await supabase.storage.from(old.bucket).remove([old.path]);
+      if (error) throw new Error("Não foi possível eliminar o currículo.");
+      const { error: updateError } = await supabase.from("student_profiles").update({ cv_url: null })
+        .eq("id", profileId).eq("user_id", data.user.id).select("id").single();
+      if (updateError) throw new Error("O ficheiro foi eliminado, mas não foi possível atualizar o perfil. Tenta novamente.");
+      setCvUrl("");
+    } catch (error) { alert(error instanceof Error ? error.message : "Não foi possível eliminar o currículo."); }
+    finally { setIsUploadingCV(false); }
+  }
+
   async function handleCVUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
-    if (!file) {
+    if (!file || isUploadingCV) {
       return;
     }
 
+    if (file.size === 0 || file.size > 10485760 || !/\.(pdf|docx)$/i.test(file.name)
+      || !["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
+      alert("Seleciona um PDF ou DOCX com até 10 MB."); return;
+    }
     setIsUploadingCV(true);
 
     try {
@@ -1297,13 +1320,13 @@ professional_experience_items: professionalExperienceItems,
         .toLowerCase()
         .replace(/[^a-z0-9-_]/g, "-");
 
-      const filePath = `${user.id}/${Date.now()}-${safeFileName}.${fileExtension}`;
+      const filePath = `${user.id}/${crypto.randomUUID()}-${safeFileName}.${fileExtension}`;
 
       const { error: uploadError } = await supabase.storage
         .from("student-cvs")
         .upload(filePath, file, {
           cacheControl: "3600",
-          upsert: true,
+          upsert: false,
         });
 
       if (uploadError) {
@@ -1312,13 +1335,21 @@ professional_experience_items: professionalExperienceItems,
         return;
       }
 
-      const { data } = supabase.storage
-        .from("student-cvs")
-        .getPublicUrl(filePath);
-
-      const cvPublicUrl = data.publicUrl;
-
-      setCvUrl(cvPublicUrl);
+      const previousCV = cvUrl;
+      const { error: saveCVError } = await supabase.from("student_profiles")
+        .update({ cv_url: filePath }).eq("id", profileId).eq("user_id", user.id).select("id").single();
+      if (saveCVError) {
+        await supabase.storage.from("student-cvs").remove([filePath]);
+        throw new Error("Não foi possível guardar o currículo.");
+      }
+      setCvUrl(filePath);
+      if (previousCV) {
+        try {
+          const old = cvStorageLocation(previousCV, user.id, process.env.NEXT_PUBLIC_SUPABASE_URL!);
+          const { error: removeError } = await supabase.storage.from(old.bucket).remove([old.path]);
+          if (removeError) alert("O novo currículo foi guardado, mas não foi possível eliminar o ficheiro anterior.");
+        } catch { /* Legacy external references are never fetched or deleted. */ }
+      }
 
       const formData = new FormData();
       formData.append("file", file);
@@ -1331,7 +1362,7 @@ professional_experience_items: professionalExperienceItems,
       const aiData = (await response.json()) as AIProfileResponse;
 
       if (!response.ok) {
-        alert(aiData.error || "Erro ao analisar CV.");
+        alert("O currículo foi guardado. " + (aiData.error || "Não foi possível preencher o perfil automaticamente."));
         setIsUploadingCV(false);
         return;
       }
@@ -1341,7 +1372,7 @@ professional_experience_items: professionalExperienceItems,
       const { error: updateProfileError } = await supabase
         .from("student_profiles")
         .update({
-          cv_url: cvPublicUrl,
+          cv_url: filePath,
           ...getAIProfileUpdatePayload(aiData),
         })
         .eq("id", profileId)
@@ -2462,13 +2493,10 @@ function getTrainingItems() {
 
                   <div className="mt-6 grid gap-5">
                     <div>
-                      <label className="text-sm font-semibold">URL do CV</label>
-                      <input
-                        value={cvUrl}
-                        onChange={(event) => setCvUrl(event.target.value)}
-                        placeholder="https://..."
-                        className={inputClass}
-                      />
+                      <p className="text-sm font-semibold">Currículo</p>
+                      <p className="mt-2 text-sm text-slate-500">{cvUrl ? "Currículo guardado em armazenamento privado." : "Ainda não carregaste um currículo."}</p>
+                      {cvUrl && <div className="mt-3 flex gap-3"><CandidateCVButton studentId={profileId} className="text-sm font-semibold text-blue-700" /><button type="button" disabled={isUploadingCV} onClick={removeCV} className="text-sm font-semibold text-red-700">Eliminar currículo</button></div>}
+
                     </div>
 
                     <div>

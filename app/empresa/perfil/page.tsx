@@ -200,8 +200,8 @@ export default function PerfilEmpresaPage() {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      alert("Seleciona um ficheiro de imagem válido.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size === 0 || file.size > 5242880) {
+      alert("Seleciona uma imagem JPEG, PNG ou WebP com até 5 MB.");
       return;
     }
 

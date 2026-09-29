@@ -2,6 +2,8 @@
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
+import { candidateSnapshots } from "@/lib/candidate-snapshots";
+import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createNotification } from "@/lib/create-notification";
@@ -216,32 +218,7 @@ export default function EmpresaCandidatosPage() {
           seniority
         ),
 
-        student_profiles (
-          id,
-          user_id,
-          phone,
-          bio,
-          headline,
-          location,
-          desired_area,
-          availability,
-          academic_education,
-          professional_experience,
-          languages,
-          cv_url,
-          linkedin_url,
-          portfolio_url,
-          main_role,
-          seniority,
-          work_model,
-          expected_salary,
-          preferred_regions,
-          ai_summary,
-          profiles (
-            name,
-            email
-          )
-        )
+        student_profiles (id)
       `
       )
       .in("job_id", jobIds)
@@ -253,12 +230,12 @@ export default function EmpresaCandidatosPage() {
       return;
     }
 
+    let snapshots: Map<string, NonNullable<CandidateApplication["student_profiles"]>>;
+    try { snapshots = await candidateSnapshots<NonNullable<CandidateApplication["student_profiles"]>>((data || []).map(application => application.student_id)); }
+    catch { alert("Não foi possível carregar os candidatos."); setIsLoading(false); return; }
+
     const normalizedApplications = (data || []).map((application) => {
-      const normalizedStudentProfile = Array.isArray(
-        application.student_profiles
-      )
-        ? application.student_profiles[0] ?? null
-        : application.student_profiles;
+      const normalizedStudentProfile = snapshots.get(application.student_id) || null;
 
       return {
         ...application,
@@ -797,14 +774,7 @@ export default function EmpresaCandidatosPage() {
                       </button>
 
                       {application.student_profiles?.cv_url && (
-                        <a
-                          href={application.student_profiles.cv_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
-                        >
-                          Ver CV
-                        </a>
+                        <CandidateCVButton studentId={application.student_profiles.id} className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]" />
                       )}
 
                       {application.student_profiles?.linkedin_url && (

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:security": "node --import tsx tests/security-api.test.ts && node tests/security-database.test.mjs"
+    "test:security": "node --import tsx tests/security-api.test.ts && node tests/security-database.test.mjs && node tests/candidate-privacy.test.mjs && node --import tsx tests/cv-storage.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

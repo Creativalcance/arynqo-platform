@@ -1,6 +1,8 @@
 "use client";
 
 import { createNotification } from "@/lib/create-notification";
+import { candidateSnapshots } from "@/lib/candidate-snapshots";
+import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import Link from "next/link";
 import { use, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -165,41 +167,11 @@ export default function EmpresaCandidatoDetalhePage({
     const currentCompany = companyProfile as CompanyProfile;
     setCompany(currentCompany);
 
-    const { data, error } = await supabase
-      .from("student_profiles")
-      .select(
-        `
-        id,
-        user_id,
-        headline,
-        location,
-        bio,
-        cv_url,
-        linkedin_url,
-        portfolio_url,
-        academic_education,
-        professional_experience,
-        languages,
-        availability,
-        desired_area,
-        phone,
-        main_role,
-        seniority,
-        work_model,
-        expected_salary,
-        preferred_regions,
-        ai_summary,
-        contact_visibility,
-        profiles (
-          name,
-          email
-        )
-      `
-      )
-      .eq("id", id)
-      .single();
+    let data: StudentProfile | undefined;
+    try { data = (await candidateSnapshots<StudentProfile>([id])).get(id); }
+    catch { data = undefined; }
 
-    if (error || !data) {
+    if (!data) {
       alert("Candidato não encontrado.");
       window.location.href = "/empresa/matches";
       return;
@@ -655,14 +627,7 @@ export default function EmpresaCandidatoDetalhePage({
 
               <div className="mt-5 space-y-3">
                 {canViewFullProfile && student.cv_url && (
-                  <a
-                    href={student.cv_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm font-medium transition hover:border-[#1683FF] hover:text-[#1683FF]"
-                  >
-                    Ver CV
-                  </a>
+                  <CandidateCVButton studentId={student.id} className="block rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm font-medium transition hover:border-[#1683FF] hover:text-[#1683FF]" />
                 )}
 
                 {canViewFullProfile && student.linkedin_url && (
