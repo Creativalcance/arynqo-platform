@@ -122,7 +122,7 @@ function mapRawMatchToAppMatch(match: RawAIMatch): AppMatchItem {
     company: company?.company_name || "Empresa não identificada",
     description:
       job?.description ||
-      "Match calculado pela IA com base no perfil profissional e nos requisitos da vaga.",
+      "Compatibilidade calculada com base no perfil profissional e nos requisitos da vaga.",
     score: normalizeScore(match.match_score),
     reason:
       match.ai_reason ||

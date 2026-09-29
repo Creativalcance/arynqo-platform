@@ -140,224 +140,6 @@ const talentTypeLabels: Record<string, string> = {
   career_change: "Transição de carreira",
 };
 
-function normalizeText(value: string | null | undefined) {
-  return (value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function inferFamilyFromText(values: Array<string | null | undefined>) {
-  const families = [
-    {
-      family: "marketing",
-      keywords: [
-        "marketing",
-        "comunicacao",
-        "comunicação",
-        "publicidade",
-        "branding",
-        "social media",
-        "conteudo",
-        "conteúdo",
-        "seo",
-        "campanhas",
-        "head of marketing",
-        "diretor de marketing",
-        "director de marketing",
-        "marketing manager",
-        "gestor de marketing",
-      ],
-    },
-    {
-      family: "recursos_humanos",
-      keywords: [
-        "recursos humanos",
-        "rh",
-        "talento",
-        "recrutamento",
-        "selecao",
-        "seleção",
-        "people",
-        "formacao",
-        "formação",
-        "desenvolvimento de talentos",
-        "gestao de pessoas",
-        "gestão de pessoas",
-      ],
-    },
-    {
-      family: "industrial",
-      keywords: [
-        "industria",
-        "indústria",
-        "producao",
-        "produção",
-        "torneiro",
-        "torneiro mecanico",
-        "torneiro mecânico",
-        "fresador",
-        "maquinador",
-        "maquinagem",
-        "metalomecanica",
-        "metalomecânica",
-        "serralheiro",
-        "soldador",
-        "mecanico industrial",
-        "mecânico industrial",
-        "tecnico mecanico",
-        "técnico mecânico",
-        "cnc",
-        "manutencao",
-        "manutenção",
-        "operador fabril",
-        "operador industrial",
-        "desenho tecnico",
-        "desenho técnico",
-      ],
-    },
-    {
-      family: "transportes",
-      keywords: [
-        "transportes",
-        "motorista",
-        "condutor",
-        "pesados",
-        "ligeiros",
-        "carta c",
-        "carta ce",
-        "tacografo",
-        "distribuicao",
-        "entregas",
-        "rotas",
-      ],
-    },
-    {
-      family: "construcao",
-      keywords: [
-        "construcao",
-        "obra",
-        "obras",
-        "pedreiro",
-        "servente",
-        "carpinteiro",
-        "pintor",
-        "canalizador",
-        "eletricista",
-        "alvenaria",
-        "cofragem",
-      ],
-    },
-    {
-      family: "tecnologia",
-      keywords: [
-        "software",
-        "programador",
-        "developer",
-        "frontend",
-        "backend",
-        "fullstack",
-        "dados",
-        "informatica",
-        "tecnologia",
-        "react",
-        "typescript",
-      ],
-    },
-    {
-      family: "comercial",
-      keywords: [
-        "comercial",
-        "vendas",
-        "sales",
-        "business development",
-        "gestor de conta",
-        "account manager",
-      ],
-    },
-    {
-      family: "logistica",
-      keywords: [
-        "logistica",
-        "armazem",
-        "operador de armazem",
-        "supply chain",
-        "stocks",
-        "inventario",
-      ],
-    },
-  ];
-
-  const scores = new Map<string, number>();
-
-  values.forEach((value, index) => {
-    const text = normalizeText(value);
-    if (!text) return;
-
-    const weight = index <= 2 ? 10 : index <= 5 ? 5 : 1;
-
-    families.forEach((family) => {
-      family.keywords.forEach((keyword) => {
-        if (text.includes(normalizeText(keyword))) {
-          scores.set(
-            family.family,
-            (scores.get(family.family) || 0) + weight
-          );
-        }
-      });
-    });
-  });
-
-  const bestMatch = Array.from(scores.entries()).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
-
-  return bestMatch?.[0] || "";
-}
-
-function areFamiliesCompatible(candidateFamily: string, jobFamily: string) {
-  if (!candidateFamily || !jobFamily) {
-    return false;
-  }
-
-  if (candidateFamily === jobFamily) {
-    return true;
-  }
-
-  const compatibilityMap: Record<string, string[]> = {
-    industrial: ["logistica"],
-    transportes: ["logistica"],
-    logistica: ["transportes", "industrial"],
-    construcao: ["industrial"],
-    marketing: ["design", "comercial"],
-    recursos_humanos: ["educacao"],
-    tecnologia: ["design"],
-    comercial: ["marketing"],
-  };
-
-  return (compatibilityMap[jobFamily] || []).includes(candidateFamily);
-}
-
-function isProfessionallyCompatible(match: Match, selectedJob: Job | null) {
-  const candidateFamily = inferFamilyFromText([
-    match.student?.headline,
-    match.student?.desired_area,
-    match.student?.talent_type,
-  ]);
-
-  const jobFamily = inferFamilyFromText([
-    selectedJob?.title,
-    selectedJob?.opportunity_type,
-    selectedJob?.seniority,
-    selectedJob?.area,
-  ]);
-
-  return areFamiliesCompatible(candidateFamily, jobFamily);
-}
-
 export default function CompanyMatchesPage() {
   const [company, setCompany] = useState<CompanyProfile | null>(null);
   const [companyPlan, setCompanyPlan] = useState("free");
@@ -576,7 +358,7 @@ is_relevant,
         opportunity_type_score: match.opportunity_type_score || 0,
         ai_reason:
           match.ai_reason ||
-          "A IA ainda não gerou uma justificação detalhada.",
+          "Resultado anterior: recalcula para obter os critérios e a cobertura de informação.",
         strengths: match.strengths || [],
         gaps: match.gaps || [],
         matchingSkills: match.matching_skills || [],
@@ -856,7 +638,6 @@ is_relevant,
   const recommendedMatches = useMemo(() => {
   return matches.filter(
     (match) =>
-      isProfessionallyCompatible(match, selectedJob) &&
       match.is_relevant === true &&
       match.match_category !== "not_relevant" &&
       (match.match_category === "recommended" ||
@@ -868,7 +649,6 @@ is_relevant,
 const otherMatches = useMemo(() => {
   return matches.filter(
     (match) =>
-      isProfessionallyCompatible(match, selectedJob) &&
       match.is_relevant === true &&
       match.match_category === "low_compatibility" &&
       match.match_score < 50 &&
@@ -920,8 +700,8 @@ const otherMatches = useMemo(() => {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Matches acima de 50% são recomendações reais. Perfis abaixo
-                  desse valor ficam separados como baixa compatibilidade.
+                  O índice de compatibilidade combina os dados do perfil e da vaga.
+                  Confirma os requisitos e a informação em falta antes de selecionar candidatos.
                 </p>
               </div>
 
@@ -1027,8 +807,8 @@ const otherMatches = useMemo(() => {
 
             {activeMatchView === "others" && (
               <section className="mb-8 rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800">
-                Estes perfis foram analisados pela IA, mas têm compatibilidade
-                inferior a 50%. Não são recomendações principais para esta vaga.
+                Estes perfis têm compatibilidade baixa ou informação insuficiente.
+                Consulta os critérios e as lacunas antes de tomar uma decisão.
               </section>
             )}
 
@@ -1157,7 +937,7 @@ const otherMatches = useMemo(() => {
                                       : "bg-amber-500"
                                   }`}
                                 >
-                                  {match.match_score}%
+                                  {match.match_score}/100
                                 </span>
                               </div>
 
@@ -1394,7 +1174,7 @@ function CandidateDetail({
             </p>
 
             <p className="mt-2 text-6xl font-semibold tracking-[-0.08em]">
-              {match.match_score}%
+              {match.match_score}/100
             </p>
 
             <p className="mt-2 text-xs text-white/50">Compatibilidade IA</p>

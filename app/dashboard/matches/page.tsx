@@ -174,7 +174,7 @@ export default function CandidateMatchesPage() {
         work_model_score: match.work_model_score || 0,
         salary_score: match.salary_score || 0,
         education_language_score: match.education_language_score || 0,
-        ai_reason: match.ai_reason || "A IA ainda não gerou uma justificação detalhada.",
+        ai_reason: match.ai_reason || "Resultado anterior: recalcula para obter os critérios e a cobertura de informação.",
         strengths: match.strengths || [],
         gaps: match.gaps || [],
         job: job
@@ -354,11 +354,11 @@ export default function CandidateMatchesPage() {
                     <div className="flex flex-col justify-between bg-[#07111F] p-8 text-white">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD]">
-                          Match Score
+                          Índice de compatibilidade
                         </p>
 
                         <p className="mt-4 text-6xl font-semibold tracking-[-0.08em]">
-                          {match.match_score}%
+                          {match.match_score}/100
                         </p>
                       </div>
 
