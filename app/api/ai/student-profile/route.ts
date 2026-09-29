@@ -1,3 +1,4 @@
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -116,6 +117,8 @@ function normalizeResponse(value: Partial<ImprovedProfileResponse>) {
 
 export async function POST(request: NextRequest) {
   try {
+    const actor = await requireActor(request, ["student", "admin"]);
+    await enforceApiLimit(actor, "ai", 10);
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "OPENAI_API_KEY não está configurada." },
@@ -199,6 +202,8 @@ Regras:
 
     return NextResponse.json(parsed);
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao melhorar perfil:", error);
 
     return NextResponse.json(

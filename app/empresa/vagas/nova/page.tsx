@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -357,7 +359,7 @@ export default function NovaVagaPage() {
     setIsGeneratingAI(true);
 
     try {
-      const response = await fetch("/api/ai/job-assistant", {
+      const response = await authenticatedFetch("/api/ai/job-assistant", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -474,7 +476,7 @@ export default function NovaVagaPage() {
 
   async function structureJobWithAI(jobId: string) {
     try {
-      await fetch("/api/ai/structure-job", {
+      await authenticatedFetch("/api/ai/structure-job", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -508,7 +510,7 @@ export default function NovaVagaPage() {
 
   async function recalculateJobMatches(jobId: string) {
     try {
-      await fetch("/api/ai/recalculate-job-matches", {
+      await authenticatedFetch("/api/ai/recalculate-job-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

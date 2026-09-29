@@ -373,6 +373,7 @@ export default function EmpresaCandidatoDetalhePage({
   message:
     "Uma empresa demonstrou interesse no teu perfil para uma vaga compatível.",
   relatedType: "candidate_action",
+  relatedJobId: jobId,
   relatedId: student.id,
   relatedUrl: "/dashboard/notificacoes",
   actionLabel: "Ver notificações",

@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -219,7 +221,7 @@ export default function AppVagaDetailPage() {
     setStatusMessage("");
 
     try {
-      const response = await fetch("/api/ai/generate-matches", {
+      const response = await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

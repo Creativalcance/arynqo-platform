@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -168,7 +170,7 @@ export default function AdminAcademiaPage() {
         return;
       }
 
-      const response = await fetch("/api/ai/academy-post", {
+      const response = await authenticatedFetch("/api/ai/academy-post", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { createNotification } from "@/lib/create-notification";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -818,6 +820,7 @@ is_relevant,
           selectedJob?.title || "vaga compatível"
         }".`,
         relatedType: "candidate_action",
+  relatedJobId: jobId,
         relatedId: studentId,
         relatedUrl: "/dashboard/notificacoes",
         actionLabel: "Ver notificações",
@@ -837,7 +840,7 @@ is_relevant,
     setIsRegenerating(true);
 
     try {
-      const response = await fetch("/api/ai/recalculate-job-matches", {
+      const response = await authenticatedFetch("/api/ai/recalculate-job-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

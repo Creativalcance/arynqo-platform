@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -244,7 +246,7 @@ export default function CandidateMatchesPage() {
     setIsRegenerating(true);
 
     try {
-      await fetch("/api/ai/generate-matches", {
+      await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

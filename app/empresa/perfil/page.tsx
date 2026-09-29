@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -242,7 +244,7 @@ export default function PerfilEmpresaPage() {
     setIsAutoFilling(true);
 
     try {
-      const response = await fetch("/api/ai/company-scraper", {
+      const response = await authenticatedFetch("/api/ai/company-scraper", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

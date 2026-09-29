@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -1321,7 +1323,7 @@ professional_experience_items: professionalExperienceItems,
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/ai/parse-cv", {
+      const response = await authenticatedFetch("/api/ai/parse-cv", {
         method: "POST",
         body: formData,
       });
@@ -1425,7 +1427,7 @@ professional_experience_items: professionalExperienceItems,
 
 async function regenerateMatches(studentId: string) {
   try {
-    await fetch("/api/ai/generate-matches", {
+    await authenticatedFetch("/api/ai/generate-matches", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1450,7 +1452,7 @@ async function regenerateMatches(studentId: string) {
         return;
       }
 
-      const response = await fetch("/api/ai/student-profile", {
+      const response = await authenticatedFetch("/api/ai/student-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

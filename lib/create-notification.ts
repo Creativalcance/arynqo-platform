@@ -1,3 +1,4 @@
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
 type NotificationChannel = "in_app" | "email" | "push";
 
 type CreateNotificationInput = {
@@ -6,13 +7,14 @@ type CreateNotificationInput = {
   message: string;
   relatedType?: string | null;
   relatedId?: string | null;
+  relatedJobId?: string;
   relatedUrl?: string | null;
   actionLabel?: string | null;
   channels?: NotificationChannel[];
 };
 
 export async function createNotification(input: CreateNotificationInput) {
-  const response = await fetch("/api/notifications/create", {
+  const response = await authenticatedFetch("/api/notifications/create", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -23,6 +25,7 @@ export async function createNotification(input: CreateNotificationInput) {
       message: input.message,
       relatedType: input.relatedType || null,
       relatedId: input.relatedId || null,
+      relatedJobId: input.relatedJobId,
       relatedUrl: input.relatedUrl || null,
       actionLabel: input.actionLabel || null,
       channels: input.channels || ["in_app", "email", "push"],

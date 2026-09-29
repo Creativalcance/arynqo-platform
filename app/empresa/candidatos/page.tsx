@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createNotification } from "@/lib/create-notification";
@@ -408,7 +410,7 @@ export default function EmpresaCandidatosPage() {
     try {
       await Promise.all(
         jobIds.map((jobId) =>
-          fetch("/api/ai/recalculate-job-matches", {
+          authenticatedFetch("/api/ai/recalculate-job-matches", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

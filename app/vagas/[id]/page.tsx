@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { use, useEffect, useState } from "react";
 import { createNotification } from "@/lib/create-notification";
 import { supabase } from "@/lib/supabase";
@@ -223,7 +225,7 @@ export default function JobPage({
     setIsGeneratingMatch(true);
 
     try {
-      const response = await fetch("/api/ai/generate-matches", {
+      const response = await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
