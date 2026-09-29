@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -194,7 +196,7 @@ export default function CandidateMatchesPage() {
     );
   }
 
-  async function handleAction(jobId: string, actionType: string) {
+  async function handleAction(jobId: string, actionType: "saved" | "ignored") {
     if (!studentId) {
       return;
     }
@@ -244,7 +246,7 @@ export default function CandidateMatchesPage() {
     setIsRegenerating(true);
 
     try {
-      await fetch("/api/ai/generate-matches", {
+      await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -471,17 +473,9 @@ export default function CandidateMatchesPage() {
                           {hasAction(job.id, "saved") ? "Guardada" : "Guardar"}
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => handleAction(job.id, "applied")}
-                          className={`rounded-full px-5 py-3 text-sm font-semibold transition ${
-                            hasAction(job.id, "applied")
-                              ? "bg-[#1683FF] text-white"
-                              : "bg-[#1683FF]/10 text-[#1683FF] hover:bg-[#1683FF] hover:text-white"
-                          }`}
-                        >
-                          {hasAction(job.id, "applied") ? "Candidatura registada" : "Tenho interesse"}
-                        </button>
+                        <Link href={`/vagas/${job.id}`} className="rounded-full bg-[#1683FF]/10 px-5 py-3 text-sm font-semibold text-[#1683FF] transition hover:bg-[#1683FF] hover:text-white">
+                          Candidatar-me
+                        </Link>
 
                         <button
                           type="button"

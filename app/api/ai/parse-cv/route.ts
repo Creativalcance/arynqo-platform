@@ -1,3 +1,4 @@
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -248,6 +249,8 @@ export async function POST(request: NextRequest) {
   let uploadedFileId = "";
 
   try {
+    const actor = await requireActor(request, ["student", "admin"]);
+    await enforceApiLimit(actor, "ai", 10);
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "OPENAI_API_KEY não está configurada." },
@@ -263,6 +266,10 @@ export async function POST(request: NextRequest) {
         { error: "Ficheiro não encontrado." },
         { status: 400 }
       );
+    }
+
+    if (!(file instanceof File) || file.size === 0 || file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "O currículo deve ter entre 1 byte e 10 MB." }, { status: 400 });
     }
 
     const allowedExtensions = [".pdf", ".doc", ".docx"];
@@ -432,6 +439,8 @@ Regras para professional_experience_items:
 
     return NextResponse.json(parsed);
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao analisar CV:", error);
 
     if (uploadedFileId) {

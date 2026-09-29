@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -198,8 +200,8 @@ export default function PerfilEmpresaPage() {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      alert("Seleciona um ficheiro de imagem válido.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size === 0 || file.size > 5242880) {
+      alert("Seleciona uma imagem JPEG, PNG ou WebP com até 5 MB.");
       return;
     }
 
@@ -242,7 +244,7 @@ export default function PerfilEmpresaPage() {
     setIsAutoFilling(true);
 
     try {
-      const response = await fetch("/api/ai/company-scraper", {
+      const response = await authenticatedFetch("/api/ai/company-scraper", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,3 +1,4 @@
+import { requireActor, enforceApiLimit, authorizeMatchScope, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -905,11 +906,14 @@ function calculateMatch(student: StudentProfile, job: Job): MatchResult {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json().catch(() => ({}))) as {
+    const actor = await requireActor(request);
+    const requestedScope = (await request.json().catch(() => ({}))) as {
       studentId?: string;
       jobId?: string;
     };
 
+    const body = await authorizeMatchScope(actor, requestedScope);
+    await enforceApiLimit(actor, "matching", 30, 60);
     const supabase = getAdminClient();
 
     let studentsQuery = supabase.from("student_profiles").select(`
@@ -1049,6 +1053,8 @@ export async function POST(request: NextRequest) {
       matches_generated: matches.length,
     });
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao gerar matches:", error);
 
     return NextResponse.json(

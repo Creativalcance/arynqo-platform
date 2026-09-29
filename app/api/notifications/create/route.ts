@@ -1,3 +1,5 @@
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
+import { resolveNotificationEvent } from "@/lib/notification-event";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -7,6 +9,7 @@ type NotificationChannel = "in_app" | "email" | "push";
 
 type CreateNotificationBody = {
   userId?: string;
+  relatedJobId?: string;
   title?: string;
   message?: string;
   relatedType?: string | null;
@@ -274,18 +277,13 @@ async function sendEmail({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as CreateNotificationBody;
-
-    if (!body.userId || !body.title || !body.message) {
-      return NextResponse.json(
-        { error: "userId, title e message são obrigatórios." },
-        { status: 400 }
-      );
-    }
-
+    const actor = await requireActor(request);
+    const input = (await request.json()) as CreateNotificationBody;
+    const supabase = getAdminClient();
+    const body = await resolveNotificationEvent(actor, supabase, input);
+    await enforceApiLimit(actor, "notifications", 30, 60);
     const channels = normalizeChannels(body.channels);
     const category = getNotificationCategory(body.relatedType);
-    const supabase = getAdminClient();
 
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
@@ -340,6 +338,7 @@ export async function POST(request: NextRequest) {
       .from("notifications")
       .insert({
         user_id: body.userId,
+        event_key: body.eventKey,
         title: body.title,
         message: body.message,
         related_type: body.relatedType || null,
@@ -352,6 +351,10 @@ export async function POST(request: NextRequest) {
       })
       .select("id")
       .single();
+
+    if (notificationError?.code === "23505") {
+      return NextResponse.json({ success: true, duplicate: true });
+    }
 
     if (notificationError || !notificationData) {
       return NextResponse.json(
@@ -403,13 +406,14 @@ export async function POST(request: NextRequest) {
       push_status: pushEnabled ? "pending" : "disabled",
     });
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao criar notificação:", error);
 
     return NextResponse.json(
       {
         error: "Erro ao criar notificação.",
-        details:
-          error instanceof Error ? error.message : JSON.stringify(error),
+
       },
       { status: 500 }
     );

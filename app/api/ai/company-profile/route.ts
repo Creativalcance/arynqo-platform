@@ -1,3 +1,4 @@
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextResponse } from "next/server";
 
 type RequestBody = {
@@ -10,6 +11,8 @@ type RequestBody = {
 
 export async function POST(request: Request) {
   try {
+    const actor = await requireActor(request, ["company", "admin"]);
+    await enforceApiLimit(actor, "ai", 10);
     const body = (await request.json()) as RequestBody;
 
     if (!process.env.OPENAI_API_KEY) {
@@ -88,7 +91,9 @@ Regras:
       "";
 
     return NextResponse.json({ text });
-  } catch {
+  } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     return NextResponse.json(
       { error: "Erro inesperado ao gerar conteúdo." },
       { status: 500 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { use, useEffect, useState } from "react";
 import { createNotification } from "@/lib/create-notification";
 import { supabase } from "@/lib/supabase";
@@ -223,7 +225,7 @@ export default function JobPage({
     setIsGeneratingMatch(true);
 
     try {
-      const response = await fetch("/api/ai/generate-matches", {
+      const response = await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -333,6 +335,7 @@ export default function JobPage({
       return;
     }
 
+    if (isApplying) return;
     setIsApplying(true);
 
     const { data: applicationData, error } = await supabase
@@ -345,7 +348,7 @@ export default function JobPage({
       .single();
 
     if (error) {
-      alert("Já te candidataste ou ocorreu um erro.");
+      alert(error.code === "23505" ? "Já enviaste uma candidatura para esta vaga." : error.code === "P0001" ? "Não foi possível enviar a candidatura. Confirma que a vaga continua disponível." : "Não foi possível enviar a candidatura. Tenta novamente.");
       setIsApplying(false);
       return;
     }

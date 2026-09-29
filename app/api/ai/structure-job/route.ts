@@ -1,3 +1,5 @@
+import { requireActor, enforceApiLimit, requireOwnedJob, apiErrorResponse } from "@/lib/api-auth";
+import { POST as generateMatches } from "@/app/api/ai/generate-matches/route";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
@@ -202,6 +204,7 @@ function normalizeResponse(
 
 export async function POST(request: NextRequest) {
   try {
+    const actor = await requireActor(request, ["company", "admin"]);
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "OPENAI_API_KEY não está configurada." },
@@ -218,6 +221,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await requireOwnedJob(actor, body.jobId);
+    await enforceApiLimit(actor, "ai", 10);
     const fallback = getFallback();
 
     const response = await openai.chat.completions.create({
@@ -339,21 +344,24 @@ Regras:
       );
     }
 
-    await fetch(`${request.nextUrl.origin}/api/ai/generate-matches`, {
+    // Invoke the shared handler directly; do not construct a self-request from Host.
+    const matchResponse = await generateMatches(new NextRequest(request.url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: request.headers.get("authorization") || "",
       },
-      body: JSON.stringify({
-        jobId: body.jobId,
-      }),
-    }).catch(() => null);
+      body: JSON.stringify({ jobId: body.jobId }),
+    }));
 
     return NextResponse.json({
       success: true,
       job: structuredJob,
+      matching_updated: matchResponse.ok,
     });
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao estruturar vaga:", error);
 
     return NextResponse.json(

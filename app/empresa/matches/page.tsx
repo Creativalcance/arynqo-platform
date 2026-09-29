@@ -1,6 +1,9 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import { createNotification } from "@/lib/create-notification";
+import { candidateSnapshots } from "@/lib/candidate-snapshots";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -546,38 +549,13 @@ is_relevant,
 
     const rawMatches = (data || []) as RawMatch[];
 
-    const studentProfiles = rawMatches
-      .map((match) =>
-        Array.isArray(match.student_profiles)
-          ? match.student_profiles[0] ?? null
-          : match.student_profiles
-      )
-      .filter((student): student is StudentProfile => Boolean(student));
-
-    const userIds = Array.from(
-      new Set(studentProfiles.map((student) => student.user_id))
-    );
-
-    let publicProfiles: PublicProfile[] = [];
-
-    if (userIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, name, email")
-        .in("id", userIds);
-
-      publicProfiles = (profilesData || []) as PublicProfile[];
-    }
+    let snapshots: Map<string, StudentProfile & { profiles: PublicProfile | null }>;
+    try { snapshots = await candidateSnapshots<StudentProfile & { profiles: PublicProfile | null }>(rawMatches.map(match => match.student_id)); }
+    catch { setMatches([]); setIsLoadingMatches(false); alert("Não foi possível carregar os candidatos."); return; }
 
     const normalizedMatches = rawMatches.map((match) => {
-      const student = Array.isArray(match.student_profiles)
-        ? match.student_profiles[0] ?? null
-        : match.student_profiles;
-
-      const publicProfile = student
-        ? publicProfiles.find((profile) => profile.id === student.user_id) ||
-          null
-        : null;
+      const student = snapshots.get(match.student_id) || null;
+      const publicProfile = student?.profiles || null;
 
       const key = `${match.student_id}:${match.job_id}`;
 
@@ -791,7 +769,7 @@ is_relevant,
     action_type: actionType,
   });
 
-  if (error) {
+  if (error && error.code !== "23505") {
     alert(error.message);
     return;
   }
@@ -818,6 +796,7 @@ is_relevant,
           selectedJob?.title || "vaga compatível"
         }".`,
         relatedType: "candidate_action",
+  relatedJobId: jobId,
         relatedId: studentId,
         relatedUrl: "/dashboard/notificacoes",
         actionLabel: "Ver notificações",
@@ -837,7 +816,7 @@ is_relevant,
     setIsRegenerating(true);
 
     try {
-      const response = await fetch("/api/ai/recalculate-job-matches", {
+      const response = await authenticatedFetch("/api/ai/recalculate-job-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,3 +1,4 @@
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
@@ -107,61 +108,14 @@ function normalizePost(
   };
 }
 
-async function getCurrentUserRole(request: NextRequest) {
-  const authorization = request.headers.get("authorization");
-
-  if (!authorization) {
-    return null;
-  }
-
-  const token = authorization.replace("Bearer ", "").trim();
-
-  if (!token) {
-    return null;
-  }
-
-  const supabase = createClient(supabaseUrl || "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "", {
-    global: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
-    return null;
-  }
-
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userData.user.id)
-    .single();
-
-  return profileData?.role || null;
-}
-
 export async function POST(request: NextRequest) {
   try {
+    const actor = await requireActor(request, ["admin"]);
+    await enforceApiLimit(actor, "ai", 10);
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "OPENAI_API_KEY não está configurada." },
         { status: 500 }
-      );
-    }
-
-    const role = await getCurrentUserRole(request);
-
-    if (role !== "admin") {
-      return NextResponse.json(
-        { error: "Apenas administradores podem gerar artigos." },
-        { status: 403 }
       );
     }
 
@@ -308,6 +262,8 @@ Regras:
       post: data,
     });
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error("Erro ao gerar artigo da Academia:", error);
 
     return NextResponse.json(

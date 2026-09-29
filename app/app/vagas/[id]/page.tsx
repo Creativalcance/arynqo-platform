@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/authenticated-fetch";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -219,7 +221,7 @@ export default function AppVagaDetailPage() {
     setStatusMessage("");
 
     try {
-      const response = await fetch("/api/ai/generate-matches", {
+      const response = await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -330,6 +332,7 @@ export default function AppVagaDetailPage() {
       return;
     }
 
+    if (isApplying) return;
     setIsApplying(true);
     setStatusMessage("");
 
@@ -343,7 +346,7 @@ export default function AppVagaDetailPage() {
       .single();
 
     if (error) {
-      setStatusMessage("Já te candidataste ou ocorreu um erro.");
+      setStatusMessage(error.code === "23505" ? "Já enviaste uma candidatura para esta vaga." : error.code === "P0001" ? "Não foi possível enviar a candidatura. Confirma que a vaga continua disponível." : "Não foi possível enviar a candidatura. Tenta novamente.");
       setIsApplying(false);
       return;
     }

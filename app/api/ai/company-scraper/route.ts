@@ -1,3 +1,5 @@
+import { fetchPublicWebsite, publicWebsiteUrl } from "@/lib/public-website";
+import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextResponse } from "next/server";
 
 type RequestBody = {
@@ -74,20 +76,7 @@ function extractLogo(html: string, baseUrl: string) {
 
 async function fetchPage(url: string) {
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-      next: {
-        revalidate: 0,
-      },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const html = await response.text();
+    const html = await fetchPublicWebsite(url);
 
     return {
       url,
@@ -123,6 +112,8 @@ function buildCandidateUrls(normalizedUrl: string) {
 
 export async function POST(request: Request) {
   try {
+    const actor = await requireActor(request, ["company", "admin"]);
+    await enforceApiLimit(actor, "ai", 10);
     const body = (await request.json()) as RequestBody;
 
     if (!body.websiteUrl) {
@@ -140,6 +131,11 @@ export async function POST(request: Request) {
     }
 
     const normalizedUrl = normalizeUrl(body.websiteUrl);
+    try {
+      publicWebsiteUrl(normalizedUrl);
+    } catch {
+      return NextResponse.json({ error: "Endereço de website inválido." }, { status: 400 });
+    }
     const candidateUrls = buildCandidateUrls(normalizedUrl);
 
     const pages = (
@@ -285,6 +281,8 @@ Formato obrigatório:
 
     return NextResponse.json(parsed);
   } catch (error) {
+    const denied = apiErrorResponse(error);
+    if (denied) return denied;
     console.error(error);
 
     return NextResponse.json(
