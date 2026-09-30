@@ -8,7 +8,7 @@ let sessionPreference: string | null = null;
 
 export function getCookiePreferencesSnapshot(): string | null {
   let raw: string | null;
-  try { raw = window.localStorage.getItem(COOKIE_PREFERENCES_KEY) ?? sessionPreference; }
+  try { raw = sessionPreference ?? window.localStorage.getItem(COOKIE_PREFERENCES_KEY); }
   catch { raw = sessionPreference; }
   return parseCookiePreferences(raw) ? raw : null;
 }
@@ -24,24 +24,26 @@ export function subscribeCookiePreferences(listener: () => void) {
       listener();
     }
   };
+  const expiryTimer = window.setInterval(listener, 60_000);
   window.addEventListener("storage", onStorage);
   window.addEventListener(UPDATE_EVENT, listener);
   window.addEventListener("focus", listener);
   return () => {
+    window.clearInterval(expiryTimer);
     window.removeEventListener("storage", onStorage);
     window.removeEventListener(UPDATE_EVENT, listener);
     window.removeEventListener("focus", listener);
   };
 }
 
-export function saveNecessaryStoragePreference(): boolean {
-  const raw = JSON.stringify(createCookiePreferences());
+export function saveCookiePreference(analytics: boolean): boolean {
+  const raw = JSON.stringify(createCookiePreferences(Date.now(), analytics));
   sessionPreference = raw;
   let persisted = false;
   try {
     window.localStorage.setItem(COOKIE_PREFERENCES_KEY, raw);
     persisted = window.localStorage.getItem(COOKIE_PREFERENCES_KEY) === raw;
-  } catch { /* Keep the acknowledgement for this visit if storage is blocked. */ }
+  } catch { /* Keep the choice for this visit if storage is blocked. */ }
   window.dispatchEvent(new Event(UPDATE_EVENT));
   return persisted;
 }

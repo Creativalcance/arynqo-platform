@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { COOKIE_PREFERENCES_MAX_AGE, createCookiePreferences, parseCookiePreferences } from "../lib/cookie-preferences";
 
 const now = Date.parse("2026-09-30T02:00:00Z");
-test("necessary-only acknowledgement expires at 180 days and cannot authorise optional tracking", () => {
+test("consent expires at 180 days and only explicit analytics choice permits tracking", () => {
   const record = createCookiePreferences(now);
   const raw = JSON.stringify(record);
   assert.equal(parseCookiePreferences(raw, now)?.choice, "necessary_only");
@@ -21,4 +21,9 @@ test("future timestamps and altered retention are invalid", () => {
   assert.equal(parseCookiePreferences(JSON.stringify(createCookiePreferences(now + 1)), now), null);
   assert.equal(parseCookiePreferences(JSON.stringify({ ...record, expiresAt: "not-a-date" }), now), null);
   assert.equal(parseCookiePreferences(JSON.stringify({ ...record, expiresAt: new Date(now + COOKIE_PREFERENCES_MAX_AGE + 1).toISOString() }), now), null);
+});
+
+test("previous acknowledgement does not imply analytics consent", () => {
+  assert.equal(parseCookiePreferences(JSON.stringify({ ...createCookiePreferences(now), version: 1 }), now), null);
+  assert.equal(parseCookiePreferences(JSON.stringify(createCookiePreferences(now, true)), now)?.choice, "analytics");
 });
