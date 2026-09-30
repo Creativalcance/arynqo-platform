@@ -494,7 +494,7 @@ export default function AppVagaDetailPage() {
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-cyan-950/30">
           <div className="flex items-start justify-between gap-5">
             <div>
-              <p className="text-sm text-white/60">Compatibilidade IA</p>
+              <p className="text-sm text-white/60">Compatibilidade</p>
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">

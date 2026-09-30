@@ -461,7 +461,7 @@ export default function JobPage({
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div>
                   <p className="text-sm font-semibold text-[#1683FF]">
-                    Compatibilidade IA
+                    Compatibilidade
                   </p>
 
                   <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#07111F]">

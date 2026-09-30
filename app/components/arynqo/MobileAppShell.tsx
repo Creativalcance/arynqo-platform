@@ -387,7 +387,7 @@ export default function MobileAppShell() {
                 </span>
 
                 {score > 0 && (
-                  <span className="mb-2 text-sm text-cyan-300">/100</span>
+                  <span className="mb-2 text-sm text-cyan-300">%</span>
                 )}
               </div>
             </div>

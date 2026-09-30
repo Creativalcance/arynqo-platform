@@ -358,7 +358,7 @@ export default function CandidateMatchesPage() {
                         </p>
 
                         <p className="mt-4 text-6xl font-semibold tracking-[-0.08em]">
-                          {match.match_score}/100
+                          {match.match_score}%
                         </p>
                       </div>
 

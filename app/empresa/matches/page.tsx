@@ -841,8 +841,8 @@ const otherMatches = useMemo(() => {
                 </button>
               </section>
             ) : (
-              <section className="grid gap-6 xl:grid-cols-[390px_1fr]">
-                <aside className="rounded-[32px] border border-[#DDE3EA] bg-white p-4 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
+              <section className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[390px_minmax(0,1fr)]">
+                <aside className="min-w-0 rounded-[32px] border border-[#DDE3EA] bg-white p-4 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
                   <div className="mb-4 flex items-center justify-between px-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
@@ -937,7 +937,7 @@ const otherMatches = useMemo(() => {
                                       : "bg-amber-500"
                                   }`}
                                 >
-                                  {match.match_score}/100
+                                  {match.match_score}%
                                 </span>
                               </div>
 
@@ -1021,7 +1021,7 @@ const otherMatches = useMemo(() => {
                   </div>
                 </aside>
 
-                <section className="rounded-[32px] border border-[#DDE3EA] bg-white shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
+                <section className="min-w-0 rounded-[32px] border border-[#DDE3EA] bg-white shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
                   {selectedMatch && selectedMatch.student ? (
                     <CandidateDetail
                       match={selectedMatch}
@@ -1101,10 +1101,10 @@ function CandidateDetail({
     : student.headline || `Talent #${match.student_id.slice(0, 4)}`;
 
   return (
-    <div>
-      <div className="border-b border-[#DDE3EA] p-8">
+    <div className="min-w-0 max-w-full [overflow-wrap:anywhere]">
+      <div className="border-b border-[#DDE3EA] p-4 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="flex gap-5">
+          <div className="flex min-w-0 max-w-full gap-3 sm:gap-5">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-2xl font-semibold text-white">
               {student.avatar_url && isPremium && contactAllowed ? (
                 <img
@@ -1117,12 +1117,12 @@ function CandidateDetail({
               )}
             </div>
 
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-500">
                 {student.desired_area || "Talento"}
               </p>
 
-              <h2 className="mt-1 text-4xl font-semibold tracking-[-0.06em] text-[#07111F]">
+              <h2 className="mt-1 text-2xl font-semibold tracking-[-0.06em] text-[#07111F] sm:text-4xl">
                 {displayName}
               </h2>
 
@@ -1174,16 +1174,16 @@ function CandidateDetail({
             </p>
 
             <p className="mt-2 text-6xl font-semibold tracking-[-0.08em]">
-              {match.match_score}/100
+              {match.match_score}%
             </p>
 
-            <p className="mt-2 text-xs text-white/50">Compatibilidade IA</p>
+            <p className="mt-2 text-xs text-white/50">Compatibilidade</p>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-0 xl:grid-cols-[1fr_320px]">
-        <div className="p-8">
+      <div className="grid min-w-0 grid-cols-1 gap-0 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 p-4 sm:p-8">
           <div className="mb-6 flex flex-wrap gap-2">
             {[
               { id: "resumo", label: "Resumo IA" },
@@ -1344,7 +1344,7 @@ function CandidateDetail({
           )}
         </div>
 
-        <aside className="border-t border-[#DDE3EA] p-8 xl:border-l xl:border-t-0">
+        <aside className="min-w-0 border-t border-[#DDE3EA] p-4 sm:p-8 xl:border-l xl:border-t-0">
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
             Breakdown
           </h3>
@@ -1424,7 +1424,7 @@ function InfoPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-6 text-sm leading-6 text-slate-600">
+    <div className="min-w-0 rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-4 text-sm leading-6 text-slate-600 [overflow-wrap:anywhere] sm:p-6">
       <p className="mb-3 text-sm font-semibold text-[#07111F]">{title}</p>
       {children}
     </div>
