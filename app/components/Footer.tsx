@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { complaintsBookUrl, legalLinks } from "@/lib/legal-navigation";
 
 export default function Footer() {
   return (
@@ -53,6 +54,16 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10 px-6 py-6">
+        <nav aria-label="Informação legal" className="mx-auto mb-6 flex max-w-7xl flex-wrap justify-center gap-x-7 gap-y-4 text-sm text-blue-100 md:justify-start">
+          {legalLinks.map(link => (
+            <Link key={link.href} href={link.href} className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+              {link.title}
+            </Link>
+          ))}
+          <a href={complaintsBookUrl} target="_blank" rel="noopener noreferrer" className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            Livro de Reclamações<span className="sr-only"> (abre num novo separador)</span>
+          </a>
+        </nav>
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-sm text-blue-100 md:flex-row">
           <p>
             © {new Date().getFullYear()} ARYNQO. Todos os direitos reservados.
