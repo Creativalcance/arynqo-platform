@@ -48,6 +48,10 @@ Os testes de API usam respostas sintéticas e o runtime Node 24 (hook para o mar
 
 Build com variáveis fictícias: compila páginas e rotas, sem validar integrações reais. Lint dirigido aos ficheiros novos.
 
-Pendente: verificação visual e percurso autenticado no domínio publicado, com uma sessão de administrador. O navegador disponível não permite acesso ao servidor local (`ERR_BLOCKED_BY_CLIENT`). Não foi criada uma conta nem recuperada uma sessão artificial para contornar essa limitação.
+O módulo inicial foi publicado. A tentativa de login no domínio foi recusada por falta de perfil administrativo; o percurso autenticado de consulta e exportação permanece por validar.
+
+Correção de 30/09/2026: os controlos são montados apenas após `/api/admin/acesso` validar no servidor o token e o perfil protegido. A verificação inicial e as mudanças de sessão ocultam o módulo. Testes em `tests/admin-access.test.mjs`: HTML inicial sem controlos, visitantes rejeitados com 401, candidatos/empresas com 403, administrador autorizado, cache privado. A API de dados continua a verificar permissões em cada operação.
+
+A função de quotas rejeitava `admin-read` e `admin-export`, causando o erro do limite de utilização. Migração `20260930185255_admin_api_limit_operations.sql` acrescenta essas operações, mantendo execução exclusiva de `service_role`. Ambas foram executadas em produção numa transação revertida. Verificação de tipos e lint dirigido passaram.
 
 Advisors: novo aviso informativo de RLS sem políticas no log é intencional (acesso exclusivo por serviço). Restantes avisos de funções antigas e proteção de palavras-passe comprometidas são anteriores a este módulo.

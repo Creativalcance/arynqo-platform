@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '@/lib/authenticated-fetch';
 import { adminCatalog, labelFor, type AdminDataset } from '@/lib/admin-catalog';
 import type { AdminRow } from '@/lib/admin-export';
+import { supabase } from '@/lib/supabase';
 const control = 'rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm';
 const button = 'rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50';
 function valueText(value: unknown) { if (value === null || value === undefined || value === '')
@@ -17,6 +18,37 @@ function displayValue(field: string, value: unknown) {
 }
 
 export default function AdminAccounts() {
+    const [allowed, setAllowed] = useState(false);
+    const [accessError, setAccessError] = useState('');
+    useEffect(() => {
+        let active = true, generation = 0;
+        async function validate() {
+            const attempt = ++generation;
+            setAllowed(false);
+            setAccessError('');
+            try {
+                const response = await authenticatedFetch('/api/admin/acesso', { cache: 'no-store' });
+                if (!active || attempt !== generation) return;
+                if (response.status === 401) { window.location.replace('/admin/login'); return; }
+                if (!response.ok) throw new Error(response.status === 403 ? 'Esta área está reservada a administradores.' : 'Não foi possível verificar as permissões.');
+                setAllowed(true);
+            } catch (error) {
+                if (active && attempt === generation) setAccessError(error instanceof Error ? error.message : 'Não foi possível verificar as permissões.');
+            }
+        }
+        void validate();
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+            // Defer Auth calls until the Auth callback has released its lock.
+            setAllowed(false);
+            queueMicrotask(() => { if (active) void validate(); });
+        });
+        return () => { active = false; generation++; subscription.unsubscribe(); };
+    }, []);
+    if (!allowed) return <main className="min-h-screen bg-[#F7F9FC] px-6 py-12 text-center"><p role="status">{accessError || 'A verificar acesso…'}</p>{accessError && <Link href="/admin/login" className="mt-4 inline-block text-blue-700 underline">Iniciar sessão de administrador</Link>}</main>;
+    return <AdminAccountsContent />;
+}
+
+function AdminAccountsContent() {
     const [dataset, setDataset] = useState<AdminDataset>('contas'), [rows, setRows] = useState<AdminRow[]>([]), [total, setTotal] = useState(0), [page, setPage] = useState(1);
     const [q, setQ] = useState(''), [role, setRole] = useState(''), [confirmed, setConfirmed] = useState(''), [from, setFrom] = useState(''), [to, setTo] = useState('');
     const [user, setUser] = useState<{
