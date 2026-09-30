@@ -23,9 +23,10 @@ export default function RootLayoutShell({ children }: RootLayoutShellProps) {
 
   return (
     <>
+      <a href="#conteudo-principal" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:p-4">Saltar para o conteúdo</a>
       <GoogleAnalytics />
       <Header />
-      {children}
+      <div id="conteudo-principal" tabIndex={-1}>{children}</div>
       <Footer onManageCookies={() => setCookiePreferencesOpen(true)} />
       <CookiePreferences open={cookiePreferencesOpen} onOpen={() => setCookiePreferencesOpen(true)} onClose={() => setCookiePreferencesOpen(false)} />
     </>

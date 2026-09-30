@@ -1,39 +1,7 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-
+import { pageMetadata } from "@/lib/seo";
+export const metadata = pageMetadata("Emprego e recrutamento em Portugal", "Descobre oportunidades de emprego e liga o teu perfil às necessidades das empresas. Conhece o recrutamento com apoio de IA da ARYNQO.", "/");
 export default function HomePage() {
-  const router = useRouter();
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  async function checkSession() {
-    const { data } = await supabase.auth.getSession();
-
-    if (data.session) {
-      router.replace("/dashboard");
-      return;
-    }
-
-    setIsCheckingSession(false);
-  }
-
-  if (isCheckingSession) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm font-medium text-slate-500">
-          A carregar ARYNQO...
-        </p>
-      </main>
-    );
-  }
-
   return (
     <main className="overflow-hidden bg-[#F7F9FC]">
       <section className="relative border-b border-neutral-200 bg-gradient-to-b from-white to-[#F7F9FC]">
@@ -44,15 +12,17 @@ export default function HomePage() {
             Plataforma inteligente de recrutamento e evolução profissional
           </div>
 
-          <h1 className="mt-8 max-w-5xl text-6xl font-black tracking-[-0.06em] text-[#07111F] md:text-7xl">
+          <h1 className="mt-8 max-w-5xl text-4xl sm:text-6xl font-black tracking-[-0.06em] text-[#07111F] md:text-7xl">
             Onde o talento se desenvolve.
           </h1>
 
           <p className="mt-8 max-w-3xl text-xl leading-relaxed text-neutral-600">
             A ARYNQO liga estudantes, profissionais e empresas através de uma
-            experiência moderna, inteligente e premium de recrutamento.
+            plataforma onde podes pesquisar vagas, apresentar competências e consultar recomendações com apoio de IA.
           </p>
 
+          <form action="/vagas" className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:flex-row"><label htmlFor="home-search" className="sr-only">Função, área ou localização</label><input id="home-search" name="q" placeholder="Função, área ou localização" className="min-w-0 flex-1 rounded-2xl border border-slate-300 bg-white px-5 py-4"/><button className="rounded-2xl bg-[#07111F] px-6 py-4 font-semibold text-white">Pesquisar vagas</button></form>
+          <p className="mt-5"><Link href="/empresas" className="font-semibold text-blue-700 underline underline-offset-4">Quero recrutar: conhecer a solução para empresas</Link></p>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/vagas"

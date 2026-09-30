@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Confirmar email | ARYNQO",
+  title: "Confirmar email",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };

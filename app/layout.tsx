@@ -3,6 +3,7 @@ import "./globals.css";
 import RootLayoutShell from "@/app/components/RootLayoutShell";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.arynqo.com"),
   title: {
     default: "ARYNQO | Where talent evolves",
     template: "%s | ARYNQO",
@@ -29,7 +30,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: "#050816",
   colorScheme: "dark light",
 };
