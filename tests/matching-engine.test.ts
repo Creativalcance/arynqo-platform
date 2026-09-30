@@ -74,3 +74,22 @@ test("related responsibilities and qualifications are not interchangeable",()=>{
   const r=calculateMatch(candidate({skills_normalized:[have]}),vacancy({required_skills:[want]}));assert.equal(r.skillsScore,0,`${have} != ${want}`);
  }
 });
+
+test("complete synthetic profiles distinguish suitable roles from missing evidence across occupations",()=>{
+ const cases=[
+  {family:"marketing",title:"Diretor de Marketing",skills:["Marketing estratégico","Marketing digital"],missing:"Orçamentação"},
+  {family:"financeiro",title:"Diretor Financeiro",skills:["Análise financeira","Controlo orçamental"],missing:"Fiscalidade"},
+  {family:"educacao",title:"Professor Ensino Básico",skills:["Planeamento pedagógico","Gestão de turma"],missing:"Licenciatura em Ensino Básico"},
+  {family:"transportes",title:"Motorista de Pesados",skills:["Carta de condução CE","Segurança rodoviária"],missing:"Experiência em transporte internacional"},
+ ];
+ for(const item of cases){
+  const c=candidate({role_family:item.family,role_title:item.title,headline:item.title,skills_normalized:item.skills});
+  const j=vacancy({role_family:item.family,role_title:item.title,title:item.title,required_skills:item.skills});
+  const aligned=calculateMatch(c,j);
+  assert.equal(aligned.matchCategory,"recommended",item.title);
+  assert.equal(aligned.skillsScore,100,item.title);
+  const incomplete=calculateMatch(c,{...j,required_skills:[...item.skills,item.missing]});
+  assert.notEqual(incomplete.matchCategory,"recommended",`${item.title}: missing evidence must require review`);
+  assert.equal(incomplete.missingSkills.length,1,item.title);
+ }
+});

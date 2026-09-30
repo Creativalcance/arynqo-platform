@@ -31,3 +31,11 @@ Foram executados 17 testes de matching, todos aprovados, incluindo novos casos p
 4. Pedir a um recrutador uma avaliação independente dos nove casos possíveis do piloto anterior e de uma amostra dos restantes; ocultar inicialmente a pontuação e distinguir incompatibilidade de informação insuficiente.
 5. Repetir o piloto com o dicionário atualizado e calcular precisão/recall apenas quando existirem etiquetas independentes, incluindo uma amostra que não tenha sido usada para ajustar as regras.
 6. Decidir a adoção após essa validação. A revisão atual mantém-se numa branch de desenvolvimento; nenhum resultado de produção foi substituído.
+
+## Verificação adicional com perfis sintéticos completos
+
+Foram acrescentados casos de marketing, finanças, ensino e transportes. Para cada profissão, verifica-se uma recomendação quando todos os requisitos definidos no caso têm evidência explícita e ausência de recomendação automática quando se acrescenta um requisito obrigatório sem evidência. São cenários técnicos construídos, não etiquetas de adequação atribuídas por recrutadores. O teste de ensino não certifica habilitações: verifica precisamente que a ausência da licenciatura exigida impede a recomendação automática.
+
+Foi reforçado o teste local das migrações: após a empresa proprietária aceitar uma candidatura, o respetivo candidato consulta o estado accepted; um segundo candidato não consulta essa candidatura. Este teste usa PGlite com dados sintéticos e as regras de acesso do cenário, não sessões reais de empresa no website.
+
+Comandos executados nesta fase: `npm run test:matching` (18 testes aprovados), `npm run test:security` (12 testes aprovados), `npx tsc --noEmit` e ESLint nos ficheiros de teste alterados. Nenhuma conta, candidatura, vaga ou decisão foi criada em produção. Os testes autenticados de empresa e administrador no browser permanecem pendentes por falta de contas desses perfis.
