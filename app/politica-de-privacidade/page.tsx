@@ -7,6 +7,7 @@ const document = legalDocuments.privacy;
 export const metadata: Metadata = {
   title: document.title,
   description: document.description,
+  alternates: { canonical: "https://www.arynqo.com/politica-de-privacidade" },
 };
 
 export default function Page() {

@@ -7,6 +7,7 @@ const document = legalDocuments.legal;
 export const metadata: Metadata = {
   title: document.title,
   description: document.description,
+  alternates: { canonical: "https://www.arynqo.com/aviso-legal" },
 };
 
 export default function Page() {
