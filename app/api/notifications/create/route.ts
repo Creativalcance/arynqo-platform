@@ -1,3 +1,4 @@
+import { sendNotificationEmail } from "@/lib/notification-email";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { resolveNotificationEvent } from "@/lib/notification-event";
 import { NextRequest, NextResponse } from "next/server";
@@ -44,10 +45,10 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 
 const notificationFromEmail =
-  process.env.NOTIFICATION_FROM_EMAIL || "Arynqo <no-reply@arynqo.com>";
+  process.env.NOTIFICATION_FROM_EMAIL || "ARYNQO <no-reply@arynqo.com>";
 
 const appBaseUrl =
-  process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || "";
+  process.env.NEXT_PUBLIC_APP_URL || "https://arynqo-platform.vercel.app";
 
 function getAdminClient() {
   if (!supabaseUrl || !serviceRoleKey) {
@@ -126,155 +127,6 @@ function isCategoryEnabled(
   return true;
 }
 
-function buildAbsoluteUrl(path: string | null | undefined) {
-  if (!path) {
-    return "";
-  }
-
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-
-  if (!appBaseUrl) {
-    return path;
-  }
-
-  const normalizedBaseUrl = appBaseUrl.startsWith("http")
-    ? appBaseUrl
-    : `https://${appBaseUrl}`;
-
-  return `${normalizedBaseUrl}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function buildEmailHtml({
-  name,
-  title,
-  message,
-  actionLabel,
-  relatedUrl,
-}: {
-  name: string | null;
-  title: string;
-  message: string;
-  actionLabel?: string | null;
-  relatedUrl?: string | null;
-}) {
-  const actionUrl = buildAbsoluteUrl(relatedUrl);
-  const safeName = name ? escapeHtml(name) : "";
-  const safeTitle = escapeHtml(title);
-  const safeMessage = escapeHtml(message);
-  const safeActionLabel = escapeHtml(actionLabel || "Abrir na ARYNQO");
-
-  return `
-    <div style="font-family: Arial, sans-serif; background:#F7F9FC; padding:32px;">
-      <div style="max-width:640px; margin:0 auto; background:#ffffff; border-radius:24px; padding:32px; border:1px solid #DDE3EA;">
-        <p style="margin:0 0 16px; color:#1683FF; font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;">
-          ARYNQO
-        </p>
-
-        <h1 style="margin:0; color:#07111F; font-size:28px; line-height:1.15;">
-          ${safeTitle}
-        </h1>
-
-        <p style="margin:24px 0 0; color:#475569; font-size:15px; line-height:1.7;">
-          Olá${safeName ? `, ${safeName}` : ""}.
-        </p>
-
-        <p style="margin:12px 0 0; color:#475569; font-size:15px; line-height:1.7;">
-          ${safeMessage}
-        </p>
-
-        ${
-          actionUrl
-            ? `
-              <div style="margin-top:28px;">
-                <a href="${escapeHtml(
-                  actionUrl
-                )}" style="display:inline-block; background:#1683FF; color:#ffffff; text-decoration:none; font-size:14px; font-weight:700; padding:14px 22px; border-radius:999px;">
-                  ${safeActionLabel}
-                </a>
-              </div>
-            `
-            : ""
-        }
-
-        <p style="margin:32px 0 0; color:#94A3B8; font-size:12px; line-height:1.6;">
-          Recebeste este email porque tens notificações ativas na plataforma ARYNQO.
-        </p>
-      </div>
-    </div>
-  `;
-}
-
-async function sendEmail({
-  to,
-  name,
-  title,
-  message,
-  actionLabel,
-  relatedUrl,
-}: {
-  to: string;
-  name: string | null;
-  title: string;
-  message: string;
-  actionLabel?: string | null;
-  relatedUrl?: string | null;
-}) {
-  if (!resendApiKey) {
-    return {
-      sent: false,
-      disabled: true,
-      error: "RESEND_API_KEY não está configurada.",
-    };
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: notificationFromEmail,
-      to,
-      subject: title,
-      html: buildEmailHtml({
-        name,
-        title,
-        message,
-        actionLabel,
-        relatedUrl,
-      }),
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-
-    return {
-      sent: false,
-      disabled: false,
-      error: errorText || "Erro ao enviar email.",
-    };
-  }
-
-  return {
-    sent: true,
-    disabled: false,
-    error: null,
-  };
-}
-
 export async function POST(request: NextRequest) {
   try {
     const actor = await requireActor(request);
@@ -300,7 +152,7 @@ export async function POST(request: NextRequest) {
 
     const profile = profileData as UserProfile;
 
-    const { data: preferencesData } = await supabase
+    const { data: preferencesData, error: preferencesError } = await supabase
       .from("notification_preferences")
       .select(
         `
@@ -313,6 +165,8 @@ export async function POST(request: NextRequest) {
       )
       .eq("user_id", body.userId)
       .maybeSingle();
+
+    if (preferencesError) return NextResponse.json({ error: "Não foi possível verificar as preferências de notificação." }, { status: 503 });
 
     const preferences = (preferencesData || {
       email_enabled: true,
@@ -367,14 +221,15 @@ export async function POST(request: NextRequest) {
     let emailError: string | null = null;
 
     if (emailEnabled) {
-      const emailResult = await sendEmail({
+      const emailResult = await sendNotificationEmail({
         to: profile.email,
         name: profile.name,
         title: body.title,
         message: body.message,
         actionLabel: body.actionLabel,
         relatedUrl: body.relatedUrl,
-      });
+        eventKey: body.eventKey,
+      }, { apiKey: resendApiKey, from: notificationFromEmail, baseUrl: appBaseUrl });
 
       if (emailResult.disabled) {
         emailStatus = "disabled";
@@ -386,7 +241,7 @@ export async function POST(request: NextRequest) {
         emailError = emailResult.error;
       }
 
-      await supabase
+      const { error: deliveryStatusError } = await supabase
         .from("notifications")
         .update({
           email_status: emailStatus,
@@ -394,6 +249,7 @@ export async function POST(request: NextRequest) {
             emailStatus === "sent" ? new Date().toISOString() : null,
         })
         .eq("id", notificationData.id);
+      if (deliveryStatusError) return NextResponse.json({ error: "A notificação foi criada, mas não foi possível guardar o estado de envio.", notification_id: notificationData.id }, { status: 503 });
     }
 
     return NextResponse.json({
@@ -408,7 +264,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const denied = apiErrorResponse(error);
     if (denied) return denied;
-    console.error("Erro ao criar notificação:", error);
+    console.error("Falha na criação de notificação.");
 
     return NextResponse.json(
       {

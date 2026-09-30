@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -82,6 +83,7 @@ export default function LoginPage() {
             Entrar
           </button>
         </form>
+        <Link href="/auth/confirm" className="mt-6 block text-center text-sm font-semibold text-[#1683FF]">Precisas de confirmar o email ou pedir um novo link?</Link>
       </div>
     </main>
   );
