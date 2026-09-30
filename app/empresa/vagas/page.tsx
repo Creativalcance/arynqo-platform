@@ -244,7 +244,7 @@ export default function EmpresaVagasPage() {
                     </Link>
 
                     <Link
-                      href={`/empresa/vagas/${job.id}`}
+                      href={`/empresa/vagas/${job.id}/editar`}
                       className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                     >
                       Editar

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { test } from 'node:test';
 import { PGlite } from '@electric-sql/pglite';
 
@@ -39,11 +39,24 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   insert into storage.buckets(id,public) values('student-cvs',false),('cvs',false),('company-logos',true);
   `);
   await db.exec(await readFile(new URL('../supabase/migrations/20260929232747_protect_candidate_privacy.sql',import.meta.url),'utf8'));
+  const migration = (await readdir(new URL('../supabase/migrations/',import.meta.url))).find(name=>name.endsWith('_allow_owned_company_candidate_reads.sql'));
+  assert.ok(migration,'owned-company read migration must be present');
+  await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`,import.meta.url),'utf8'));
   const login = async n => db.exec(`reset role;set role authenticated;set request.test_user='${id(n)}';`);
   const visible = async () => (await db.query('select * from student_profiles')).rows.length;
   await login(1); assert.equal(await visible(),0);
   const preview = (await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot;
   assert.equal(preview.headline,'Role'); assert.equal(preview.profiles,null); assert.equal(preview.bio,undefined); assert.equal(preview.cv_url,undefined);
+  await db.exec('reset role');
+  await db.exec(`update profiles set role='admin' where id='${id(1)}'; insert into profiles values('${id(4)}','admin','Unassociated admin','admin@example.invalid');`);
+  await login(1);
+  assert.equal(await visible(),0,'admin company owner still needs candidate consent');
+  assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot.profiles,null);
+  await login(4);
+  assert.equal(await visible(),0,'admin without a company gets no global candidate access');
+  assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid])`)).rows.length,0);
+  await db.exec('reset role'); await db.exec(`update profiles set role='company' where id='${id(1)}'`);
+  await login(1);
   assert.equal((await db.query("select * from storage.objects where bucket_id='student-cvs'")).rows.length,0);
   await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}','${id(22)}','pending')`),/not authorized/);
   await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}','${id(21)}','accepted')`),/Only the candidate/);
@@ -60,6 +73,14 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   assert.equal((await db.query("select * from storage.objects where bucket_id='student-cvs'")).rows.length,1);
   const full = (await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot;
   assert.equal(full.profiles.email,'private@example.invalid');
+  await db.exec('reset role'); await db.exec(`update profiles set role='admin' where id='${id(1)}'`);
+  await login(1); assert.equal(await visible(),1,'admin owner can read an authorized candidate');
+  assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot.profiles.email,'private@example.invalid');
+  await db.exec('reset role'); await db.exec(`update profiles set role='admin' where id='${id(2)}'`);
+  await login(2);
+  assert.equal(await visible(),0,'admin of another company cannot read this candidate');
+  assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid])`)).rows.length,0);
+  await db.exec('reset role'); await db.exec(`update profiles set role='company' where id in ('${id(1)}','${id(2)}')`);
   await login(2); assert.equal(await visible(),0);
   assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid])`)).rows.length,0);
   assert.equal((await db.query("select * from storage.objects where bucket_id='student-cvs'")).rows.length,0);
