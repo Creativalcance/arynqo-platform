@@ -452,7 +452,7 @@ export default function AppMatchesPage() {
 
                     <div className="rounded-3xl bg-emerald-400/10 px-4 py-3 text-center">
                       <p className="text-2xl font-semibold text-emerald-300">
-                        {currentMatch.score}%
+                        {currentMatch.score}/100
                       </p>
 
                       <p className="text-[11px] text-emerald-100/70">match</p>
@@ -689,7 +689,7 @@ export default function AppMatchesPage() {
 
                     <div className="rounded-2xl bg-emerald-400/10 px-3 py-2 text-center">
                       <p className="text-lg font-semibold text-emerald-300">
-                        {match.score}%
+                        {match.score}/100
                       </p>
 
                       <p className="text-[11px] text-emerald-100/70">match</p>
