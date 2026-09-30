@@ -1,20 +1,18 @@
 export const COOKIE_PREFERENCES_KEY = "arynqo_cookie_preferences";
-export const COOKIE_PREFERENCES_VERSION = 1;
+export const COOKIE_PREFERENCES_VERSION = 2;
 export const COOKIE_PREFERENCES_MAX_AGE = 180 * 24 * 60 * 60 * 1000;
 
 export type CookiePreferences = {
   version: number;
-  choice: "necessary_only";
+  choice: "necessary_only" | "analytics";
   savedAt: string;
   expiresAt: string;
 };
 
-// This records acknowledgement of necessary storage, not consent to tracking.
-// Adding optional technologies requires their actual blocking logic and a new version.
-export function createCookiePreferences(now = Date.now()): CookiePreferences {
+export function createCookiePreferences(now = Date.now(), analytics = false): CookiePreferences {
   return {
     version: COOKIE_PREFERENCES_VERSION,
-    choice: "necessary_only",
+    choice: analytics ? "analytics" : "necessary_only",
     savedAt: new Date(now).toISOString(),
     expiresAt: new Date(now + COOKIE_PREFERENCES_MAX_AGE).toISOString(),
   };
@@ -24,7 +22,7 @@ export function parseCookiePreferences(raw: string | null, now = Date.now()): Co
   if (!raw) return null;
   try {
     const value = JSON.parse(raw);
-    if (!value || value.version !== COOKIE_PREFERENCES_VERSION || value.choice !== "necessary_only" ||
+    if (!value || value.version !== COOKIE_PREFERENCES_VERSION || (value.choice !== "necessary_only" && value.choice !== "analytics") ||
         typeof value.savedAt !== "string" || typeof value.expiresAt !== "string") return null;
     const savedAt = Date.parse(value.savedAt), expiresAt = Date.parse(value.expiresAt);
     if (!Number.isFinite(savedAt) || !Number.isFinite(expiresAt) || savedAt > now ||

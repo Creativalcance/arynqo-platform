@@ -52,6 +52,11 @@ test('recruitment writes enforce role, vacancy ownership, consent and deduplicat
  await assert.rejects(action(24),/consent required/);
  await action(24,'shortlisted');
  await db.exec("update applications set status='accepted'");
+ await login(3);
+ assert.deepEqual((await db.query('select job_id,status from applications')).rows,[{job_id:id(21),status:'accepted'}], 'candidate sees the decision recorded by their vacancy owner');
+ await login(4);
+ assert.equal((await db.query('select * from applications')).rows.length,0,'another candidate cannot see this application');
+ await login(1);
  await assert.rejects(db.exec("update applications set status='invented'"),/not authorized/);
  await assert.rejects(db.exec(`update applications set student_id='${id(32)}'`),/immutable/);
  await login(2);

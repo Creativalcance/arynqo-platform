@@ -197,7 +197,7 @@ export default function AppMatchDetailPage() {
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500"
-              style={{ width: `${match.score}%` }}
+              style={{ width: `${match.score}/100` }}
             />
           </div>
 
