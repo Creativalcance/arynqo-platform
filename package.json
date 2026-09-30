@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:matching": "node --import tsx tests/matching-engine.test.ts",
     "evaluate:matching": "node --import tsx scripts/evaluate-matching.ts",
+    "shadow:matching": "node --import tsx scripts/shadow-matching.ts",
     "test:security": "node --import tsx tests/security-api.test.ts && node tests/security-database.test.mjs && node tests/candidate-privacy.test.mjs && node --import tsx tests/cv-storage.test.ts && node tests/recruitment-actions.test.mjs"
   },
   "dependencies": {

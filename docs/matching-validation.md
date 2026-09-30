@@ -33,3 +33,5 @@ Before production adoption:
 No production scoring or public release was performed as part of these local tests. The new code is prepared for review; high match accuracy remains to be established by the labelled pilot.
 
 Validation commands: `npm run test:matching` (15 passed), `npm run test:security` (12 passed), `npx tsc --noEmit --incremental false` (passed), targeted ESLint (passed), full ESLint (32 existing errors/38 warnings; no new diagnostic signatures), synthetic production build (passed). The evaluation CLI was smoke-tested with two synthetic labelled cases only; its output is not evidence of real-world accuracy.
+
+A subsequent read-only shadow pilot evaluated all 60 current candidate/vacancy combinations without changing stored matches. See `matching-shadow-pilot.md`: no automatic recommendations, nine possible matches and four stored recommendations demoted for missing mandatory evidence. Vocabulary ambiguities were found; recruiter labels are still missing. This is a diagnostic of rules and input quality, not proof of accuracy.
