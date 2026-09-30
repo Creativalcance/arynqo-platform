@@ -59,8 +59,9 @@ export const legalDocuments: Record<"cookies" | "privacy" | "legal", LegalDocume
         "title": "Armazenamento identificado na plataforma",
         "paragraphs": [
           "A autenticação integra o cliente Supabase. Na sua configuração habitual de navegador, este cliente conserva informação de sessão em armazenamento local, numa chave cujo formato depende do projeto, geralmente sb seguido da referência do projeto e de auth token. A informação é necessária à continuidade do acesso autenticado; pode persistir entre visitas e deve ser removida quando termine a sessão ou seja eliminada pelo utilizador, de acordo com o funcionamento do serviço.",
+          "A chave arynqo_cookie_preferences guarda, em armazenamento local, a versão do aviso, a escolha de continuar apenas com os mecanismos necessários e as datas de registo e validade. O registo é válido durante 180 dias neste navegador. Após esse período, ou se a versão deixar de ser válida, o aviso volta a ser apresentado. O armazenamento local não é eliminado automaticamente por atingir esse prazo; o registo é substituído na próxima gravação ou pode ser removido pelo utilizador nas definições do navegador.",
           "A chave local arynqo_admin_unlocked é utilizada pelo código para recordar um estado de interface da área administrativa. Não substitui a autenticação nem deve ser tratada como prova de autorização. O armazenamento local não tem uma expiração automática equivalente à de um cookie; a remoção depende da aplicação ou do utilizador.",
-          "Não foram identificadas no código consultado integrações explícitas de Google Analytics, Google Tag Manager ou Meta Pixel. Esta observação não comprova a ausência de tecnologias adicionadas por configuração externa, infraestrutura ou conteúdo incorporado. Não se atribuem nesta versão nomes ou durações a cookies que não tenham sido verificados."
+          "Na configuração atual, não são utilizadas ferramentas de estatísticas ou publicidade baseadas em cookies opcionais. A introdução dessas tecnologias exige informação atualizada e uma escolha prévia do utilizador quando legalmente necessária."
         ]
       },
       {
@@ -68,10 +69,11 @@ export const legalDocuments: Record<"cookies" | "privacy" | "legal", LegalDocume
         "number": "6",
         "title": "Escolha e alteração de preferências",
         "paragraphs": [
-          "O mecanismo de escolha deve permitir aceitar todos os cookies opcionais, rejeitar todos os cookies opcionais ou escolher por categoria, com opções claras e acessíveis. As categorias opcionais devem estar inicialmente desativadas. A rejeição não impede o acesso às funcionalidades que delas não dependam.",
-          "Depois da escolha, deve ser possível reabrir as preferências através de uma opção permanente no website. A retirada do consentimento deve ser tão simples como a sua prestação. Após a retirada, as tecnologias opcionais deixam de ser ativadas e os identificadores sob controlo da ARYNQO devem ser removidos quando tecnicamente aplicável.",
-          "A escolha deve ser registada com a informação necessária para demonstrar o consentimento, incluindo versão da política, categorias e momento da decisão. A sua conservação deve ser proporcional. Novas finalidades ou alterações que afetem a validade da escolha exigem nova informação e, quando necessário, novo consentimento."
-        ]
+          "Ao aceder pela primeira vez, é apresentado um aviso sobre o armazenamento necessário. A opção Continuar com os necessários regista a leitura desse aviso; não constitui consentimento para estatísticas, publicidade ou outros tratamentos opcionais. Como a configuração atual utiliza apenas mecanismos necessários, não existem categorias opcionais para ativar ou desativar.",
+          "Pode reabrir a informação através de Gerir cookies no rodapé do website ou no acesso disponibilizado na área móvel. O painel apresenta as categorias e permite guardar novamente a preferência. Eliminar os dados do website no navegador remove o registo. Se o navegador impedir a gravação, a leitura é recordada apenas durante a visita e essa limitação é comunicada.",
+          "Se forem introduzidas tecnologias opcionais, o mecanismo será atualizado antes da sua ativação para permitir aceitar todas, rejeitar todas ou escolher por categoria, com visibilidade equivalente para aceitar e rejeitar e sem opções previamente assinaladas. A retirada do consentimento deverá ser tão simples como a sua prestação.",
+          "A escolha relativa a futuras tecnologias opcionais deverá ser registada com a informação necessária à demonstração do consentimento. A alteração de versão ou de finalidades deverá dar origem a nova informação e, quando necessário, a novo consentimento. A preferência atual por armazenamento necessário não autoriza a instalação futura de rastreadores."
+]
       },
       {
         "id": "seccao-7",

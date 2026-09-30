@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { complaintsBookUrl, legalLinks } from "@/lib/legal-navigation";
 
-export default function Footer() {
+export default function Footer({ onManageCookies }: { onManageCookies: () => void }) {
   return (
     <footer className="border-t border-[#DDE3EA] bg-[#07111F] text-white">
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-4 lg:px-12">
@@ -63,6 +63,9 @@ export default function Footer() {
           <a href={complaintsBookUrl} target="_blank" rel="noopener noreferrer" className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
             Livro de Reclamações<span className="sr-only"> (abre num novo separador)</span>
           </a>
+          <button type="button" onClick={onManageCookies} className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            Gerir cookies
+          </button>
         </nav>
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-sm text-blue-100 md:flex-row">
           <p>
