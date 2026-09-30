@@ -48,7 +48,7 @@ const notificationFromEmail =
   process.env.NOTIFICATION_FROM_EMAIL || "ARYNQO <no-reply@arynqo.com>";
 
 const appBaseUrl =
-  process.env.NEXT_PUBLIC_APP_URL || "https://arynqo-platform.vercel.app";
+  process.env.NEXT_PUBLIC_APP_URL || "https://www.arynqo.com";
 
 function getAdminClient() {
   if (!supabaseUrl || !serviceRoleKey) {

@@ -3,8 +3,8 @@
 Template de produção: `confirmation.html`.
 
 - Assunto: **Confirma o teu email | ARYNQO**
-- Site URL: **https://arynqo-platform.vercel.app**
-- Redirect URLs: preservar os endereços válidos existentes e incluir **https://arynqo-platform.vercel.app/auth/confirm**. Preservar `/login` para emails antigos, enquanto necessário.
+- Site URL: **https://www.arynqo.com**
+- Redirect URLs: preservar os endereços válidos existentes e incluir **https://www.arynqo.com/auth/confirm**. Incluir também **https://www.arynqo.com/login**. Preservar os destinos anteriores `https://arynqo-platform.vercel.app/auth/confirm` e `/login` para compatibilidade.
 - No painel Supabase → Authentication → Emails → Confirm sign up, aplicar o assunto e conteúdo HTML.
 - Manter a confirmação de email ativa. Não resolver erros desativando a confirmação.
 - O botão usa `.SiteURL` e `.TokenHash`, que são variáveis oficiais Supabase. A página GET não consome o token; a confirmação acontece após clique explícito, por POST. O servidor verifica exclusivamente type=email e não devolve sessões.
