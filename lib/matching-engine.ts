@@ -123,6 +123,10 @@ const aliases: Record<string, string> = {
   "node.js": "nodejs", "node js": "nodejs", "recursos humanos": "recursos humanos",
   "project management": "gestao de projetos", "gestao de projectos": "gestao de projetos",
   "customer service": "atendimento ao cliente", "welding": "soldadura",
+  // Exact lexical variants only; related responsibilities are not equivalent evidence.
+  "strategia de marketing": "estrategia de marketing",
+  "marketing estrategico": "estrategia de marketing",
+  "controle de qualidade": "controlo de qualidade",
   "english": "ingles", "portuguese": "portugues", "french": "frances", "spanish": "espanhol",
 };
 function canonical(value: string) { const n = normalize(value); return aliases[n] || n; }

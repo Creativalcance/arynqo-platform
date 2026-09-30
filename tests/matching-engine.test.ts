@@ -63,3 +63,14 @@ test("manually declared profile skills are available to matching",()=>{
  const r=calculateMatch(candidate({skills_normalized:[],student_skills:[{skills:{name:"React"}},{skills:[{name:"TypeScript"}]}]}),vacancy());
  assert.equal(r.skillsScore,100);assert.equal(r.matchCategory,"recommended");
 });
+
+test("exact spelling and marketing strategy variants match in both directions",()=>{
+ for(const [have,want] of [["Marketing estratégico","Strategia de marketing"],["Estratégia de marketing","Marketing estratégico"],["Controlo de qualidade","Controle de qualidade"]]){
+  const r=calculateMatch(candidate({skills_normalized:[have]}),vacancy({required_skills:[want]}));assert.equal(r.skillsScore,100,`${have} = ${want}`);
+ }
+});
+test("related responsibilities and qualifications are not interchangeable",()=>{
+ for(const [have,want] of [["Marketing estratégico","Planeamento estratégico"],["Gestão de campanhas","Desenvolvimento de campanhas"],["Análise de mercado","Análise de dados"],["Gestão de orçamento","Orçamentação"],["Carta de condução B","Carta de condução CE"]]){
+  const r=calculateMatch(candidate({skills_normalized:[have]}),vacancy({required_skills:[want]}));assert.equal(r.skillsScore,0,`${have} != ${want}`);
+ }
+});
