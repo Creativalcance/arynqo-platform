@@ -93,3 +93,10 @@ test("complete synthetic profiles distinguish suitable roles from missing eviden
   assert.equal(incomplete.missingSkills.length,1,item.title);
  }
 });
+
+test("job language level and spoken channel affect recommendation", () => {
+ const job = vacancy({languages:["Falado: English (C1)"]});
+ assert.equal(calculateMatch(candidate({languages:"",spoken_languages:"Inglês (C2)"}),job).matchCategory,"recommended");
+ assert.notEqual(calculateMatch(candidate({languages:"",spoken_languages:"Inglês (B2)"}),job).matchCategory,"recommended");
+ assert.notEqual(calculateMatch(candidate({languages:"",written_languages:"Inglês (C2)"}),job).matchCategory,"recommended");
+});

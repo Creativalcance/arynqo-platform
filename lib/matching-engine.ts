@@ -1,3 +1,4 @@
+import { languageCompatibility } from "./profile-options";
 type MatchCategory =
   | "recommended"
   | "possible"
@@ -575,10 +576,11 @@ export function calculateMatch(student: StudentProfile, job: Job): MatchResult {
   const jobSalary = job.salary_max || parseSalary(job.salary_range);
   const salaryKnown = !!candidateSalary && !!jobSalary;
   const salaryScore = salaryKnown ? getSalaryScore(student, job) : 0;
-  const candidateLanguages = normalizeList([student.languages, student.spoken_languages, student.written_languages]);
-  const jobLanguages = normalizeArray(job.languages);
-  const languageKnown = candidateLanguages.length > 0 && jobLanguages.length > 0;
-  const languageScore = languageKnown ? scoreOverlap(candidateLanguages, jobLanguages) : 0;
+  const candidateLanguages = [student.languages || "", ...(student.spoken_languages || "").split(/[,;\n]+/).filter(Boolean).map(v => `Falado: ${v.trim()}`), ...(student.written_languages || "").split(/[,;\n]+/).filter(Boolean).map(v => `Escrito: ${v.trim()}`)].filter(Boolean);
+  const jobLanguages = job.languages || [];
+  const languageEvidence = languageCompatibility(candidateLanguages, jobLanguages);
+  const languageKnown = languageEvidence.known;
+  const languageScore = languageEvidence.score;
   const candidateEducation = normalizeList([student.academic_education, student.professional_experience]);
   const jobEducation = normalizeList([job.education_requirements, job.experience_requirements]);
   const educationKnown = candidateEducation.length > 0 && jobEducation.length > 0;

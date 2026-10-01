@@ -367,7 +367,7 @@ export default function AppPerfilPage() {
 
                 <section className="mt-5 grid grid-cols-2 gap-3">
                   <InfoCard
-                    label="Score IA"
+                    label="Score"
                     value={studentProfile.ai_profile_score}
                   />
                   <InfoCard

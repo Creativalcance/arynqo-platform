@@ -1,4 +1,5 @@
 "use client";
+import { CountrySelect } from "@/app/components/ProfileFields";
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
@@ -620,12 +621,7 @@ export default function PerfilEmpresaPage() {
 
                   <div>
                     <label className="text-sm font-semibold">País</label>
-                    <input
-                      value={country}
-                      onChange={(event) => setCountry(event.target.value)}
-                      className={inputClass}
-                      disabled={!isEditing}
-                    />
+                    <CountrySelect value={country} onChange={setCountry} disabled={!isEditing} />
                   </div>
                 </div>
               </div>

@@ -16,6 +16,7 @@ type CompanyProfile = {
 };
 
 type StudentProfile = {
+  talent_type: string | null;
   id: string;
 };
 
@@ -70,7 +71,7 @@ export default function DashboardPage() {
           .maybeSingle(),
         supabase
           .from("student_profiles")
-          .select("id")
+          .select("id, talent_type")
           .eq("user_id", userId)
           .maybeSingle(),
       ]);
@@ -158,7 +159,7 @@ export default function DashboardPage() {
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <span className="rounded-full bg-[#07111F] px-4 py-2 text-sm font-semibold text-white">
-                  {isTalent ? "Estudante" : isCompany ? "Empresa" : "Admin"}
+                  {isTalent ? ({student: "Estudante", graduate: "Recém-licenciado", professional: "Profissional", career_change: "Em transição de carreira"}[studentProfile?.talent_type || ""] || "Candidato") : isCompany ? "Empresa" : "Admin"}
                 </span>
 
                 {isAdmin && (

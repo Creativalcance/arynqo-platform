@@ -1,5 +1,7 @@
 "use client";
 
+import { CountrySelect, LanguagePicker, TagPicker } from "@/app/components/ProfileFields";
+import { splitTags } from "@/lib/profile-options";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import { cvStorageLocation } from "@/lib/cv-storage";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
@@ -10,6 +12,7 @@ import { supabase } from "@/lib/supabase";
 type StudentProfile = {
   id: string;
   headline: string | null;
+  country: string | null;
   location: string | null;
   bio: string | null;
   cv_url: string | null;
@@ -261,7 +264,7 @@ const tabs: { id: ProfileTab; label: string; description: string }[] = [
   {
     id: "ia",
     label: "Perfil IA",
-    description: "Matching, senioridade, scores e resumo inteligente.",
+    description: "Matching, senioridade, scores e resumo profissional.",
   },
 ];
 
@@ -271,6 +274,7 @@ export default function PerfilEstudantePage() {
   const [name, setName] = useState("");
   const [headline, setHeadline] = useState("");
   const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
   const [location, setLocation] = useState("");
   const [desiredArea, setDesiredArea] = useState("");
   const [availability, setAvailability] = useState("");
@@ -325,7 +329,6 @@ const [aiMatchKeywords, setAiMatchKeywords] = useState<string[]>([]);
   const [aiProfileScore, setAiProfileScore] = useState(0);
   const [aiEmployabilityScore, setAiEmployabilityScore] = useState(0);
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [newSkill, setNewSkill] = useState("");
   const [isGeneratingAIProfile, setIsGeneratingAIProfile] = useState(false);
   const [isUploadingCV, setIsUploadingCV] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -933,6 +936,7 @@ professional_experience_items: professionalExperienceItems,
   `
   id,
   headline,
+  country,
   location,
   bio,
   cv_url,
@@ -990,6 +994,7 @@ professional_experience_items,
     setProfileId(profile.id);
     setHeadline(profile.headline || "");
     setPhone(profile.phone || "");
+    setCountry(profile.country || "");
     setLocation(profile.location || "");
     setDesiredArea(profile.desired_area || "");
     setAvailability(profile.availability || "");
@@ -1098,6 +1103,7 @@ setProfessionalExperienceItems(
     .update({
       headline,
       phone,
+      country,
       location,
       desired_area: desiredArea,
       availability,
@@ -1167,45 +1173,6 @@ professional_experience_items: professionalExperienceItems,
   alert("Perfil atualizado e matches recalculados com sucesso.");
 }
 
-  async function handleAddSkill() {
-  const skillName = newSkill.trim();
-
-  if (!skillName) {
-    return;
-  }
-
-  await upsertSkill(skillName);
-  setNewSkill("");
-  await loadStudentSkills(profileId);
-
-  const updatedSkills = uniqueArray([
-    ...skills.map((skill) => skill.name),
-    skillName,
-  ]);
-
-  const { error } = await supabase
-    .from("student_profiles")
-    .update({
-      skills_normalized: updatedSkills,
-      ai_match_keywords: uniqueArray([
-        ...aiMatchKeywords,
-        ...updatedSkills,
-        headline,
-        mainRole,
-        desiredArea,
-      ]),
-    })
-    .eq("id", profileId);
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  setSkillsNormalized(updatedSkills);
-  await regenerateMatches(profileId);
-}
-
   async function handleRemoveSkill(skillId: string) {
     const { error } = await supabase
       .from("student_skills")
@@ -1214,8 +1181,7 @@ professional_experience_items: professionalExperienceItems,
       .eq("skill_id", skillId);
 
     if (error) {
-      alert(error.message);
-      return;
+      throw new Error(error.message);
     }
 
     setSkills((currentSkills) =>
@@ -1256,8 +1222,7 @@ professional_experience_items: professionalExperienceItems,
         .single();
 
       if (createSkillError || !createdSkill?.id) {
-        console.error(createSkillError);
-        return;
+        throw new Error(createSkillError?.message || "Não foi possível adicionar a competência.");
       }
 
       skillId = createdSkill.id;
@@ -1271,7 +1236,7 @@ professional_experience_items: professionalExperienceItems,
       });
 
     if (linkSkillError) {
-      console.error(linkSkillError);
+      throw new Error(linkSkillError.message);
     }
   }
 
@@ -1472,6 +1437,7 @@ async function regenerateMatches(studentId: string) {
   }
 }
   async function handleGenerateAIProfile() {
+    if (!window.confirm("Apenas será melhorada a escrita; não será alterada a informação. A IA não deve acrescentar factos nem preencher campos vazios. Poderás rever a proposta antes de a aplicar.")) return;
     setIsGeneratingAIProfile(true);
 
     try {
@@ -1499,30 +1465,17 @@ async function regenerateMatches(studentId: string) {
         return;
       }
 
-      applyAIData(aiData);
-
-      const { error: updateProfileError } = await supabase
-        .from("student_profiles")
-        .update(getAIProfileUpdatePayload(aiData))
-        .eq("id", profileId)
-        .eq("user_id", user.id);
-
-      if (updateProfileError) {
-        alert(updateProfileError.message);
-        setIsGeneratingAIProfile(false);
-        return;
+      const draft = [
+        ["Título profissional", aiData.headline], ["Apresentação", aiData.bio],
+        ["Objetivos de carreira", aiData.career_goals], ["Resumo profissional", aiData.ai_summary],
+      ].map(([label, text]) => `${label}:\n${text || "(sem alterações)"}`).join("\n\n");
+      if (window.confirm(`Revê a proposta de escrita antes de aplicar. Confirma que todos os factos estão corretos.\n\n${draft}\n\nAplicar ao formulário?`)) {
+        setHeadline(aiData.headline || headline);
+        setBio(aiData.bio || bio);
+        setCareerGoals(aiData.career_goals || careerGoals);
+        setAiSummary(aiData.ai_summary || aiSummary);
+        alert("Proposta aplicada ao formulário. Revê os textos e guarda o perfil para confirmar.");
       }
-
-      if (Array.isArray(aiData.skills)) {
-        for (const skillName of aiData.skills) {
-          await upsertSkill(skillName);
-        }
-
-        await loadStudentSkills(profileId);
-      }
-
-      await regenerateMatches(profileId);
-      alert("Perfil completo melhorado com IA.");
     } catch (error) {
       console.error(error);
       alert("Erro ao melhorar perfil com IA.");
@@ -1635,7 +1588,7 @@ function getTrainingItems() {
             <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Perfil inteligente ARYNQO
+                  Perfil ARYNQO
                 </p>
 
                 <h1 className="max-w-3xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
@@ -1669,7 +1622,7 @@ function getTrainingItems() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs text-white/50">Score IA</p>
+                    <p className="text-xs text-white/50">Score</p>
                     <p className="mt-1 text-2xl font-semibold text-white">
                       {aiProfileScore}
                     </p>
@@ -1784,8 +1737,9 @@ function getTrainingItems() {
               >
                 {isGeneratingAIProfile
                   ? "A melhorar perfil..."
-                  : "Melhorar todos os campos com IA"}
+                  : "Melhorar a escrita com IA"}
               </button>
+              <p className="mt-3 text-xs leading-5 text-slate-500">Apenas será melhorada a escrita; não será alterada a informação. Revê a proposta antes de guardar.</p>
             </section>
 
             <button
@@ -1855,6 +1809,7 @@ function getTrainingItems() {
   </select>
 </div>
 
+                    <div><label className="text-sm font-semibold">País</label><CountrySelect value={country} onChange={setCountry} /></div>
                     <div>
   <label className="text-sm font-semibold">
     Localização
@@ -1944,7 +1899,7 @@ function getTrainingItems() {
         </p>
 
         <h3 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.05em] md:text-4xl">
-          Constrói o teu CV inteligente.
+          Constrói o teu CV.
         </h3>
 
         <p className="mt-4 max-w-3xl text-sm leading-6 text-white/65">
@@ -2024,47 +1979,14 @@ function getTrainingItems() {
                     Competências usadas no matching com vagas e empresas.
                   </p>
 
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {skills.map((skill) => (
-                      <span
-                        key={skill.id}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#1683FF]/20 bg-[#1683FF]/5 px-3 py-2 text-xs font-semibold text-[#07111F]"
-                      >
-                        {skill.name}
-
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSkill(skill.id)}
-                          className="text-slate-400 transition hover:text-[#1683FF]"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-
-                    {skills.length === 0 && (
-                      <p className="text-sm leading-6 text-slate-500">
-                        Ainda não adicionaste nenhuma skill.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="mt-5 flex gap-2">
-                    <input
-                      value={newSkill}
-                      onChange={(event) => setNewSkill(event.target.value)}
-                      placeholder="Ex: Excel"
-                      className="w-full rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={handleAddSkill}
-                      className="rounded-2xl bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1683FF]"
-                    >
-                      +
-                    </button>
-                  </div>
+                  <TagPicker value={skills.map(skill => skill.name)} onChange={async values => {
+                    for (const skill of skills) if (!values.includes(skill.name)) await handleRemoveSkill(skill.id);
+                    for (const value of values) if (!skills.some(skill => skill.name === value)) await upsertSkill(value);
+                    const { error } = await supabase.from("student_profiles").update({skills_normalized: values}).eq("id", profileId);
+                    await loadStudentSkills(profileId);
+                    if (error) throw new Error("As competências foram alteradas, mas não foi possível atualizar a compatibilidade. Guarda o perfil para tentar novamente.");
+                    await regenerateMatches(profileId);
+                  }} label="Competências técnicas" />
                 </section>
 
                 <section className="grid gap-6 md:grid-cols-2">
@@ -2073,14 +1995,7 @@ function getTrainingItems() {
                       Idiomas falados
                     </h3>
 
-                    <textarea
-                      value={spokenLanguages}
-                      onChange={(event) =>
-                        setSpokenLanguages(event.target.value)
-                      }
-                      rows={6}
-                      className={textareaClass}
-                    />
+                    <LanguagePicker value={splitTags(spokenLanguages)} onChange={values => setSpokenLanguages(values.join(", "))} label="idiomas falados" />
                   </div>
 
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
@@ -2088,14 +2003,7 @@ function getTrainingItems() {
                       Idiomas escritos
                     </h3>
 
-                    <textarea
-                      value={writtenLanguages}
-                      onChange={(event) =>
-                        setWrittenLanguages(event.target.value)
-                      }
-                      rows={6}
-                      className={textareaClass}
-                    />
+                    <LanguagePicker value={splitTags(writtenLanguages)} onChange={values => setWrittenLanguages(values.join(", "))} label="idiomas escritos" />
                   </div>
                 </section>
 
@@ -2104,12 +2012,7 @@ function getTrainingItems() {
                     Resumo de idiomas
                   </h3>
 
-                  <textarea
-                    value={languages}
-                    onChange={(event) => setLanguages(event.target.value)}
-                    rows={5}
-                    className={textareaClass}
-                  />
+                  <LanguagePicker value={splitTags(languages)} onChange={values => setLanguages(values.join(", "))} label="idiomas" />
                 </section>
 
                 <section className="grid gap-6 md:grid-cols-2">
@@ -2118,12 +2021,7 @@ function getTrainingItems() {
                       Soft skills
                     </h3>
 
-                    <textarea
-                      value={softSkills}
-                      onChange={(event) => setSoftSkills(event.target.value)}
-                      rows={6}
-                      className={textareaClass}
-                    />
+                    <TagPicker value={splitTags(softSkills)} onChange={values => setSoftSkills(values.join(", "))} label="Competências comportamentais" />
                   </div>
 
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
@@ -2131,12 +2029,7 @@ function getTrainingItems() {
                       Ferramentas e software
                     </h3>
 
-                    <textarea
-                      value={tools}
-                      onChange={(event) => setTools(event.target.value)}
-                      rows={6}
-                      className={textareaClass}
-                    />
+                    <TagPicker value={splitTags(tools)} onChange={values => setTools(values.join(", "))} label="Ferramentas e software" />
                   </div>
                 </section>
               </div>
@@ -2471,7 +2364,7 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Resumo profissional IA
+                    Resumo profissional
                   </h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">

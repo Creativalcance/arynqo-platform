@@ -1,4 +1,5 @@
 "use client";
+import { JobLanguagePicker, TagPicker } from "@/app/components/ProfileFields";
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
@@ -107,42 +108,7 @@ const PROFESSIONAL_AREAS = [
   "Telecomunicações",
 ];
 
-const COMMON_LANGUAGES = [
-  "Português",
-  "Inglês",
-  "Espanhol",
-  "Francês",
-  "Alemão",
-  "Italiano",
-  "Mandarim",
-];
 
-const COMMON_SKILLS = [
-  "Comunicação",
-  "Trabalho em equipa",
-  "Organização",
-  "Proatividade",
-  "Resolução de problemas",
-  "Gestão de tempo",
-  "Microsoft Office",
-  "Excel",
-  "Inglês",
-  "Atendimento ao cliente",
-  "Vendas",
-  "Marketing Digital",
-  "Redes Sociais",
-  "Análise de dados",
-  "Gestão de projetos",
-  "React",
-  "Next.js",
-  "TypeScript",
-  "JavaScript",
-  "TailwindCSS",
-  "Supabase",
-  "PostgreSQL",
-  "OpenAI API",
-  "Figma",
-];
 
 export default function NovaVagaPage() {
   const [company, setCompany] = useState<CompanyProfile | null>(null);
@@ -158,10 +124,8 @@ export default function NovaVagaPage() {
   const [specializationInput, setSpecializationInput] = useState("");
 
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
-  const [requiredSkillInput, setRequiredSkillInput] = useState("");
 
   const [preferredSkills, setPreferredSkills] = useState<string[]>([]);
-  const [preferredSkillInput, setPreferredSkillInput] = useState("");
 
   const [location, setLocation] = useState("");
   const [workModel, setWorkModel] = useState("Híbrido");
@@ -169,7 +133,6 @@ export default function NovaVagaPage() {
   const [seniority, setSeniority] = useState("Júnior");
 
   const [languages, setLanguages] = useState<string[]>([]);
-  const [languageInput, setLanguageInput] = useState("");
 
   const [salaryRange, setSalaryRange] = useState("");
   const [educationRequirements, setEducationRequirements] = useState("");
@@ -321,39 +284,7 @@ export default function NovaVagaPage() {
     addItem(value, currentItems, setItems, clearInput);
   }
 
-  function toggleLanguage(language: string) {
-    if (languages.includes(language)) {
-      setLanguages(
-        languages.filter((currentLanguage) => currentLanguage !== language)
-      );
-      return;
-    }
 
-    setLanguages([...languages, language]);
-  }
-
-  function toggleSkill(skill: string, type: "required" | "preferred") {
-    if (type === "required") {
-      if (requiredSkills.includes(skill)) {
-        setRequiredSkills(
-          requiredSkills.filter((currentSkill) => currentSkill !== skill)
-        );
-        return;
-      }
-
-      setRequiredSkills([...requiredSkills, skill]);
-      return;
-    }
-
-    if (preferredSkills.includes(skill)) {
-      setPreferredSkills(
-        preferredSkills.filter((currentSkill) => currentSkill !== skill)
-      );
-      return;
-    }
-
-    setPreferredSkills([...preferredSkills, skill]);
-  }
 
   async function generateJobWithAI() {
     setIsGeneratingAI(true);
@@ -585,8 +516,6 @@ export default function NovaVagaPage() {
   const selectClass =
     "mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm text-[#07111F] outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10";
 
-  const chipClass =
-    "inline-flex items-center gap-2 rounded-full border border-[#DDE3EA] bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#1683FF] hover:text-[#1683FF]";
 
   const selectedChipClass =
     "inline-flex items-center gap-2 rounded-full border border-[#1683FF] bg-[#1683FF] px-4 py-2 text-xs font-semibold text-white transition";
@@ -687,8 +616,7 @@ export default function NovaVagaPage() {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                Escreva e carregue em Enter para adicionar. Também pode escolher
-                sugestões rápidas.
+                Selecione competências técnicas, comportamentais e ferramentas no catálogo partilhado com os candidatos. Pode adicionar novas tags quando necessário.
               </p>
 
               <div className="mt-6 grid gap-5">
@@ -755,110 +683,26 @@ export default function NovaVagaPage() {
                 <div className="grid gap-5 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-semibold">
-                      Skills obrigatórias
+                      Competências obrigatórias
                     </label>
 
                     <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
-                      <div className="flex flex-wrap gap-2">
-                        {requiredSkills.map((skill) => (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() =>
-                              removeItem(skill, requiredSkills, setRequiredSkills)
-                            }
-                            className={selectedChipClass}
-                          >
-                            {skill}
-                            <span>×</span>
-                          </button>
-                        ))}
-
-                        <input
-                          value={requiredSkillInput}
-                          onChange={(event) =>
-                            setRequiredSkillInput(event.target.value)
-                          }
-                          onKeyDown={(event) =>
-                            handleEnterToAdd(
-                              event,
-                              requiredSkillInput,
-                              requiredSkills,
-                              setRequiredSkills,
-                              () => setRequiredSkillInput("")
-                            )
-                          }
-                          placeholder="Adicionar skill + Enter"
-                          className="min-w-[180px] flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-slate-400"
-                        />
-                      </div>
+                      <TagPicker value={requiredSkills} onChange={setRequiredSkills} />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-sm font-semibold">
-                      Skills preferenciais
+                      Competências preferenciais
                     </label>
 
                     <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
-                      <div className="flex flex-wrap gap-2">
-                        {preferredSkills.map((skill) => (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() =>
-                              removeItem(skill, preferredSkills, setPreferredSkills)
-                            }
-                            className={selectedChipClass}
-                          >
-                            {skill}
-                            <span>×</span>
-                          </button>
-                        ))}
-
-                        <input
-                          value={preferredSkillInput}
-                          onChange={(event) =>
-                            setPreferredSkillInput(event.target.value)
-                          }
-                          onKeyDown={(event) =>
-                            handleEnterToAdd(
-                              event,
-                              preferredSkillInput,
-                              preferredSkills,
-                              setPreferredSkills,
-                              () => setPreferredSkillInput("")
-                            )
-                          }
-                          placeholder="Adicionar skill + Enter"
-                          className="min-w-[180px] flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-slate-400"
-                        />
-                      </div>
+                      <TagPicker value={preferredSkills} onChange={setPreferredSkills} />
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold">Sugestões rápidas</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {COMMON_SKILLS.map((skill) => {
-                      const selected =
-                        requiredSkills.includes(skill) ||
-                        preferredSkills.includes(skill);
 
-                      return (
-                        <button
-                          key={skill}
-                          type="button"
-                          onClick={() => toggleSkill(skill, "required")}
-                          className={selected ? selectedChipClass : chipClass}
-                        >
-                          {skill}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -941,58 +785,8 @@ export default function NovaVagaPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Idiomas</label>
-
-                  <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
-                    <div className="flex flex-wrap gap-2">
-                      {languages.map((language) => (
-                        <button
-                          key={language}
-                          type="button"
-                          onClick={() =>
-                            removeItem(language, languages, setLanguages)
-                          }
-                          className={selectedChipClass}
-                        >
-                          {language}
-                          <span>×</span>
-                        </button>
-                      ))}
-
-                      <input
-                        value={languageInput}
-                        onChange={(event) => setLanguageInput(event.target.value)}
-                        onKeyDown={(event) =>
-                          handleEnterToAdd(
-                            event,
-                            languageInput,
-                            languages,
-                            setLanguages,
-                            () => setLanguageInput("")
-                          )
-                        }
-                        placeholder="Adicionar idioma + Enter"
-                        className="min-w-[180px] flex-1 border-0 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-slate-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {COMMON_LANGUAGES.map((language) => {
-                      const selected = languages.includes(language);
-
-                      return (
-                        <button
-                          key={language}
-                          type="button"
-                          onClick={() => toggleLanguage(language)}
-                          className={selected ? selectedChipClass : chipClass}
-                        >
-                          {language}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <label className="text-sm font-semibold">Idiomas e níveis mínimos</label>
+                  <JobLanguagePicker value={languages} onChange={setLanguages} />
                 </div>
               </div>
             </section>

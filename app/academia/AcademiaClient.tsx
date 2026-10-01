@@ -111,8 +111,7 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
 
           <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-600 md:text-xl">
             Guias, dicas e recursos para melhorares o teu CV, preparares
-            candidaturas, evoluíres profissionalmente e acompanhares tendências
-            de recrutamento inteligente.
+            candidaturas, evoluíres profissionalmente e acompanhares Tendências de Recrutamento.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
