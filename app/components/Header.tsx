@@ -26,6 +26,7 @@ export default function Header() {
 
     window.addEventListener("arynqo-admin-unlocked", handleAdminUnlock);
     window.addEventListener("storage", handleAdminUnlock);
+    window.addEventListener("arynqo-notifications-changed", checkSession);
 
     const {
       data: { subscription },
@@ -38,6 +39,7 @@ export default function Header() {
       subscription.unsubscribe();
       window.removeEventListener("arynqo-admin-unlocked", handleAdminUnlock);
       window.removeEventListener("storage", handleAdminUnlock);
+      window.removeEventListener("arynqo-notifications-changed", checkSession);
     };
   }, []);
 

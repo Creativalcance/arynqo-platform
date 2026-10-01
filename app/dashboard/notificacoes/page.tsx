@@ -108,6 +108,7 @@ export default function NotificacoesPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingRequestId, setIsUpdatingRequestId] = useState("");
+  const [contactFeedback, setContactFeedback] = useState("");
   const [renewingId, setRenewingId] = useState("");
   const [renewalMessages, setRenewalMessages] = useState<Record<string, string>>({});
 
@@ -312,66 +313,27 @@ export default function NotificacoesPage() {
     );
   }
 
-  async function updateContactRequestStatus(
-    request: ContactRequest,
-    status: RequestStatus
-  ) {
-    if (!studentProfile) {
-      return;
-    }
-
+  async function updateContactRequestStatus(request: ContactRequest, status: RequestStatus) {
+    if (!studentProfile || isUpdatingRequestId) return;
     setIsUpdatingRequestId(request.id);
-
-    const { error } = await supabase
-      .from("candidate_contact_requests")
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", request.id)
-      .eq("student_id", studentProfile.id);
-
-    if (error) {
-      alert(error.message);
+    setContactFeedback("");
+    try {
+      const { data, error } = await supabase.rpc("respond_candidate_contact_request", {
+        request_id: request.id, decision: status,
+      });
+      if (error || !["accepted", "rejected"].includes(data)) throw error || new Error("Invalid response");
+      const confirmedStatus = data as RequestStatus;
+      setContactRequests(current => current.map(item => item.id === request.id ? { ...item, status: confirmedStatus } : item));
+      setNotifications(current => current.map(item => item.related_id === request.id && ["candidate_contact_request", "contact_request"].includes(item.related_type || "") ? { ...item, is_read: true } : item));
+      setContactFeedback(confirmedStatus === "accepted" ? "Pedido aceite. A empresa já pode consultar o teu perfil." : "Pedido recusado. Este pedido não autoriza o acesso ao teu perfil.");
+      window.dispatchEvent(new Event("arynqo-notifications-changed"));
+      // The database already created the company's notification. Email delivery must not block the response UI.
+      void createNotification({ userId: "", title: "", message: "", relatedType: "candidate_contact_request", relatedId: request.id }).catch(() => undefined);
+    } catch {
+      setContactFeedback("Não foi possível guardar a resposta. Tenta novamente. Se a sessão terminou, inicia sessão antes de responder.");
+    } finally {
       setIsUpdatingRequestId("");
-      return;
     }
-
-    if (request.company?.user_id) {
-      await createNotification({
-  userId: request.company.user_id,
-  title:
-    status === "accepted"
-      ? "Pedido de contacto aceite"
-      : "Pedido de contacto recusado",
-  message:
-    status === "accepted"
-      ? `O candidato aceitou o pedido de contacto para a vaga "${
-          request.job?.title || "vaga"
-        }".`
-      : `O candidato recusou o pedido de contacto para a vaga "${
-          request.job?.title || "vaga"
-        }".`,
-  relatedType: "candidate_contact_request",
-  relatedId: request.id,
-  relatedUrl:
-    status === "accepted"
-      ? `/empresa/candidatos/${request.student_id}?jobId=${request.job_id}`
-      : "/dashboard/notificacoes",
-  actionLabel: status === "accepted" ? "Ver candidato" : "Ver notificações",
-  channels: ["in_app", "email", "push"],
-});
-    }
-
-    setContactRequests((currentRequests) =>
-      currentRequests.map((currentRequest) =>
-        currentRequest.id === request.id
-          ? { ...currentRequest, status }
-          : currentRequest
-      )
-    );
-
-    setIsUpdatingRequestId("");
   }
 
   function formatDate(date: string) {
@@ -384,7 +346,11 @@ export default function NotificacoesPage() {
     }).format(new Date(date));
   }
 
-  const unreadCount = notifications.filter(
+  const resolvedRequestIds = new Set(contactRequests.filter(request => request.status !== "pending").map(request => request.id));
+  const visibleNotifications = notifications.filter(notification =>
+    !(["candidate_contact_request", "contact_request"].includes(notification.related_type || "") && resolvedRequestIds.has(notification.related_id || ""))
+  );
+  const unreadCount = visibleNotifications.filter(
     (notification) => !notification.is_read
   ).length;
 
@@ -396,7 +362,10 @@ export default function NotificacoesPage() {
     return contactRequests.filter((request) => request.status !== "pending");
   }, [contactRequests]);
 
-  const totalPendingItems = unreadCount + pendingContactRequests.length;
+  const pendingRequestIds = new Set(pendingContactRequests.map(request => request.id));
+  const totalPendingItems = unreadCount + pendingContactRequests.length - visibleNotifications.filter(notification =>
+    !notification.is_read && ["candidate_contact_request", "contact_request"].includes(notification.related_type || "") && pendingRequestIds.has(notification.related_id || "")
+  ).length;
 
   if (isLoading) {
     return (
@@ -450,6 +419,8 @@ export default function NotificacoesPage() {
           </div>
         </section>
 
+        {contactFeedback && <p role="status" className="mb-6 rounded-2xl bg-white p-4 text-sm">{contactFeedback}</p>}
+
         {pendingContactRequests.length > 0 && (
           <section className="mb-8 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
             <div className="mb-8">
@@ -462,8 +433,8 @@ export default function NotificacoesPage() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Estes pedidos surgem quando uma empresa encontra o teu perfil
-                num match, mas tu ainda não te candidataste diretamente à vaga.
+                As empresas pedem autorização para consultar o teu perfil completo.
+                Podes aceitar ou recusar cada pedido.
               </p>
             </div>
 
@@ -472,7 +443,7 @@ export default function NotificacoesPage() {
                 <ContactRequestCard
                   key={request.id}
                   request={request}
-                  isUpdating={isUpdatingRequestId === request.id}
+                  isUpdating={!!isUpdatingRequestId}
                   formatDate={formatDate}
                   onAccept={() =>
                     updateContactRequestStatus(request, "accepted")
@@ -509,7 +480,7 @@ export default function NotificacoesPage() {
           </div>
 
           <div className="space-y-4">
-            {notifications.map((notification) => (
+            {visibleNotifications.map((notification) => (
               <article
                 key={notification.id}
                 className={

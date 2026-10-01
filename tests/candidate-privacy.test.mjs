@@ -100,8 +100,9 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
    alter table jobs add column is_active boolean default true, add column renewal_deadline timestamptz, add column title text default 'Vaga';
    alter table company_profiles add column company_name text default 'Empresa';
    create table notification_preferences(user_id uuid,email_enabled boolean,application_updates_enabled boolean,contact_requests_enabled boolean);
-   create table notifications(id uuid default gen_random_uuid(),user_id uuid,event_key text unique,title text,message text,related_type text,related_id uuid,related_url text,action_label text,channels text[],email_status text,push_status text);
+   create table notifications(id uuid default gen_random_uuid(),user_id uuid,event_key text unique,title text,message text,related_type text,related_id uuid,related_url text,action_label text,channels text[],email_status text,push_status text,is_read boolean default false);
    grant select on notifications to authenticated;
+   grant update(is_read) on notifications to authenticated;
    create table company_candidate_actions(company_id uuid,student_id uuid,job_id uuid,action_type text,created_at timestamptz);
    grant insert on company_candidate_actions to authenticated;
    delete from candidate_contact_requests;
@@ -109,6 +110,8 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
    insert into student_profiles(id,user_id,headline,location,desired_area,contact_visibility) values('${id(32)}','${id(5)}','Developer','Lisboa','IT','approval_required');
   `);
   await db.exec(await readFile(new URL('../supabase/migrations/20261001110626_free_company_launch_and_candidate_consent.sql',import.meta.url),'utf8'));
+  await db.exec('revoke update on candidate_contact_requests from authenticated;grant update(status) on candidate_contact_requests to authenticated');
+  await db.exec(await readFile(new URL('../supabase/migrations/20261001112946_atomic_candidate_contact_response.sql',import.meta.url),'utf8'));
   await db.exec('create trigger test_company_action before insert on company_candidate_actions for each row execute function guard_company_candidate_action()');
   await login(1);
   assert.equal(await visible(),0,'open profile is no longer automatic identity consent');
@@ -127,8 +130,13 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   await db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(32)}','${id(21)}','pending')`);
   assert.equal((await db.query("select count(*)::int as n from notifications")).rows[0].n,1);
   await assert.rejects(db.exec("update candidate_contact_requests set status='accepted'"),/Only the candidate/);
-  await login(5); await db.exec("update candidate_contact_requests set status='accepted'");
+  const pendingId=(await db.query("select id from candidate_contact_requests")).rows[0].id;
+  await assert.rejects(db.query("select respond_candidate_contact_request($1,'accepted')",[pendingId]),/not authorized/);
+  await login(5);
+  assert.equal((await db.query("select respond_candidate_contact_request($1,'accepted') as status",[pendingId])).rows[0].status,'accepted');
+  assert.equal((await db.query("select respond_candidate_contact_request($1,'rejected') as status",[pendingId])).rows[0].status,'accepted','a repeated or stale click cannot replace the recorded answer');
   assert.equal((await db.query("select count(*)::int as n from notifications")).rows[0].n,2);
+  assert.equal((await db.query(`select is_read from notifications where user_id='${id(5)}'`)).rows[0].is_read,true);
   await assert.rejects(db.query("select company_candidate_directory(null,'',1)"),/Company account required/);
   await login(1); assert.equal(await visible(),1);
   await db.exec(`insert into company_candidate_actions(company_id,student_id,job_id,action_type) values('${id(11)}','${id(32)}','${id(21)}','accepted')`);
@@ -153,7 +161,10 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   await login(1);
   await db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}','${id(21)}','pending')`);
   assert.equal((await db.query(`select email_status from notifications where user_id='${id(3)}'`)).rows[0].email_status,'disabled','contact email preferences remain respected');
-  await login(3); await db.exec(`update candidate_contact_requests set status='rejected' where student_id='${id(31)}'`);
+  await login(3);
+  const refusalId=(await db.query(`select id from candidate_contact_requests where student_id='${id(31)}'`)).rows[0].id;
+  assert.equal((await db.query("select respond_candidate_contact_request($1,'rejected') as status",[refusalId])).rows[0].status,'rejected');
+  assert.equal((await db.query(`select is_read from notifications where user_id='${id(3)}'`)).rows[0].is_read,true);
   await login(1);
   assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot.profiles,null,'rejecting a request never reveals an open profile');
   await assert.rejects(db.exec(`update candidate_contact_requests set status='pending' where student_id='${id(31)}'`),/Only the candidate/);
@@ -162,5 +173,6 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}','${id(21)}','pending')`),/Vacancy unavailable/);
   await db.exec('reset role;set role anon');
   await assert.rejects(db.query("select company_candidate_directory(null,'',1)"),/permission denied/);
+  await assert.rejects(db.query("select respond_candidate_contact_request($1,'accepted')",[pendingId]),/permission denied/);
  } finally { await db.close(); }
 });
