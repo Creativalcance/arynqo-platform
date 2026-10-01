@@ -394,7 +394,6 @@ export default function JobPage({
   const preferredSkills = job.preferred_skills || [];
   const specializations = job.specializations || [];
   const languages = job.languages || [];
-  const screeningQuestions = (job.screening_questions || []).slice(0, 3);
   const evaluationCriteria = job.evaluation_criteria || [];
 
   return (
@@ -487,7 +486,7 @@ export default function JobPage({
                         {aiMatch.match_score}%
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-500">
-                        Compatibilidade estimada, não probabilidade de contratação
+                        Compatibilidade estimada
                       </p>
                     </div>
 
@@ -604,26 +603,6 @@ export default function JobPage({
             </ContentSection>
           )}
 
-          {screeningQuestions.length > 0 && (
-            <ContentSection title="Perguntas de triagem" eyebrow="Candidatura">
-              <div className="grid gap-4">
-                {screeningQuestions.map((question, index) => (
-                  <div
-                    key={`${question}-${index}`}
-                    className="rounded-3xl border border-[#DDE3EA] bg-[#F7F9FC] p-5"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                      Pergunta {index + 1}
-                    </p>
-                    <p className="mt-2 font-semibold text-[#07111F]">
-                      {question}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </ContentSection>
-          )}
-
           {evaluationCriteria.length > 0 && (
             <ContentSection title="Critérios de avaliação" eyebrow="Processo">
               <div className="flex flex-wrap gap-3">
@@ -635,7 +614,7 @@ export default function JobPage({
           )}
 
           {job.ai_summary && (
-            <ContentSection title="Resumo IA" eyebrow="Leitura rápida">
+            <ContentSection title="Resumo" eyebrow="Leitura rápida">
               <p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700">
                 {job.ai_summary}
               </p>
