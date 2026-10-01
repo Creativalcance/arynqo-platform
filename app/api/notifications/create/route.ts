@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
       preferences.push_enabled &&
       categoryEnabled;
 
-    const { data: notificationData, error: notificationError } = await supabase
+    const { data: insertedNotification, error: insertError } = await supabase
       .from("notifications")
       .insert({
         user_id: body.userId,
@@ -206,8 +206,13 @@ export async function POST(request: NextRequest) {
       .select("id")
       .single();
 
-    if (notificationError?.code === "23505") {
-      return NextResponse.json({ success: true, duplicate: true });
+    let notificationData=insertedNotification;
+    let notificationError=insertError;
+    if (insertError?.code === "23505") {
+      const existing=await supabase.from('notifications').select('id,email_status').eq('event_key',body.eventKey).single();
+      if(existing.error)return NextResponse.json({error:'Não foi possível consultar a notificação.'},{status:503});
+      if(existing.data.email_status==='sent'||existing.data.email_status==='disabled')return NextResponse.json({success:true,duplicate:true});
+      notificationData=existing.data;notificationError=null;
     }
 
     if (notificationError || !notificationData) {

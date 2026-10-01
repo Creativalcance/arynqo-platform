@@ -36,24 +36,6 @@ type ApplicationInsertResponse = {
   id: string;
 };
 
-type CompanyProfileRelation = {
-  user_id: string;
-};
-
-type JobWithCompany = {
-  title: string;
-  company_profiles: CompanyProfileRelation | CompanyProfileRelation[] | null;
-};
-
-function normalizeCompanyProfile(
-  companyProfiles: CompanyProfileRelation | CompanyProfileRelation[] | null,
-) {
-  if (Array.isArray(companyProfiles)) {
-    return companyProfiles[0] ?? null;
-  }
-
-  return companyProfiles;
-}
 
 function ScoreItem({
   label,
@@ -278,36 +260,12 @@ export default function AppVagaDetailPage() {
     studentId: string,
     applicationId: string,
   ) {
-    const { data, error } = await supabase
-      .from("jobs")
-      .select(
-        `
-        title,
-        company_profiles (
-          user_id
-        )
-      `,
-      )
-      .eq("id", jobId)
-      .single();
-
-    if (error || !data) {
-      console.error(error);
-      return;
-    }
-
-    const jobData = data as JobWithCompany;
-    const companyProfile = normalizeCompanyProfile(jobData.company_profiles);
-
-    if (!companyProfile?.user_id) {
-      return;
-    }
 
     try {
       await createNotification({
-        userId: companyProfile.user_id,
+        userId: '', // The server derives the recipient from the application.
         title: "Nova candidatura recebida",
-        message: `Recebeste uma nova candidatura para a vaga "${jobData.title}".`,
+        message: 'Nova candidatura recebida.',
         relatedType: "application",
         relatedId: applicationId,
         relatedUrl: `/empresa/candidatos/${studentId}?jobId=${jobId}`,

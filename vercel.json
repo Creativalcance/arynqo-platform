@@ -3,6 +3,7 @@
     {
       "path": "/api/cron/generate-academy-post",
       "schedule": "0 9 * * 1"
-    }
+    },
+    { "path": "/api/cron/platform-events", "schedule": "0 8 * * *" }
   ]
 }

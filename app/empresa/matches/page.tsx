@@ -233,7 +233,8 @@ export default function CompanyMatchesPage() {
     setJobs(normalizedJobs);
 
     if (normalizedJobs.length > 0) {
-      setSelectedJobId(normalizedJobs[0].id);
+      const requested=new URLSearchParams(window.location.search).get('jobId');
+      setSelectedJobId(normalizedJobs.find(job=>job.id===requested)?.id||normalizedJobs[0].id);
     }
 
     setIsLoading(false);

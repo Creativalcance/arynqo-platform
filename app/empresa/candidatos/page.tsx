@@ -221,7 +221,7 @@ export default function EmpresaCandidatosPage() {
         student_profiles (id)
       `
       )
-      .in("job_id", jobIds)
+      .in("job_id", (()=>{const requested=new URLSearchParams(window.location.search).get('jobId');return requested?jobIds.filter(id=>id===requested):jobIds;})())
       .order("created_at", { ascending: false });
 
     if (error) {

@@ -47,7 +47,7 @@ export async function resolveNotificationEvent(
         `Recebeste uma nova candidatura para a vaga "${job.title}".`, "application",
         `/empresa/candidatos/${student.id}?jobId=${job.id}`, "Ver candidato", "created");
     }
-    if (actor.role === "company" && actor.id === company.user_id &&
+    if (["company","admin"].includes(actor.role) && actor.id === company.user_id &&
         ["accepted", "rejected"].includes(application.status)) {
       const label = application.status === "accepted" ? "aceite" : "recusada";
       return event(student.user_id, `Candidatura ${label}`,
@@ -82,7 +82,7 @@ export async function resolveNotificationEvent(
 
   if (input.relatedType === "candidate_action") {
     requireUuid(input.relatedJobId, "ID da vaga");
-    if (actor.role !== "company") return denied();
+    if (!["company","admin"].includes(actor.role)) return denied();
     const job = await lookup("jobs", input.relatedJobId, "id,company_id,title");
     const company = await lookup("company_profiles", job.company_id, "id,user_id,company_name");
     if (actor.id !== company.user_id) return denied();

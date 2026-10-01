@@ -15,6 +15,8 @@ type Job = {
   is_featured: boolean | null;
   is_active: boolean | null;
   created_at: string;
+  expires_at: string | null;
+  renewal_deadline: string | null;
 };
 
 const workModeLabels: Record<string, string> = {
@@ -69,7 +71,9 @@ export default function EmpresaVagasPage() {
         contract_type,
         is_featured,
         is_active,
-        created_at
+        created_at,
+        expires_at,
+        renewal_deadline
       `
       )
       .eq("company_id", companyProfile.id)
@@ -86,6 +90,11 @@ export default function EmpresaVagasPage() {
   }
 
   async function toggleJobStatus(jobId: string, currentStatus: boolean | null) {
+    if (!currentStatus) {
+      const {error}=await supabase.rpc('renew_job_publication',{job_id:jobId});
+      if(error){alert('Não foi possível renovar a vaga.');return;}
+      await loadCompanyJobs();return;
+    }
     const { error } = await supabase
       .from("jobs")
       .update({
@@ -236,8 +245,10 @@ export default function EmpresaVagasPage() {
                   </div>
 
                   <div className="flex flex-wrap justify-end gap-3">
+                    <Link href={`/empresa/candidatos?jobId=${job.id}`} className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold">Ver candidaturas</Link>
+                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p>Confirma até {new Date(job.renewal_deadline).toLocaleDateString('pt-PT')} se continuas a recrutar.</p><button className="mt-2 font-semibold underline" onClick={async()=>{const {error}=await supabase.rpc('renew_job_publication',{job_id:job.id});if(error)alert('Não foi possível renovar a vaga.');else await loadCompanyJobs();}}>Sim, renovar por 30 dias</button><button className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}>Não, desativar</button></div>}
                     <Link
-                      href={`/empresa/matches`}
+                      href={`/empresa/matches?jobId=${job.id}`}
                       className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                     >
                       Ver matches

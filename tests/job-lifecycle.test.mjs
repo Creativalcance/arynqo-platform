@@ -1,0 +1,47 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+test('Publication renewal, deadlines and transactional application notifications',async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;
+ create schema auth;create function auth.uid() returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create table profiles(id uuid primary key,name text,email text,role text);
+ create table company_profiles(id uuid primary key,user_id uuid);
+ create table student_profiles(id uuid primary key,user_id uuid);
+ create table jobs(id uuid primary key,company_id uuid,title text,is_active boolean,created_at timestamptz default now());
+ create table applications(id uuid primary key default gen_random_uuid(),student_id uuid,job_id uuid,status text default 'pending',created_at timestamptz default now());
+ create table notification_preferences(user_id uuid,email_enabled boolean,application_updates_enabled boolean);
+ create table notifications(id uuid primary key default gen_random_uuid(),user_id uuid,event_key text unique,title text,message text,related_type text,related_id uuid,related_url text,action_label text,channels text[],email_status text,email_sent_at timestamptz,push_status text);
+ insert into profiles values('11111111-1111-1111-1111-111111111111','Empresa','company@example.invalid','company'),('22222222-2222-2222-2222-222222222222','Candidato','student@example.invalid','student');
+ insert into company_profiles values('33333333-3333-3333-3333-333333333333','11111111-1111-1111-1111-111111111111');
+ insert into student_profiles values('44444444-4444-4444-4444-444444444444','22222222-2222-2222-2222-222222222222');`);
+ await db.exec(await readFile('supabase/migrations/20261001101826_job_validity_and_transactional_notifications.sql','utf8'));
+ await db.exec("alter table company_profiles add column company_name text default 'Empresa';create table company_candidate_actions(id uuid default gen_random_uuid(),student_id uuid,company_id uuid,job_id uuid,action_type text);");
+ const interest=await readFile('supabase/migrations/20261001101945_schedule_job_validity_and_company_interest.sql','utf8');
+ await db.exec(interest.slice(interest.indexOf('create function public.company_interest_notification')));
+ await db.exec(`insert into jobs(id,company_id,title,is_active)values('55555555-5555-5555-5555-555555555555','33333333-3333-3333-3333-333333333333','Teste',true);
+ insert into applications(student_id,job_id)values('44444444-4444-4444-4444-444444444444','55555555-5555-5555-5555-555555555555');`);
+ assert.equal((await db.query('select count(*)::int as n from notifications')).rows[0].n,1);
+ await db.exec(`update applications set status='accepted';update applications set status='accepted';`);
+ assert.equal((await db.query('select count(*)::int as n from notifications')).rows[0].n,2);
+ await db.exec(`update jobs set expires_at=now()-interval '1 day';`);
+ const first=(await db.query('select process_job_lifecycle() as result')).rows[0].result;assert.equal(first.reminded,1);assert.equal(first.closed,0);
+ assert.equal((await db.query('select process_job_lifecycle() as result')).rows[0].result.reminded,0);
+ await db.exec(`select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222',false)`);
+ await assert.rejects(db.query("select renew_job_publication('55555555-5555-5555-5555-555555555555')"),/not authorized/);
+ await db.exec(`select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',false);select renew_job_publication('55555555-5555-5555-5555-555555555555');`);
+ assert.equal((await db.query('select renewal_deadline from jobs')).rows[0].renewal_deadline,null);
+ await db.exec(`update jobs set expires_at=now()-interval '10 days',renewal_requested_at=now()-interval '8 days',renewal_deadline=now()-interval '1 day';`);
+ assert.equal((await db.query('select process_job_lifecycle() as result')).rows[0].result.closed,1);
+ await db.exec("insert into company_candidate_actions(student_id,company_id,job_id,action_type)values('44444444-4444-4444-4444-444444444444','33333333-3333-3333-3333-333333333333','55555555-5555-5555-5555-555555555555','accepted')");
+ const claimed=(await db.query('select claim_notification_emails() as item')).rows;
+ assert.equal(claimed.length,5);assert.equal((await db.query('select claim_notification_emails()')).rows.length,0);
+ const row=claimed[0].item;await db.query('select finish_notification_email($1,$2,true,false)',[row.id,row.lease_id]);
+ assert.equal((await db.query('select email_status from notifications where id=$1',[row.id])).rows[0].email_status,'sent');
+ await db.exec('set role authenticated');
+ await assert.rejects(db.query('select process_job_lifecycle()'),/permission denied/);
+ await assert.rejects(db.query('select claim_notification_emails()'),/permission denied/);
+ await assert.rejects(db.query('select * from notification_email_queue'),/permission denied/);
+ }finally{await db.close();}
+});
