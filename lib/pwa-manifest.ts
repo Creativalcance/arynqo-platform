@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "ARYNQO — Plataforma Inteligente de Talento",
+    name: "ARYNQO — International talent platform",
     short_name: "ARYNQO",
     description:
-      "Plataforma inteligente de talento, matching e recrutamento com IA.",
+      "International talent and recruitment platform.",
     start_url: "/app",
     scope: "/",
     display: "standalone",

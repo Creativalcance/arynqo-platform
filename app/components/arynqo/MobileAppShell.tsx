@@ -1,6 +1,8 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useMemo } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { useAppJobs } from "../../hooks/useAppJobs";
@@ -40,7 +42,7 @@ function PublicFeatureItem({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3">
       <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#1683FF]" />
-      <p className="text-sm font-medium text-neutral-700">{text}</p>
+      <p className="text-sm font-medium text-neutral-700"><LText text={text} /></p>
     </div>
   );
 }
@@ -49,7 +51,7 @@ function PublicDarkFeatureItem({ text }: { text: string }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
       <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#4BB3FD]" />
-      <p className="text-sm font-medium text-blue-50">{text}</p>
+      <p className="text-sm font-medium text-blue-50"><LText text={text} /></p>
     </div>
   );
 }
@@ -64,10 +66,10 @@ function PublicStatItem({
   return (
     <div className="rounded-3xl border border-neutral-200 bg-white p-5 text-center shadow-sm">
       <h3 className="text-4xl font-black tracking-[-0.05em] text-[#07111F]">
-        {number}
+        <LText text={number} />
       </h3>
 
-      <p className="mt-2 text-sm text-neutral-600">{label}</p>
+      <p className="mt-2 text-sm text-neutral-600"><LText text={label} /></p>
     </div>
   );
 }
@@ -80,75 +82,58 @@ function PublicAppHome() {
 
         <div className="relative mx-auto flex w-full max-w-md flex-col px-5 pb-12 pt-10 text-center">
           <div className="mx-auto rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-xs font-medium text-blue-700">
-            Plataforma inteligente de recrutamento e evolução profissional
-          </div>
+            <LText text={"Plataforma inteligente de recrutamento e evolução profissional"} /></div>
 
           <h1 className="mt-8 text-5xl font-black leading-[0.95] tracking-[-0.06em] text-[#07111F]">
-            Onde o talento se desenvolve.
-          </h1>
+            <LText text={"Onde o talento se desenvolve."} /></h1>
 
           <p className="mt-6 text-base leading-7 text-neutral-600">
-            A ARYNQO liga estudantes, profissionais e empresas através de uma
-            experiência moderna, inteligente e premium de recrutamento.
-          </p>
+            <LText text={"A ARYNQO liga estudantes, profissionais e empresas através de uma experiência moderna, inteligente e premium de recrutamento."} /></p>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
             <Link
               href="/app/vagas"
               className="rounded-full bg-[#07111F] px-5 py-4 text-center text-sm font-semibold text-white transition hover:bg-[#1683FF]"
             >
-              Explorar vagas
-            </Link>
+              <LText text={"Explorar vagas"} /></Link>
 
             <Link
               href="/registo"
               className="rounded-full border border-neutral-300 bg-white px-5 py-4 text-center text-sm font-semibold transition hover:bg-neutral-100"
             >
-              Criar conta
-            </Link>
+              <LText text={"Criar conta"} /></Link>
           </div>
 
           <div className="mt-12 grid gap-4">
   <div className="rounded-3xl border border-neutral-200 bg-white p-6 text-left shadow-sm">
-    <p className="text-sm font-medium text-blue-600">Estudantes</p>
+    <p className="text-sm font-medium text-blue-600"><LText text={"Estudantes"} /></p>
 
     <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
-      Começa a construir o teu futuro
-    </h2>
+      <LText text={"Começa a construir o teu futuro"} /></h2>
 
     <p className="mt-3 text-sm leading-6 text-neutral-600">
-      Cria um perfil profissional moderno, descobre oportunidades relevantes e
-      dá os primeiros passos no mercado com mais clareza, confiança e direção.
-    </p>
+      <LText text={"Cria um perfil profissional moderno, descobre oportunidades relevantes e dá os primeiros passos no mercado com mais clareza, confiança e direção."} /></p>
   </div>
 
   <div className="rounded-3xl border border-neutral-200 bg-white p-6 text-left shadow-sm">
-    <p className="text-sm font-medium text-blue-600">Profissionais</p>
+    <p className="text-sm font-medium text-blue-600"><LText text={"Profissionais"} /></p>
 
     <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
-      Evolui para a próxima oportunidade
-    </h2>
+      <LText text={"Evolui para a próxima oportunidade"} /></h2>
 
     <p className="mt-3 text-sm leading-6 text-neutral-600">
-      Valoriza a tua experiência, identifica novas possibilidades de carreira e
-      encontra oportunidades alinhadas com as tuas competências e ambição.
-    </p>
+      <LText text={"Valoriza a tua experiência, identifica novas possibilidades de carreira e encontra oportunidades alinhadas com as tuas competências e ambição."} /></p>
   </div>
 
   <div className="rounded-3xl border border-neutral-200 bg-[#07111F] p-6 text-left text-white shadow-sm">
     <p className="text-sm font-medium text-blue-300">
-      Empresas & Universidades
-    </p>
+      <LText text={"Empresas & Universidades"} /></p>
 
     <h2 className="mt-3 text-2xl font-bold tracking-[-0.04em]">
-      Liga talento, conhecimento e mercado
-    </h2>
+      <LText text={"Liga talento, conhecimento e mercado"} /></h2>
 
     <p className="mt-3 text-sm leading-6 text-blue-100">
-      Aproxima organizações, instituições de ensino e talento qualificado através
-      de uma plataforma preparada para recrutamento, IA, empregabilidade e
-      evolução profissional.
-    </p>
+      <LText text={"Aproxima organizações, instituições de ensino e talento qualificado através de uma plataforma preparada para recrutamento, IA, empregabilidade e evolução profissional."} /></p>
   </div>
 </div>
         </div>
@@ -158,17 +143,13 @@ function PublicAppHome() {
   <div className="grid gap-5">
     <div className="rounded-[32px] border border-neutral-200 bg-white p-6 shadow-sm">
       <p className="text-sm font-medium text-blue-600">
-        Para estudantes e profissionais
-      </p>
+        <LText text={"Para estudantes e profissionais"} /></p>
 
       <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em] text-[#07111F]">
-        Muito mais do que candidaturas
-      </h2>
+        <LText text={"Muito mais do que candidaturas"} /></h2>
 
       <p className="mt-4 text-sm leading-6 text-neutral-600">
-        Transforma o teu percurso num perfil profissional claro, atrativo e
-        preparado para novas oportunidades.
-      </p>
+        <LText text={"Transforma o teu percurso num perfil profissional claro, atrativo e preparado para novas oportunidades."} /></p>
 
       <div className="mt-6 grid gap-3">
         <PublicFeatureItem text="Cria o teu perfil com um clique" />
@@ -181,17 +162,13 @@ function PublicAppHome() {
 
     <div className="rounded-[32px] border border-neutral-200 bg-[#07111F] p-6 text-white shadow-sm">
       <p className="text-sm font-medium text-blue-300">
-        Para empresas e universidades
-      </p>
+        <LText text={"Para empresas e universidades"} /></p>
 
       <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">
-        Recrutamento inteligente
-      </h2>
+        <LText text={"Recrutamento inteligente"} /></h2>
 
       <p className="mt-4 text-sm leading-6 text-blue-100">
-        Aproxima talento, empresas e instituições de ensino através de processos
-        mais rápidos, dados mais úteis e IA aplicada ao recrutamento.
-      </p>
+        <LText text={"Aproxima talento, empresas e instituições de ensino através de processos mais rápidos, dados mais úteis e IA aplicada ao recrutamento."} /></p>
 
       <div className="mt-6 grid gap-3">
         <PublicDarkFeatureItem text="Cria o perfil da organização com um clique" />
@@ -215,32 +192,26 @@ function PublicAppHome() {
 <section className="mx-auto w-full max-w-md px-5 py-12">
   <div className="rounded-[36px] bg-[#07111F] px-6 py-12 text-center text-white">
     <p className="text-xs font-medium uppercase tracking-[0.3em] text-blue-300">
-      ARYNQO
-    </p>
+      <LText text={"ARYNQO"} /></p>
 
     <h2 className="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.05em]">
-      The next step starts here.
-    </h2>
+      <LText text={"The next step starts here."} /></h2>
 
     <p className="mt-5 text-sm leading-7 text-blue-100">
-      Junta-te à nova plataforma de recrutamento, talento e evolução
-      profissional.
-    </p>
+      <LText text={"Junta-te à nova plataforma de recrutamento, talento e evolução profissional."} /></p>
 
     <div className="mt-8 grid grid-cols-2 gap-3">
       <Link
         href="/registo"
         className="rounded-full bg-white px-5 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-neutral-100"
       >
-        Criar conta
-      </Link>
+        <LText text={"Criar conta"} /></Link>
 
       <Link
         href="/app/vagas"
         className="rounded-full border border-white/20 px-5 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
       >
-        Explorar vagas
-      </Link>
+        <LText text={"Explorar vagas"} /></Link>
     </div>
   </div>
 </section>
@@ -322,8 +293,7 @@ export default function MobileAppShell() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
         <p className="text-sm font-medium text-slate-500">
-          A carregar ARYNQO...
-        </p>
+          <LText text={"A carregar ARYNQO..."} /></p>
       </main>
     );
   }
@@ -338,15 +308,14 @@ export default function MobileAppShell() {
         <header className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-              ARYNQO
-            </p>
+              <LText text={"ARYNQO"} /></p>
 
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-              Olá, {firstName}
+              <LText text={"Olá, "} /><LText text={firstName} />
             </h1>
 
             <p className="mt-1 text-xs font-medium text-white/42">
-              {roleLabel}
+              <LText text={roleLabel} />
             </p>
           </div>
 
@@ -354,32 +323,31 @@ export default function MobileAppShell() {
             href="/dashboard"
             className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/10"
           >
-            Dashboard
-          </Link>
+            <LText text={"Dashboard"} /></Link>
         </header>
 
         {(jobsError || matchesError) && (
           <section className="mt-5 rounded-3xl border border-amber-300/15 bg-amber-300/[0.06] p-4">
             <p className="text-sm leading-6 text-amber-100/80">
-              {jobsError || matchesError}
+              <LText text={jobsError || matchesError} />
             </p>
           </section>
         )}
 
         <section className="mt-6 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
           <p className="text-sm font-medium text-cyan-100">
-            {config.modeLabel}
+            <LText text={config.modeLabel} />
           </p>
 
           <p className="mt-1 text-sm leading-6 text-white/60">
-            {config.modeDescription}
+            <LText text={config.modeDescription} />
           </p>
         </section>
 
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-cyan-950/40 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm text-white/60">{config.scoreLabel}</p>
+              <p className="text-sm text-white/60"><LText text={config.scoreLabel} /></p>
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">
@@ -393,8 +361,8 @@ export default function MobileAppShell() {
             </div>
 
             <div className="rounded-2xl bg-cyan-400/10 px-3 py-2 text-right">
-              <p className="text-xs text-cyan-200">Supabase</p>
-              <p className="text-sm font-semibold text-cyan-100">Dados reais</p>
+              <p className="text-xs text-cyan-200"><LText text={"Supabase"} /></p>
+              <p className="text-sm font-semibold text-cyan-100"><LText text={"Dados reais"} /></p>
             </div>
           </div>
 
@@ -407,8 +375,7 @@ export default function MobileAppShell() {
 
           {score === 0 && (
             <p className="mt-4 text-sm leading-6 text-white/56">
-              Ainda não existem matches IA calculados para este perfil.
-            </p>
+              <LText text={"Ainda não existem matches IA calculados para este perfil."} /></p>
           )}
 
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -416,14 +383,14 @@ export default function MobileAppShell() {
               href={config.primaryHref}
               className="rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
             >
-              {config.primaryLabel}
+              <LText text={config.primaryLabel} />
             </Link>
 
             <Link
               href={config.secondaryHref}
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              {config.secondaryLabel}
+              <LText text={config.secondaryLabel} />
             </Link>
           </div>
         </section>
@@ -434,7 +401,7 @@ export default function MobileAppShell() {
             className="rounded-3xl border border-white/10 bg-white/[0.045] p-4 transition hover:border-cyan-300/30 hover:bg-white/[0.075]"
           >
             <p className="text-3xl font-semibold">{jobs.length}</p>
-            <p className="mt-1 text-sm text-white/55">vagas reais</p>
+            <p className="mt-1 text-sm text-white/55"><LText text={"vagas reais"} /></p>
           </Link>
 
           <Link
@@ -442,20 +409,19 @@ export default function MobileAppShell() {
             className="rounded-3xl border border-white/10 bg-white/[0.045] p-4 transition hover:border-cyan-300/30 hover:bg-white/[0.075]"
           >
             <p className="text-3xl font-semibold">{matches.length}</p>
-            <p className="mt-1 text-sm text-white/55">matches IA</p>
+            <p className="mt-1 text-sm text-white/55"><LText text={"matches IA"} /></p>
           </Link>
         </section>
 
         <section className="mt-7">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">{config.featuredTitle}</h2>
+            <h2 className="text-lg font-semibold"><LText text={config.featuredTitle} /></h2>
 
             <Link
               href={showMatchesAsFeatured ? "/app/matches" : "/app/vagas"}
               className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
             >
-              Ver todos
-            </Link>
+              <LText text={"Ver todos"} /></Link>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -484,8 +450,7 @@ export default function MobileAppShell() {
                         </p>
 
                         <p className="text-[11px] text-emerald-100/70">
-                          match
-                        </p>
+                          <LText text={"match"} /></p>
                       </div>
                     </div>
                   </Link>
@@ -493,13 +458,10 @@ export default function MobileAppShell() {
               ) : (
                 <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
                   <h3 className="text-base font-semibold">
-                    Sem matches IA calculados
-                  </h3>
+                    <LText text={"Sem matches IA calculados"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-white/55">
-                    Gera matches para cruzar o perfil com as vagas reais da
-                    plataforma.
-                  </p>
+                    <LText text={"Gera matches para cruzar o perfil com as vagas reais da plataforma."} /></p>
                 </section>
               )
             ) : featuredJobs.length > 0 ? (
@@ -534,11 +496,11 @@ export default function MobileAppShell() {
                             : "text-lg font-semibold text-white/60"
                         }
                       >
-                        {job.hasAIMatch ? `${job.score}%` : "—"}
+                        <LText text={job.hasAIMatch ? `${job.score}%` : "—"} />
                       </p>
 
                       <p className="text-[11px] text-white/45">
-                        {job.hasAIMatch ? "match" : "IA"}
+                        <LText text={job.hasAIMatch ? "match" : "IA"} />
                       </p>
                     </div>
                   </div>
@@ -549,7 +511,7 @@ export default function MobileAppShell() {
                     </span>
 
                     <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-white/70">
-                      {job.rawWorkModel || job.model}
+                      <LText text={job.rawWorkModel || job.model} />
                     </span>
                   </div>
                 </Link>
@@ -557,19 +519,17 @@ export default function MobileAppShell() {
             ) : (
               <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
                 <h3 className="text-base font-semibold">
-                  Sem vagas disponíveis
-                </h3>
+                  <LText text={"Sem vagas disponíveis"} /></h3>
 
                 <p className="mt-2 text-sm leading-6 text-white/55">
-                  Não existem vagas ativas no Supabase neste momento.
-                </p>
+                  <LText text={"Não existem vagas ativas no Supabase neste momento."} /></p>
               </section>
             )}
           </div>
         </section>
 
         <section className="mt-7 pb-28">
-          <h2 className="text-lg font-semibold">Próximos passos</h2>
+          <h2 className="text-lg font-semibold"><LText text={"Próximos passos"} /></h2>
 
           <div className="mt-4 space-y-3">
             {actions.map((action) => (
@@ -579,11 +539,11 @@ export default function MobileAppShell() {
                 className="block rounded-3xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-cyan-300/40 hover:bg-white/[0.07]"
               >
                 <h3 className="text-sm font-semibold text-white">
-                  {action.title}
+                  <LText text={action.title} />
                 </h3>
 
                 <p className="mt-1 text-sm leading-6 text-white/56">
-                  {action.description}
+                  <LText text={action.description} />
                 </p>
               </Link>
             ))}

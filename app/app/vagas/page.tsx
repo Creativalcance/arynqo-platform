@@ -1,6 +1,8 @@
 "use client";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useMemo, useState } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { useAppJobs } from "../../hooks/useAppJobs";
@@ -136,12 +138,10 @@ export default function AppVagasPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-                ARYNQO
-              </p>
+                <LText text={"ARYNQO"} /></p>
 
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                Oportunidades
-              </h1>
+                <LText text={"Oportunidades"} /></h1>
             </div>
 
             <button
@@ -149,22 +149,18 @@ export default function AppVagasPage() {
               onClick={reloadJobs}
               className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.09] hover:text-white"
             >
-              Atualizar
-            </button>
+              <LText text={"Atualizar"} /></button>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-white/58">
-            Vagas reais publicadas na plataforma, cruzadas com os teus dados de
-            perfil e matches gerados por IA.
-          </p>
+            <LText text={"Vagas reais publicadas na plataforma, cruzadas com os teus dados de perfil e matches gerados por IA."} /></p>
         </header>
 
         <section className="sticky top-0 z-10 -mx-5 mt-6 border-b border-white/10 bg-[#050816]/92 px-5 pb-4 pt-2 backdrop-blur-xl">
           <label htmlFor="job-search" className="sr-only">
-            Pesquisar vagas
-          </label>
+            <LText text={"Pesquisar vagas"} /></label>
 
-          <input
+          <LElement as="input"
             id="job-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -187,7 +183,7 @@ export default function AppVagasPage() {
                       : "shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-white/60 transition hover:bg-white/[0.08] hover:text-white"
                   }
                 >
-                  {filter}
+                  <LText text={filter} />
                 </button>
               );
             })}
@@ -197,7 +193,7 @@ export default function AppVagasPage() {
         {(errorMessage || generationMessage) && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-sm leading-6 text-cyan-100/85">
-              {generationMessage || errorMessage}
+              <LText text={generationMessage || errorMessage} />
             </p>
           </section>
         )}
@@ -205,12 +201,12 @@ export default function AppVagasPage() {
         <section className="mt-5 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5">
           <div className="flex items-start justify-between gap-5">
             <div>
-              <p className="text-sm text-white/60">Recomendação IA</p>
+              <p className="text-sm text-white/60"><LText text={"Recomendação IA"} /></p>
 
               <h2 className="mt-2 text-xl font-semibold">
-                {filteredJobs.length === 1
+                <LText text={filteredJobs.length === 1
                   ? "1 vaga encontrada"
-                  : `${filteredJobs.length} vagas encontradas`}
+                  : `${filteredJobs.length} vagas encontradas`} />
               </h2>
             </div>
 
@@ -219,12 +215,12 @@ export default function AppVagasPage() {
                 {jobs.filter((job) => job.hasAIMatch).length}
               </p>
 
-              <p className="text-[11px] text-white/45">com match</p>
+              <p className="text-[11px] text-white/45"><LText text={"com match"} /></p>
             </div>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-white/58">
-            {getBestMatchText(bestMatch)}
+            <LText text={getBestMatchText(bestMatch)} />
           </p>
 
           <button
@@ -233,11 +229,11 @@ export default function AppVagasPage() {
             disabled={isGeneratingMatches}
             className="mt-5 w-full rounded-2xl bg-cyan-300 px-4 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isGeneratingMatches
+            <LText text={isGeneratingMatches
               ? "A gerar matches com IA..."
               : hasAnyCalculatedMatch
                 ? "Recalcular matches IA"
-                : "Gerar matches IA"}
+                : "Gerar matches IA"} />
           </button>
         </section>
 
@@ -259,7 +255,7 @@ export default function AppVagasPage() {
                     <div>
                       {job.area && (
                         <p className="mb-1 text-xs font-medium text-cyan-300">
-                          {job.area}
+                          <LText text={job.area} />
                         </p>
                       )}
 
@@ -284,11 +280,11 @@ export default function AppVagasPage() {
                             : "text-lg font-semibold text-white/60"
                         }
                       >
-                        {getScoreLabel(job)}
+                        <LText text={getScoreLabel(job)} />
                       </p>
 
                       <p className="text-[11px] text-white/45">
-                        {job.hasAIMatch ? "match" : "IA"}
+                        <LText text={job.hasAIMatch ? "match" : "IA"} />
                       </p>
                     </div>
                   </div>
@@ -299,16 +295,16 @@ export default function AppVagasPage() {
                     </span>
 
                     <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-white/70">
-                      {job.rawWorkModel || job.model}
+                      <LText text={job.rawWorkModel || job.model} />
                     </span>
 
                     <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-white/70">
-                      {job.type}
+                      <LText text={job.type} />
                     </span>
 
                     {job.seniority && (
                       <span className="rounded-full bg-white/8 px-3 py-1 text-xs text-white/70">
-                        {job.seniority}
+                        <LText text={job.seniority} />
                       </span>
                     )}
                   </div>
@@ -323,11 +319,10 @@ export default function AppVagasPage() {
                     {job.aiSummary && (
                       <div className="mt-4 rounded-2xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
                         <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-100/60">
-                          Resumo IA
-                        </p>
+                          <LText text={"Resumo IA"} /></p>
 
                         <p className="mt-2 text-sm leading-6 text-white/60">
-                          {job.aiSummary}
+                          <LText text={job.aiSummary} />
                         </p>
                       </div>
                     )}
@@ -339,7 +334,7 @@ export default function AppVagasPage() {
                             key={`${job.id}-${skill}`}
                             className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.07] px-3 py-1 text-xs text-cyan-100"
                           >
-                            {skill}
+                            <LText text={skill} />
                           </span>
                         ))}
                       </div>
@@ -349,8 +344,7 @@ export default function AppVagasPage() {
                       href={`/app/vagas/${job.id}`}
                       className="mt-5 block w-full rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
                     >
-                      Ver detalhes da vaga
-                    </Link>
+                      <LText text={"Ver detalhes da vaga"} /></Link>
                   </div>
                 )}
               </article>
@@ -359,20 +353,17 @@ export default function AppVagasPage() {
 
           {filteredJobs.length === 0 && (
             <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 text-center">
-              <h2 className="text-base font-semibold">Sem resultados</h2>
+              <h2 className="text-base font-semibold"><LText text={"Sem resultados"} /></h2>
 
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Experimenta remover filtros ou pesquisar por outra competência,
-                localização ou modelo de trabalho.
-              </p>
+                <LText text={"Experimenta remover filtros ou pesquisar por outra competência, localização ou modelo de trabalho."} /></p>
 
               <button
                 type="button"
                 onClick={handleClearFilters}
                 className="mt-5 rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
               >
-                Limpar filtros
-              </button>
+                <LText text={"Limpar filtros"} /></button>
             </section>
           )}
         </section>

@@ -1,6 +1,9 @@
 "use client";
+import { browserLocale } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { supabase } from "@/lib/supabase";
@@ -48,7 +51,7 @@ function formatDate(value: string | null) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("pt-PT", {
+  return new Intl.DateTimeFormat(browserLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -143,12 +146,10 @@ export default function AppAcademiaPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-                ARYNQO
-              </p>
+                <LText text={"ARYNQO"} /></p>
 
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                Academy
-              </h1>
+                <LText text={"Academy"} /></h1>
             </div>
 
             <button
@@ -156,59 +157,50 @@ export default function AppAcademiaPage() {
               onClick={loadAcademyPosts}
               className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.09] hover:text-white"
             >
-              Atualizar
-            </button>
+              <LText text={"Atualizar"} /></button>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-white/58">
-            Conteúdos da ARYNQO Academy para desenvolvimento profissional,
-            talento, empregabilidade, recrutamento e evolução de carreira.
-          </p>
+            <LText text={"Conteúdos da ARYNQO Academy para desenvolvimento profissional, talento, empregabilidade, recrutamento e evolução de carreira."} /></p>
         </header>
 
         <section className="mt-6 rounded-[2rem] border border-cyan-300/15 bg-cyan-300/[0.06] p-5">
-          <p className="text-sm text-cyan-100">ARYNQO Academy</p>
+          <p className="text-sm text-cyan-100"><LText text={"ARYNQO Academy"} /></p>
 
           <h2 className="mt-2 text-xl font-semibold">
-            Aprendizagem aplicada ao talento
-          </h2>
+            <LText text={"Aprendizagem aplicada ao talento"} /></h2>
 
           <p className="mt-3 text-sm leading-6 text-white/60">
-            A Academy liga conhecimento, IA, recrutamento e mercado de trabalho
-            numa experiência integrada dentro da plataforma.
-          </p>
+            <LText text={"A Academy liga conhecimento, IA, recrutamento e mercado de trabalho numa experiência integrada dentro da plataforma."} /></p>
 
          <div className="mt-5 grid grid-cols-2 gap-3">
   <Link
     href="/academia"
     className="rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
   >
-    Abrir versão web
-  </Link>
+    <LText text={"Abrir versão web"} /></Link>
 
   <Link
     href="/app"
     className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
   >
-    Voltar à APP
-  </Link>
+    <LText text={"Voltar à APP"} /></Link>
 </div>
         </section>
 
         {statusMessage && (
           <section className="mt-5 rounded-3xl border border-amber-300/15 bg-amber-300/[0.06] p-4">
             <p className="text-sm leading-6 text-amber-100/80">
-              {statusMessage}
+              <LText text={statusMessage} />
             </p>
           </section>
         )}
 
         <section className="sticky top-0 z-10 -mx-5 mt-6 border-b border-white/10 bg-[#050816]/92 px-5 pb-4 pt-2 backdrop-blur-xl">
           <label htmlFor="academy-search" className="sr-only">
-            Pesquisar conteúdos
-          </label>
+            <LText text={"Pesquisar conteúdos"} /></label>
 
-          <input
+          <LElement as="input"
             id="academy-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -231,7 +223,7 @@ export default function AppAcademiaPage() {
                       : "shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-white/60 transition hover:bg-white/[0.08] hover:text-white"
                   }
                 >
-                  {category}
+                  <LText text={category} />
                 </button>
               );
             })}
@@ -247,7 +239,7 @@ export default function AppAcademiaPage() {
             >
               {post.cover_image_url && (
                 <div className="mb-4 h-40 overflow-hidden rounded-2xl bg-white/10">
-                  <img
+                  <LElement as="img"
                     src={post.cover_image_url}
                     alt={post.title}
                     className="h-full w-full object-cover"
@@ -258,50 +250,45 @@ export default function AppAcademiaPage() {
               <div className="flex flex-wrap items-center gap-2">
                 {post.category && (
                   <span className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.07] px-3 py-1 text-xs text-cyan-100">
-                    {post.category}
+                    <LText text={post.category} />
                   </span>
                 )}
 
                 {post.created_at && (
                   <span className="text-xs text-white/35">
-                    {formatDate(post.created_at)}
+                    <LText text={formatDate(post.created_at)} />
                   </span>
                 )}
               </div>
 
               <h2 className="mt-3 text-lg font-semibold tracking-tight">
-                {post.title}
+                <LText text={post.title} />
               </h2>
 
               {post.excerpt && (
                 <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/58">
-                  {post.excerpt}
+                  <LText text={post.excerpt} />
                 </p>
               )}
 
               <p className="mt-4 text-sm font-medium text-cyan-300">
-                Ler conteúdo →
-              </p>
+                <LText text={"Ler conteúdo →"} /></p>
             </Link>
           ))}
 
           {filteredPosts.length === 0 && (
             <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 text-center">
               <h2 className="text-base font-semibold">
-                Sem conteúdos encontrados
-              </h2>
+                <LText text={"Sem conteúdos encontrados"} /></h2>
 
               <p className="mt-2 text-sm leading-6 text-white/55">
-                Experimenta limpar a pesquisa ou abrir a versão web da ARYNQO
-                Academy.
-              </p>
+                <LText text={"Experimenta limpar a pesquisa ou abrir a versão web da ARYNQO Academy."} /></p>
 
               <Link
                 href="/academia"
                 className="mt-5 inline-flex rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
               >
-                Abrir Academy web
-              </Link>
+                <LText text={"Abrir Academy web"} /></Link>
             </section>
           )}
         </section>

@@ -1,3 +1,4 @@
+import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, requireOwnedJob, apiErrorResponse } from "@/lib/api-auth";
 import { POST as generateMatches } from "@/app/api/ai/generate-matches/route";
 import { NextRequest, NextResponse } from "next/server";
@@ -257,7 +258,7 @@ Devolve APENAS JSON válido com estes campos:
 }
 
 Regras:
-- Usa português de Portugal.
+- Usa o idioma ${localeNames[actor.locale || "pt"]}. Mantém as chaves JSON e os códigos de classificação inalterados.
 - Não devolvas markdown.
 - Não devolvas texto fora do JSON.
 - "role_title" deve ser o nome normalizado da função.

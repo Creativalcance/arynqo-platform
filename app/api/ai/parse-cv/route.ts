@@ -1,3 +1,4 @@
+import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -375,7 +376,7 @@ O JSON deve ter exatamente esta estrutura:
 }
 
 Regras gerais:
-- Usa português de Portugal.
+- Usa o idioma ${localeNames[actor.locale || "pt"]}. Mantém as chaves JSON e os códigos de classificação inalterados.
 - Não devolvas markdown.
 - Não devolvas texto fora do JSON.
 - Preenche todos os campos.

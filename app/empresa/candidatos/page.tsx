@@ -1,10 +1,14 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import { createNotification } from "@/lib/create-notification";
 import { supabase } from "@/lib/supabase";
@@ -167,7 +171,7 @@ export default function EmpresaCandidatosPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -180,8 +184,8 @@ export default function EmpresaCandidatosPage() {
       .single();
 
     if (!companyProfile) {
-      alert("Apenas empresas podem aceder.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem aceder.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -225,14 +229,14 @@ export default function EmpresaCandidatosPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsLoading(false);
       return;
     }
 
     let snapshots: Map<string, NonNullable<CandidateApplication["student_profiles"]>>;
     try { snapshots = await candidateSnapshots<NonNullable<CandidateApplication["student_profiles"]>>((data || []).map(application => application.student_id)); }
-    catch { alert("Não foi possível carregar os candidatos."); setIsLoading(false); return; }
+    catch { localizedAlert("Não foi possível carregar os candidatos."); setIsLoading(false); return; }
 
     const normalizedApplications = (data || []).map((application) => {
       const normalizedStudentProfile = snapshots.get(application.student_id) || null;
@@ -399,7 +403,7 @@ export default function EmpresaCandidatosPage() {
 
       await loadApplications();
     } catch {
-      alert("Não foi possível recalcular os matches.");
+      localizedAlert("Não foi possível recalcular os matches.");
     }
 
     setIsRecalculating(false);
@@ -418,7 +422,7 @@ export default function EmpresaCandidatosPage() {
       .single();
 
     if (error) {
-      alert("Não foi possível atualizar a candidatura. Atualiza a lista e tenta novamente.");
+      localizedAlert("Não foi possível atualizar a candidatura. Atualiza a lista e tenta novamente.");
       return;
     }
 
@@ -453,7 +457,7 @@ export default function EmpresaCandidatosPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar candidatos...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar candidatos..."} /></p>
       </main>
     );
   }
@@ -469,17 +473,13 @@ export default function EmpresaCandidatosPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Talent intelligence
-                </p>
+                  <LText text={"Talent intelligence"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Candidatos.
-                </h1>
+                  <LText text={"Candidatos."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Analise candidaturas recebidas, veja compatibilidade IA,
-                  competências em comum, gaps e recomendações de recrutamento.
-                </p>
+                  <LText text={"Analise candidaturas recebidas, veja compatibilidade IA, competências em comum, gaps e recomendações de recrutamento."} /></p>
               </div>
 
               <button
@@ -488,7 +488,7 @@ export default function EmpresaCandidatosPage() {
                 disabled={isRecalculating || applications.length === 0}
                 className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isRecalculating ? "A recalcular..." : "Recalcular matches"}
+                <LText text={isRecalculating ? "A recalcular..." : "Recalcular matches"} />
               </button>
             </div>
           </div>
@@ -545,40 +545,37 @@ export default function EmpresaCandidatosPage() {
                   <aside className="border-b border-[#DDE3EA] bg-[#07111F] p-7 text-white xl:border-b-0 xl:border-r">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-2xl font-bold">
-                        {profile?.name?.charAt(0).toUpperCase() || "A"}
+                        {profile?.name?.charAt(0).toUpperCase() || <LText text="A" />}
                       </div>
 
                       <span
                         className={`rounded-full border px-4 py-2 text-xs font-semibold ${statusStyles[application.status]}`}
                       >
-                        {statusLabels[application.status]}
+                        <LText text={statusLabels[application.status]} />
                       </span>
                     </div>
 
                     <h2 className="mt-6 text-2xl font-semibold tracking-[-0.04em]">
-                      {profile?.name || "Nome não disponível"}
+                      {profile?.name || <LText text="Nome não disponível" />}
                     </h2>
 
                     <p className="mt-2 text-sm leading-6 text-white/60">
                       {application.student_profiles?.headline ||
                         application.student_profiles?.main_role ||
-                        application.student_profiles?.desired_area ||
-                        "Perfil profissional não definido"}
+                        application.student_profiles?.desired_area || <LText text="Perfil profissional não definido" />}
                     </p>
 
                     {match ? (
                       <div className="mt-8 rounded-[28px] border border-white/10 bg-white/10 p-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD]">
-                          Match IA
-                        </p>
+                          <LText text={"Match IA"} /></p>
 
                         <div className="mt-3 flex items-end gap-2">
                           <p className="text-5xl font-black tracking-[-0.07em]">
                             {match.match_score}%
                           </p>
                           <p className="mb-2 text-xs text-white/50">
-                            compatibilidade
-                          </p>
+                            <LText text={"compatibilidade"} /></p>
                         </div>
 
                         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
@@ -591,9 +588,7 @@ export default function EmpresaCandidatosPage() {
                     ) : (
                       <div className="mt-8 rounded-[28px] border border-white/10 bg-white/10 p-5">
                         <p className="text-sm leading-6 text-white/65">
-                          Ainda não existe match calculado para esta
-                          candidatura.
-                        </p>
+                          <LText text={"Ainda não existe match calculado para esta candidatura."} /></p>
                       </div>
                     )}
                   </aside>
@@ -602,25 +597,24 @@ export default function EmpresaCandidatosPage() {
                     <div className="flex flex-wrap items-start justify-between gap-5">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                          Vaga
-                        </p>
+                          <LText text={"Vaga"} /></p>
 
                         <h3 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                          {application.jobs?.title || "Vaga não disponível"}
+                          <LText text={application.jobs?.title || "Vaga não disponível"} />
                         </h3>
 
                         <div className="mt-3 flex flex-wrap gap-2">
                           {application.jobs?.area && (
-                            <Chip>{application.jobs.area}</Chip>
+                            <Chip><LText text={application.jobs.area} /></Chip>
                           )}
                           {application.jobs?.work_model && (
-                            <Chip>{application.jobs.work_model}</Chip>
+                            <Chip><LText text={application.jobs.work_model} /></Chip>
                           )}
                           {application.jobs?.opportunity_type && (
-                            <Chip>{application.jobs.opportunity_type}</Chip>
+                            <Chip><LText text={application.jobs.opportunity_type} /></Chip>
                           )}
                           {application.jobs?.seniority && (
-                            <Chip>{application.jobs.seniority}</Chip>
+                            <Chip><LText text={application.jobs.seniority} /></Chip>
                           )}
                         </div>
                       </div>
@@ -630,8 +624,7 @@ export default function EmpresaCandidatosPage() {
                           href={`/empresa/candidatos/${studentId}?jobId=${jobId}`}
                           className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                         >
-                          Ver perfil completo
-                        </Link>
+                          <LText text={"Ver perfil completo"} /></Link>
                       )}
                     </div>
 
@@ -701,7 +694,7 @@ export default function EmpresaCandidatosPage() {
 
                         {match.ai_reason && (
                           <p className="mt-6 text-sm leading-6 text-slate-600">
-                            {match.ai_reason}
+                            <LText text={match.ai_reason} />
                           </p>
                         )}
 
@@ -737,11 +730,11 @@ export default function EmpresaCandidatosPage() {
 
                     {!match && skills.length > 0 && (
                       <section className="mt-8">
-                        <h4 className="text-sm font-semibold">Skills</h4>
+                        <h4 className="text-sm font-semibold"><LText text={"Skills"} /></h4>
 
                         <div className="mt-3 flex flex-wrap gap-3">
                           {skills.map((skill) => (
-                            <Chip key={skill.id}>{skill.name}</Chip>
+                            <Chip key={skill.id}><LText text={skill.name} /></Chip>
                           ))}
                         </div>
                       </section>
@@ -750,11 +743,10 @@ export default function EmpresaCandidatosPage() {
                     {application.student_profiles?.ai_summary && (
                       <section className="mt-8 rounded-[28px] border border-[#DDE3EA] bg-white p-6">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                          Resumo IA do candidato
-                        </p>
+                          <LText text={"Resumo IA do candidato"} /></p>
 
                         <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
-                          {application.student_profiles.ai_summary}
+                          <LText text={application.student_profiles.ai_summary} />
                         </p>
                       </section>
                     )}
@@ -765,41 +757,37 @@ export default function EmpresaCandidatosPage() {
                         disabled={application.status === "accepted"}
                         className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Aceitar
-                      </button>
+                        <LText text={"Aceitar"} /></button>
 
                       <button
                         onClick={() => updateStatus(application, "rejected")}
                         disabled={application.status === "rejected"}
                         className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Rejeitar
-                      </button>
+                        <LText text={"Rejeitar"} /></button>
 
                       {application.student_profiles?.cv_url && (
                         <CandidateCVButton studentId={application.student_profiles.id} className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]" />
                       )}
 
                       {application.student_profiles?.linkedin_url && (
-                        <a
+                        <LElement as="a"
                           href={application.student_profiles.linkedin_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                         >
-                          LinkedIn
-                        </a>
+                          <LText text={"LinkedIn"} /></LElement>
                       )}
 
                       {application.student_profiles?.portfolio_url && (
-                        <a
+                        <LElement as="a"
                           href={application.student_profiles.portfolio_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                         >
-                          Portfólio
-                        </a>
+                          <LText text={"Portfólio"} /></LElement>
                       )}
                     </div>
                   </div>
@@ -811,13 +799,10 @@ export default function EmpresaCandidatosPage() {
           {filteredApplications.length === 0 && (
             <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center">
               <p className="text-lg font-semibold text-[#07111F]">
-                Ainda não existem candidaturas para este filtro.
-              </p>
+                <LText text={"Ainda não existem candidaturas para este filtro."} /></p>
 
               <p className="mt-2 text-sm text-slate-500">
-                Quando os candidatos se candidatarem, serão apresentados aqui
-                com score de compatibilidade IA.
-              </p>
+                <LText text={"Quando os candidatos se candidatarem, serão apresentados aqui com score de compatibilidade IA."} /></p>
             </div>
           )}
         </div>
@@ -830,7 +815,7 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-[28px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.05)]">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-3 text-3xl font-black tracking-[-0.05em] text-[#07111F]">
@@ -859,7 +844,7 @@ function FilterButton({
           : "border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF] hover:text-[#1683FF]"
       }`}
     >
-      {label}
+      <LText text={label} />
     </button>
   );
 }
@@ -876,11 +861,11 @@ function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-[#DDE3EA] bg-white p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-2 break-words text-sm font-semibold text-[#07111F]">
-        {value}
+        <LText text={value} />
       </p>
     </div>
   );
@@ -899,7 +884,7 @@ function ScoreMini({
     <div className="rounded-2xl bg-white p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-          {label}
+          <LText text={label} />
         </p>
 
         <p className="text-sm font-black text-[#1683FF]">{safeValue}%</p>
@@ -930,7 +915,7 @@ function MatchBlock({
 
   return (
     <div className={className}>
-      <h4 className="text-sm font-semibold text-[#07111F]">{title}</h4>
+      <h4 className="text-sm font-semibold text-[#07111F]"><LText text={title} /></h4>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (
@@ -938,7 +923,7 @@ function MatchBlock({
             key={item}
             className="rounded-full border border-[#DDE3EA] bg-white px-3 py-2 text-xs font-semibold text-slate-700"
           >
-            {item}
+            <LText text={item} />
           </span>
         ))}
       </div>

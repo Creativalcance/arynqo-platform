@@ -1,7 +1,9 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import Link from "@/lib/i18n/link";
+import { usePathname } from "@/lib/i18n/navigation";
 import { useAppProfile } from "../../hooks/useAppProfile";
 
 function getInitial(name: string | null | undefined, email: string | null | undefined) {
@@ -39,11 +41,11 @@ export default function MobileProfileShortcut() {
             : "flex h-8 w-8 items-center justify-center rounded-full bg-cyan-300 text-xs font-bold text-[#06111f]"
         }
       >
-        {initial}
+        <LText text={initial} />
       </span>
 
       <span className="pr-1 text-xs font-semibold">
-        {hasSession ? roleLabel : "Entrar"}
+        <LText text={hasSession ? roleLabel : "Entrar"} />
       </span>
     </Link>
   );

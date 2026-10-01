@@ -1,3 +1,4 @@
+import { normalizeLocale } from "@/lib/i18n/config";
 import { sendNotificationEmail } from "@/lib/notification-email";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { resolveNotificationEvent } from "@/lib/notification-event";
@@ -21,6 +22,7 @@ type CreateNotificationBody = {
 };
 
 type UserProfile = {
+  locale?: string;
   id: string;
   email: string;
   name: string | null;
@@ -139,7 +141,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
-      .select("id, email, name")
+      .select("id, email, name, locale")
       .eq("id", body.userId)
       .single();
 
@@ -227,6 +229,7 @@ export async function POST(request: NextRequest) {
 
     if (emailEnabled) {
       const emailResult = await sendNotificationEmail({
+        locale: normalizeLocale(profile.locale),
         to: profile.email,
         name: profile.name,
         title: body.title,

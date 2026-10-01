@@ -1,10 +1,14 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { createNotification } from "@/lib/create-notification";
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { isPremiumCompany } from "@/lib/company-plan";
@@ -175,7 +179,7 @@ export default function CompanyMatchesPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -188,8 +192,8 @@ export default function CompanyMatchesPage() {
       .single();
 
     if (companyError || !companyData) {
-      alert("Apenas empresas podem aceder a esta página.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem aceder a esta página.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -336,7 +340,7 @@ is_relevant,
 
     let snapshots: Map<string, StudentProfile & { profiles: PublicProfile | null }>;
     try { snapshots = await candidateSnapshots<StudentProfile & { profiles: PublicProfile | null }>(rawMatches.map(match => match.student_id)); }
-    catch { setMatches([]); setIsLoadingMatches(false); alert("Não foi possível carregar os candidatos."); return; }
+    catch { setMatches([]); setIsLoadingMatches(false); localizedAlert("Não foi possível carregar os candidatos."); return; }
 
     const normalizedMatches = rawMatches.map((match) => {
       const student = snapshots.get(match.student_id) || null;
@@ -407,7 +411,7 @@ is_relevant,
     try {
       await sendContactRequest(match);
     } catch {
-      alert("Não foi possível enviar o pedido de autorização. Tenta novamente.");
+      localizedAlert("Não foi possível enviar o pedido de autorização. Tenta novamente.");
     } finally {
       setRequestingMatchId("");
     }
@@ -424,17 +428,17 @@ is_relevant,
   }
 
   if (match.student.contact_visibility === "closed") {
-    alert("Este candidato não aceita pedidos de contacto sem candidatura.");
+    localizedAlert("Este candidato não aceita pedidos de contacto sem candidatura.");
     return;
   }
 
   if (match.contactRequestStatus === "pending") {
-    alert("Já existe um pedido de contacto pendente para este candidato.");
+    localizedAlert("Já existe um pedido de contacto pendente para este candidato.");
     return;
   }
 
   if (match.contactRequestStatus === "accepted") {
-    alert("O contacto já foi aprovado pelo candidato.");
+    localizedAlert("O contacto já foi aprovado pelo candidato.");
     return;
   }
 
@@ -462,7 +466,7 @@ is_relevant,
     .single();
 
   if (error || !data) {
-    alert(error?.message || "Não foi possível enviar o pedido de contacto.");
+    localizedAlert(error?.message || "Não foi possível enviar o pedido de contacto.");
     return;
   }
 
@@ -495,7 +499,7 @@ is_relevant,
     )
   );
 
-  alert("Pedido de contacto enviado ao candidato.");
+  localizedAlert("Pedido de contacto enviado ao candidato.");
 }
 
   async function handleAction(
@@ -521,7 +525,7 @@ is_relevant,
     currentMatch &&
     !canContactDirectly(currentMatch)
   ) {
-    alert(
+    localizedAlert(
       "Precisas de autorização do candidato antes de o aceitares ou contactares."
     );
     return;
@@ -537,7 +541,7 @@ is_relevant,
       .eq("action_type", actionType);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -563,7 +567,7 @@ is_relevant,
   });
 
   if (error && error.code !== "23505") {
-    alert(error.message);
+    localizedAlert(error.message);
     return;
   }
 
@@ -620,7 +624,7 @@ is_relevant,
       });
 
       if (!response.ok) {
-        alert("Não foi possível recalcular os matches.");
+        localizedAlert("Não foi possível recalcular os matches.");
         setIsRegenerating(false);
         return;
       }
@@ -630,14 +634,14 @@ is_relevant,
       }
     } catch (error) {
       console.error(error);
-      alert("Não foi possível recalcular os matches.");
+      localizedAlert("Não foi possível recalcular os matches.");
     }
 
     setIsRegenerating(false);
   }
 
   function handleUpgradeClick() {
-    alert(
+    localizedAlert(
       "Funcionalidade Premium em breve. Este botão irá ligar ao checkout/planos da ARYNQO."
     );
   }
@@ -687,7 +691,7 @@ const otherMatches = useMemo(() => {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar matches...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar matches..."} /></p>
       </main>
     );
   }
@@ -696,7 +700,7 @@ const otherMatches = useMemo(() => {
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
       <div className="mx-auto max-w-7xl">
         <CompanyLaunchOffer />
-        <Link href="/empresa/talentos" className="mb-6 inline-block font-semibold text-[#1683FF] underline">Explorar todos os candidatos</Link>
+        <Link href="/empresa/talentos" className="mb-6 inline-block font-semibold text-[#1683FF] underline"><LText text={"Explorar todos os candidatos"} /></Link>
         <section className="mb-8 overflow-hidden rounded-[40px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
           <div className="relative px-8 py-10 md:px-12 md:py-14">
             <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-[#1683FF]/25 blur-3xl" />
@@ -705,17 +709,13 @@ const otherMatches = useMemo(() => {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  AI Recruiter Board
-                </p>
+                  <LText text={"AI Recruiter Board"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Candidatos compatíveis.
-                </h1>
+                  <LText text={"Candidatos compatíveis."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  O índice de compatibilidade combina os dados do perfil e da vaga.
-                  Confirma os requisitos e a informação em falta antes de selecionar candidatos.
-                </p>
+                  <LText text={"O índice de compatibilidade combina os dados do perfil e da vaga. Confirma os requisitos e a informação em falta antes de selecionar candidatos."} /></p>
               </div>
 
               <button
@@ -724,7 +724,7 @@ const otherMatches = useMemo(() => {
                 disabled={isRegenerating || !selectedJobId}
                 className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isRegenerating ? "A recalcular..." : "Recalcular candidatos"}
+                <LText text={isRegenerating ? "A recalcular..." : "Recalcular candidatos"} />
               </button>
             </div>
           </div>
@@ -733,19 +733,16 @@ const otherMatches = useMemo(() => {
         {jobs.length === 0 ? (
           <section className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center shadow-sm">
             <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-              Ainda não existem vagas ativas.
-            </h2>
+              <LText text={"Ainda não existem vagas ativas."} /></h2>
 
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
-              Cria uma vaga para a IA começar a recomendar candidatos.
-            </p>
+              <LText text={"Cria uma vaga para a IA começar a recomendar candidatos."} /></p>
 
             <Link
               href="/empresa/vagas/nova"
               className="mt-6 inline-flex rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F]"
             >
-              Criar vaga
-            </Link>
+              <LText text={"Criar vaga"} /></Link>
           </section>
         ) : (
           <>
@@ -753,8 +750,7 @@ const otherMatches = useMemo(() => {
               <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
                 <div>
                   <label className="text-sm font-semibold text-[#07111F]">
-                    Vaga em análise
-                  </label>
+                    <LText text={"Vaga em análise"} /></label>
 
                   <select
                     value={selectedJobId}
@@ -771,26 +767,26 @@ const otherMatches = useMemo(() => {
 
                 {selectedJob && (
                   <div className="flex flex-wrap gap-2">
-                    {selectedJob.area && <Badge>{selectedJob.area}</Badge>}
-                    {selectedJob.location && <Badge>{selectedJob.location}</Badge>}
+                    {selectedJob.area && <Badge><LText text={selectedJob.area} /></Badge>}
+                    {selectedJob.location && <Badge><LText text={selectedJob.location} /></Badge>}
 
                     {(selectedJob.work_model || selectedJob.work_mode) && (
                       <Badge>
-                        {workModelLabels[
+                        <LText text={workModelLabels[
                           selectedJob.work_model || selectedJob.work_mode || ""
                         ] ||
                           selectedJob.work_model ||
-                          selectedJob.work_mode}
+                          selectedJob.work_mode} />
                       </Badge>
                     )}
 
                     {(selectedJob.opportunity_type || selectedJob.contract_type) && (
                       <Badge>
-                        {selectedJob.opportunity_type || selectedJob.contract_type}
+                        <LText text={selectedJob.opportunity_type || selectedJob.contract_type} />
                       </Badge>
                     )}
 
-                    {selectedJob.seniority && <Badge>{selectedJob.seniority}</Badge>}
+                    {selectedJob.seniority && <Badge><LText text={selectedJob.seniority} /></Badge>}
                   </div>
                 )}
               </div>
@@ -820,29 +816,24 @@ const otherMatches = useMemo(() => {
 
             {activeMatchView === "others" && (
               <section className="mb-8 rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-800">
-                Estes perfis têm compatibilidade baixa ou informação insuficiente.
-                Consulta os critérios e as lacunas antes de tomar uma decisão.
-              </section>
+                <LText text={"Estes perfis têm compatibilidade baixa ou informação insuficiente. Consulta os critérios e as lacunas antes de tomar uma decisão."} /></section>
             )}
 
             {isLoadingMatches ? (
               <section className="rounded-[32px] bg-white p-12 text-center shadow-sm">
                 <p className="text-sm text-slate-500">
-                  A carregar candidatos compatíveis...
-                </p>
+                  <LText text={"A carregar candidatos compatíveis..."} /></p>
               </section>
             ) : activeMatches.length === 0 ? (
               <section className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center shadow-sm">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                  {activeMatchView === "recommended"
+                  <LText text={activeMatchView === "recommended"
                     ? "Ainda não existem matches recomendados."
-                    : "Não existem candidatos de baixa compatibilidade."}
+                    : "Não existem candidatos de baixa compatibilidade."} />
                 </h2>
 
                 <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
-                  Recalcula os matches ou melhora a estrutura da vaga para
-                  aumentar a precisão da recomendação.
-                </p>
+                  <LText text={"Recalcula os matches ou melhora a estrutura da vaga para aumentar a precisão da recomendação."} /></p>
 
                 <button
                   type="button"
@@ -850,7 +841,7 @@ const otherMatches = useMemo(() => {
                   disabled={isRegenerating}
                   className="mt-6 rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isRegenerating ? "A recalcular..." : "Gerar candidatos"}
+                  <LText text={isRegenerating ? "A recalcular..." : "Gerar candidatos"} />
                 </button>
               </section>
             ) : (
@@ -859,19 +850,17 @@ const otherMatches = useMemo(() => {
                   <div className="mb-4 flex items-center justify-between px-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                        {activeMatchView === "recommended"
+                        <LText text={activeMatchView === "recommended"
                           ? "Ranking IA"
-                          : "Baixa compatibilidade"}
+                          : "Baixa compatibilidade"} />
                       </p>
 
                       <h2 className="mt-1 text-xl font-semibold tracking-[-0.04em]">
-                        {activeMatches.length} candidatos
-                      </h2>
+                        {activeMatches.length} <LText text={" candidatos"} /></h2>
 
                       {!isPremium && (
                         <p className="mt-1 text-xs text-slate-500">
-                          Top {freeVisibleLimit} visíveis no plano free
-                        </p>
+                          <LText text={"Top "} />{freeVisibleLimit} <LText text={" visíveis no plano free"} /></p>
                       )}
                     </div>
                   </div>
@@ -907,7 +896,7 @@ const otherMatches = useMemo(() => {
                           <div className="flex items-start gap-4">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#07111F] to-[#1683FF] text-sm font-semibold text-white">
                               {student?.avatar_url && isPremium && canContactDirectly(match) ? (
-                                <img
+                                <LElement as="img"
                                   src={student.avatar_url}
                                   alt={publicProfile?.name || "Candidato"}
                                   className="h-full w-full object-cover"
@@ -923,14 +912,8 @@ const otherMatches = useMemo(() => {
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                   <p className="truncate text-sm font-semibold text-[#07111F]">
-                                    #{index + 1}{" "}
-                                    {isLocked
-                                      ? "Candidato Premium"
-                                      : isPremium && canContactDirectly(match)
-                                        ? publicProfile?.name ||
-                                          "Candidato sem nome"
-                                        : student?.headline ||
-                                          `Talent #${match.student_id.slice(
+                                    #{index + 1}<LText text={" "} />
+                                    {isLocked ? <LText text="Candidato Premium" /> : isPremium && canContactDirectly(match) ? publicProfile?.name || <LText text="Candidato sem nome" /> : student?.headline || `Talent #${match.student_id.slice(
                                             0,
                                             4
                                           )}`}
@@ -938,8 +921,7 @@ const otherMatches = useMemo(() => {
 
                                   {!canContactDirectly(match) && !isLocked && (
                                     <p className="mt-1 text-[11px] font-medium text-slate-400">
-                                      Identidade protegida • Requer autorização
-                                    </p>
+                                      <LText text={"Identidade protegida • Requer autorização"} /></p>
                                   )}
                                 </div>
 
@@ -955,57 +937,48 @@ const otherMatches = useMemo(() => {
                               </div>
 
                               <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
-                                {isLocked
-                                  ? "Desbloqueia este candidato para ver a análise completa."
-                                  : student?.headline ||
-                                    "Sem título profissional definido."}
+                                {isLocked ? <LText text="Desbloqueia este candidato para ver a análise completa." /> : student?.headline || <LText text="Sem título profissional definido." />}
                               </p>
 
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {match.hasApplication && (
                                   <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600">
-                                    Candidatou-se
-                                  </span>
+                                    <LText text={"Candidatou-se"} /></span>
                                 )}
 
                                 {!match.hasApplication &&
                                   student?.contact_visibility === "open" && (
                                     <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-600">
-                                      Requer aprovação
-                                    </span>
+                                      <LText text={"Requer aprovação"} /></span>
                                   )}
 
                                 {!match.hasApplication &&
                                   student?.contact_visibility ===
                                     "approval_required" && (
                                     <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-600">
-                                      Requer aprovação
-                                    </span>
+                                      <LText text={"Requer aprovação"} /></span>
                                   )}
 
                                 {!match.hasApplication &&
                                   student?.contact_visibility === "closed" && (
                                     <span className="rounded-full bg-red-50 px-3 py-1 text-[11px] font-semibold text-red-600">
-                                      Contacto fechado
-                                    </span>
+                                      <LText text={"Contacto fechado"} /></span>
                                   )}
 
                                 {match.contactRequestStatus === "pending" && (
                                   <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-600">
-                                    Pedido enviado
-                                  </span>
+                                    <LText text={"Pedido enviado"} /></span>
                                 )}
 
                                 {match.contactRequestStatus === "accepted" && (
                                   <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600">
-                                    Contacto aprovado
-                                  </span>
+                                    <LText text={"Contacto aprovado"} /></span>
                                 )}
 
                                 {student?.talent_type && !isLocked && (
                                   <span className="rounded-full bg-[#1683FF]/10 px-3 py-1 text-[11px] font-semibold text-[#1683FF]">
-                                    {talentTypeLabels[student.talent_type] ||
-                                      student.talent_type}
+                                    <LText text={talentTypeLabels[student.talent_type] ||
+                                      student.talent_type} />
                                   </span>
                                 )}
                               </div>
@@ -1022,13 +995,10 @@ const otherMatches = useMemo(() => {
                         className="w-full rounded-[24px] border border-dashed border-[#1683FF]/30 bg-[#1683FF]/5 p-5 text-left transition hover:bg-[#1683FF]/10"
                       >
                         <p className="text-sm font-semibold text-[#07111F]">
-                          +{lockedMatchesCount} candidatos bloqueados
-                        </p>
+                          +{lockedMatchesCount} <LText text={" candidatos bloqueados"} /></p>
 
                         <p className="mt-1 text-xs leading-5 text-slate-500">
-                          Atualiza para Premium para ver todos os candidatos,
-                          identidade completa, contactos e ações.
-                        </p>
+                          <LText text={"Atualiza para Premium para ver todos os candidatos, identidade completa, contactos e ações."} /></p>
                       </button>
                     )}
                   </div>
@@ -1052,17 +1022,13 @@ const otherMatches = useMemo(() => {
                     <div className="flex min-h-[520px] items-center justify-center p-10 text-center">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                          Análise IA
-                        </p>
+                          <LText text={"Análise IA"} /></p>
 
                         <h3 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#07111F]">
-                          Seleciona um candidato
-                        </h3>
+                          <LText text={"Seleciona um candidato"} /></h3>
 
                         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-slate-500">
-                          Seleciona um candidato para veres a compatibilidade,
-                          pontos fortes, gaps e regras de contacto.
-                        </p>
+                          <LText text={"Seleciona um candidato para veres a compatibilidade, pontos fortes, gaps e regras de contacto."} /></p>
                       </div>
                     </div>
                   )}
@@ -1123,7 +1089,7 @@ function CandidateDetail({
           <div className="flex min-w-0 max-w-full gap-3 sm:gap-5">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[24px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-2xl font-semibold text-white">
               {student.avatar_url && isPremium && contactAllowed ? (
-                <img
+                <LElement as="img"
                   src={student.avatar_url}
                   alt={publicProfile?.name || "Candidato"}
                   className="h-full w-full object-cover"
@@ -1135,22 +1101,20 @@ function CandidateDetail({
 
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-500">
-                {student.desired_area || "Talento"}
+                <LText text={student.desired_area || "Talento"} />
               </p>
 
               <h2 className="mt-1 text-2xl font-semibold tracking-[-0.06em] text-[#07111F] sm:text-4xl">
-                {displayName}
+                <LText text={displayName} />
               </h2>
 
               {!contactAllowed && (
                 <p className="mt-2 text-xs font-medium text-slate-400">
-                  Contacto protegido. O candidato ainda não autorizou contacto
-                  direto para esta vaga.
-                </p>
+                  <LText text={"Contacto protegido. O candidato ainda não autorizou contacto direto para esta vaga."} /></p>
               )}
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-                {student.headline || "Sem título profissional definido."}
+                {student.headline || <LText text="Sem título profissional definido." />}
               </p>
 
               {!contactAllowed && student.contact_visibility !== "closed" && (
@@ -1159,37 +1123,34 @@ function CandidateDetail({
                     onClick={() => isPremium ? requestContact(match) : handleUpgradeClick()}
                     disabled={!!requestingMatchId || match.contactRequestStatus === "pending" || match.contactRequestStatus === "rejected"}
                     className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
-                    {requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "pending" ? "Pedido enviado" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : "Pedir autorização para ver o perfil"}
+                    <LText text={requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "pending" ? "Pedido enviado" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : "Pedir autorização para ver o perfil"} />
                   </button>
-                  <p className="mt-2 text-xs leading-5 text-slate-500">O candidato recebe uma notificação e decide se permite o acesso ao perfil completo.</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500"><LText text={"O candidato recebe uma notificação e decide se permite o acesso ao perfil completo."} /></p>
                 </div>
               )}
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {match.hasApplication && (
                   <span className="rounded-full bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-600">
-                    Candidatou-se à vaga
-                  </span>
+                    <LText text={"Candidatou-se à vaga"} /></span>
                 )}
 
                 {!match.hasApplication && contactAllowed && (
                   <span className="rounded-full bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-600">
-                    Contacto permitido
-                  </span>
+                    <LText text={"Contacto permitido"} /></span>
                 )}
 
                 {!match.hasApplication && !contactAllowed && (
                   <span className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-600">
-                    Requer autorização
-                  </span>
+                    <LText text={"Requer autorização"} /></span>
                 )}
 
                 {student.location && <Badge>{student.location}</Badge>}
-                {student.seniority && <Badge>{student.seniority}</Badge>}
+                {student.seniority && <Badge><LText text={student.seniority} /></Badge>}
 
                 {student.work_model && (
                   <Badge>
-                    {workModelLabels[student.work_model] || student.work_model}
+                    <LText text={workModelLabels[student.work_model] || student.work_model} />
                   </Badge>
                 )}
               </div>
@@ -1198,14 +1159,13 @@ function CandidateDetail({
 
           <div className="rounded-[28px] bg-[#07111F] p-6 text-center text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD]">
-              Match
-            </p>
+              <LText text={"Match"} /></p>
 
             <p className="mt-2 text-6xl font-semibold tracking-[-0.08em]">
               {match.match_score}%
             </p>
 
-            <p className="mt-2 text-xs text-white/50">Compatibilidade</p>
+            <p className="mt-2 text-xs text-white/50"><LText text={"Compatibilidade"} /></p>
           </div>
         </div>
       </div>
@@ -1229,7 +1189,7 @@ function CandidateDetail({
                     : "bg-[#F7F9FC] text-slate-500 hover:text-[#07111F]"
                 }`}
               >
-                {tab.label}
+                <LText text={tab.label} />
               </button>
             ))}
           </div>
@@ -1237,7 +1197,7 @@ function CandidateDetail({
           {activeDetailTab === "resumo" && (
             <div className="space-y-6">
               <InfoPanel title="Justificação IA">
-                <p>{match.ai_reason}</p>
+                <p><LText text={match.ai_reason} /></p>
               </InfoPanel>
 
               {student.ai_summary && (
@@ -1250,7 +1210,7 @@ function CandidateDetail({
                 <InfoPanel title="Recomendações IA">
                   <ul className="space-y-2">
                     {match.aiRecommendations.map((item) => (
-                      <li key={item}>• {item}</li>
+                      <li key={item}>• <LText text={item} /></li>
                     ))}
                   </ul>
                 </InfoPanel>
@@ -1283,9 +1243,9 @@ function CandidateDetail({
               <InfoPanel title="Pontos fortes">
                 <ul className="space-y-2">
                   {match.strengths.length > 0 ? (
-                    match.strengths.map((item) => <li key={item}>✓ {item}</li>)
+                    match.strengths.map((item) => <li key={item}>✓ <LText text={item} /></li>)
                   ) : (
-                    <li>Sem pontos fortes detalhados.</li>
+                    <li><LText text={"Sem pontos fortes detalhados."} /></li>
                   )}
                 </ul>
               </InfoPanel>
@@ -1293,9 +1253,9 @@ function CandidateDetail({
               <InfoPanel title="Gaps">
                 <ul className="space-y-2">
                   {match.gaps.length > 0 ? (
-                    match.gaps.map((item) => <li key={item}>• {item}</li>)
+                    match.gaps.map((item) => <li key={item}>• <LText text={item} /></li>)
                   ) : (
-                    <li>Sem gaps relevantes identificados.</li>
+                    <li><LText text={"Sem gaps relevantes identificados."} /></li>
                   )}
                 </ul>
               </InfoPanel>
@@ -1305,14 +1265,10 @@ function CandidateDetail({
           {activeDetailTab === "acoes" && (
             <div className="rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-6">
               <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                Decisão de recrutamento
-              </h3>
+                <LText text={"Decisão de recrutamento"} /></h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Se o candidato se candidatou à vaga, a empresa pode contactar.
-                Caso contrário, é necessário respeitar a visibilidade definida
-                pelo candidato.
-              </p>
+                <LText text={"Se o candidato se candidatou à vaga, a empresa pode contactar. Caso contrário, é necessário respeitar a visibilidade definida pelo candidato."} /></p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <ActionButton
@@ -1343,8 +1299,7 @@ function CandidateDetail({
                     href={`/empresa/candidatos/${student.id}?jobId=${match.job_id}`}
                     className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                   >
-                    Ver contacto / perfil
-                  </Link>
+                    <LText text={"Ver contacto / perfil"} /></Link>
                 ) : student.contact_visibility !== "closed" ? (
                   <button
                     type="button"
@@ -1354,9 +1309,9 @@ function CandidateDetail({
                     disabled={!!requestingMatchId || match.contactRequestStatus === "pending" || match.contactRequestStatus === "rejected"}
                     className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : match.contactRequestStatus === "pending"
+                    <LText text={requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : match.contactRequestStatus === "pending"
                       ? "Pedido enviado"
-                      : "Pedir autorização"}
+                      : "Pedir autorização"} />
                   </button>
                 ) : (
                   <button
@@ -1364,8 +1319,7 @@ function CandidateDetail({
                     disabled
                     className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold text-slate-400"
                   >
-                    Contacto indisponível
-                  </button>
+                    <LText text={"Contacto indisponível"} /></button>
                 )}
               </div>
             </div>
@@ -1374,8 +1328,7 @@ function CandidateDetail({
 
         <aside className="min-w-0 border-t border-[#DDE3EA] p-4 sm:p-8 xl:border-l xl:border-t-0">
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            Breakdown
-          </h3>
+            <LText text={"Breakdown"} /></h3>
 
           <div className="mt-6 space-y-5">
             <MatchMetric label="Skills" value={match.skills_score} />
@@ -1389,8 +1342,7 @@ function CandidateDetail({
 
           <div className="mt-8 rounded-[24px] bg-[#F7F9FC] p-5">
             <p className="text-sm font-semibold text-[#07111F]">
-              Score de perfil
-            </p>
+              <LText text={"Score de perfil"} /></p>
 
             <p className="mt-2 text-3xl font-semibold tracking-[-0.06em] text-[#1683FF]">
               {student.ai_profile_score || 0}
@@ -1399,8 +1351,7 @@ function CandidateDetail({
 
           <div className="mt-4 rounded-[24px] bg-[#F7F9FC] p-5">
             <p className="text-sm font-semibold text-[#07111F]">
-              Empregabilidade
-            </p>
+              <LText text={"Empregabilidade"} /></p>
 
             <p className="mt-2 text-3xl font-semibold tracking-[-0.06em] text-[#1683FF]">
               {student.ai_employability_score || 0}
@@ -1439,7 +1390,7 @@ function ViewButton({
           : "border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF] hover:text-[#1683FF]"
       }`}
     >
-      {label}
+      <LText text={label} />
     </button>
   );
 }
@@ -1453,7 +1404,7 @@ function InfoPanel({
 }) {
   return (
     <div className="min-w-0 rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-4 text-sm leading-6 text-slate-600 [overflow-wrap:anywhere] sm:p-6">
-      <p className="mb-3 text-sm font-semibold text-[#07111F]">{title}</p>
+      <p className="mb-3 text-sm font-semibold text-[#07111F]"><LText text={title} /></p>
       {children}
     </div>
   );
@@ -1469,7 +1420,7 @@ function ChipList({
   type: "positive" | "negative";
 }) {
   if (items.length === 0) {
-    return <p className="text-sm text-slate-500">{empty}</p>;
+    return <p className="text-sm text-slate-500"><LText text={empty} /></p>;
   }
 
   return (
@@ -1483,7 +1434,7 @@ function ChipList({
               : "bg-red-50 text-red-500"
           }`}
         >
-          {item}
+          <LText text={item} />
         </span>
       ))}
     </div>
@@ -1494,7 +1445,7 @@ function MatchMetric({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500">
-        <span>{label}</span>
+        <span><LText text={label} /></span>
         <span>{value}%</span>
       </div>
 
@@ -1535,7 +1486,7 @@ function ActionButton({
             : "border border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF] hover:text-[#1683FF]"
       }`}
     >
-      {active ? activeLabel : label}
+      <LText text={active ? activeLabel : label} />
     </button>
   );
 }

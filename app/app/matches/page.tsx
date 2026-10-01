@@ -1,7 +1,9 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
+
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { useAppMatches } from "../../hooks/useAppMatches";
 import { useAppMatchGeneration } from "../../hooks/useAppMatchGeneration";
@@ -275,71 +277,57 @@ export default function AppMatchesPage() {
         <section className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-6 pb-28">
           <header>
             <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-              ARYNQO
-            </p>
+              <LText text={"ARYNQO"} /></p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Matches IA
-            </h1>
+              <LText text={"Matches IA"} /></h1>
 
             <p className="mt-3 text-sm leading-6 text-white/58">
-              Os matches são personalizados e só ficam disponíveis depois de
-              iniciares sessão, tal como na versão desktop.
-            </p>
+              <LText text={"Os matches são personalizados e só ficam disponíveis depois de iniciares sessão, tal como na versão desktop."} /></p>
           </header>
 
           <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5">
-            <p className="text-sm text-cyan-100">Acesso reservado</p>
+            <p className="text-sm text-cyan-100"><LText text={"Acesso reservado"} /></p>
 
             <h2 className="mt-2 text-xl font-semibold">
-              Entra para veres os teus matches
-            </h2>
+              <LText text={"Entra para veres os teus matches"} /></h2>
 
             <p className="mt-3 text-sm leading-6 text-white/60">
-              A ARYNQO cruza o teu perfil real com vagas, competências,
-              preferências e dados de IA. Sem sessão iniciada, estes dados não
-              são apresentados.
-            </p>
+              <LText text={"A ARYNQO cruza o teu perfil real com vagas, competências, preferências e dados de IA. Sem sessão iniciada, estes dados não são apresentados."} /></p>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <Link
                 href="/login"
                 className="rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
               >
-                Entrar
-              </Link>
+                <LText text={"Entrar"} /></Link>
 
               <Link
                 href="/registo"
                 className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
               >
-                Criar conta
-              </Link>
+                <LText text={"Criar conta"} /></Link>
             </div>
           </section>
 
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-            <h2 className="text-sm font-semibold">Podes continuar a explorar</h2>
+            <h2 className="text-sm font-semibold"><LText text={"Podes continuar a explorar"} /></h2>
 
             <p className="mt-1 text-sm leading-6 text-white/56">
-              As vagas públicas e a ARYNQO Academy continuam disponíveis em modo
-              público.
-            </p>
+              <LText text={"As vagas públicas e a ARYNQO Academy continuam disponíveis em modo público."} /></p>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Link
                 href="/app/vagas"
                 className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
               >
-                Ver vagas
-              </Link>
+                <LText text={"Ver vagas"} /></Link>
 
               <Link
                 href="/app/academia"
                 className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
               >
-                Academy
-              </Link>
+                <LText text={"Academy"} /></Link>
             </div>
           </section>
 
@@ -362,12 +350,10 @@ export default function AppMatchesPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-                  ARYNQO
-                </p>
+                  <LText text={"ARYNQO"} /></p>
 
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                  Matches IA
-                </h1>
+                  <LText text={"Matches IA"} /></h1>
               </div>
 
               <button
@@ -376,34 +362,32 @@ export default function AppMatchesPage() {
                 disabled={isGeneratingMatches}
                 className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isGeneratingMatches ? "IA..." : "Gerar"}
+                <LText text={isGeneratingMatches ? "IA..." : "Gerar"} />
               </button>
             </div>
 
             <p className="mt-3 text-sm leading-6 text-white/58">
-              Desliza para a direita para te candidatares. Desliza para a
-              esquerda para recusares a vaga.
-            </p>
+              <LText text={"Desliza para a direita para te candidatares. Desliza para a esquerda para recusares a vaga."} /></p>
           </header>
 
           {(errorMessage || generationMessage || decisionMessage) && (
             <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
               <p className="text-sm leading-6 text-cyan-100/85">
-                {decisionMessage || generationMessage || errorMessage}
+                <LText text={decisionMessage || generationMessage || errorMessage} />
               </p>
             </section>
           )}
 
           <section className="mt-5 flex items-center justify-between rounded-3xl border border-white/10 bg-white/[0.045] p-4">
             <div>
-              <p className="text-xs text-white/40">Matches disponíveis</p>
+              <p className="text-xs text-white/40"><LText text={"Matches disponíveis"} /></p>
               <p className="mt-1 text-2xl font-semibold">{remainingMatches}</p>
             </div>
 
             <div className="text-right">
-              <p className="text-xs text-white/40">Média IA</p>
+              <p className="text-xs text-white/40"><LText text={"Média IA"} /></p>
               <p className="mt-1 text-2xl font-semibold text-cyan-200">
-                {averageScore > 0 ? `${averageScore}%` : "—"}
+                <LText text={averageScore > 0 ? `${averageScore}%` : "—"} />
               </p>
             </div>
           </section>
@@ -431,22 +415,22 @@ export default function AppMatchesPage() {
                   }
                   style={{ opacity: decisionOpacity }}
                 >
-                  {isRightDecision ? "Candidatar" : "Recusar"}
+                  <LText text={isRightDecision ? "Candidatar" : "Recusar"} />
                 </div>
 
                 <div className="flex h-full flex-col">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-300">
-                        {currentMatch.matchCategory || "Match IA"}
+                        <LText text={currentMatch.matchCategory || "Match IA"} />
                       </p>
 
                       <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                        {currentMatch.title}
+                        <LText text={currentMatch.title} />
                       </h2>
 
                       <p className="mt-2 text-sm text-white/55">
-                        {currentMatch.company}
+                        <LText text={currentMatch.company} />
                       </p>
                     </div>
 
@@ -455,19 +439,18 @@ export default function AppMatchesPage() {
                         {currentMatch.score}%
                       </p>
 
-                      <p className="text-[11px] text-emerald-100/70">match</p>
+                      <p className="text-[11px] text-emerald-100/70"><LText text={"match"} /></p>
                     </div>
                   </div>
 
                   <p className="mt-5 line-clamp-5 text-sm leading-6 text-white/64">
-                    {currentMatch.reason}
+                    <LText text={currentMatch.reason} />
                   </p>
 
                   {currentMatch.matchingSkills.length > 0 && (
                     <div className="mt-5">
                       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-                        Skills em comum
-                      </p>
+                        <LText text={"Skills em comum"} /></p>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         {currentMatch.matchingSkills
@@ -477,7 +460,7 @@ export default function AppMatchesPage() {
                               key={`${currentMatch.id}-${skill}`}
                               className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.07] px-3 py-1 text-xs text-emerald-100"
                             >
-                              {skill}
+                              <LText text={skill} />
                             </span>
                           ))}
                       </div>
@@ -487,8 +470,7 @@ export default function AppMatchesPage() {
                   {currentMatch.gaps.length > 0 && (
                     <div className="mt-5">
                       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-                        A validar
-                      </p>
+                        <LText text={"A validar"} /></p>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         {currentMatch.gaps.slice(0, 5).map((gap) => (
@@ -496,7 +478,7 @@ export default function AppMatchesPage() {
                             key={`${currentMatch.id}-${gap}`}
                             className="rounded-full border border-amber-300/15 bg-amber-300/[0.07] px-3 py-1 text-xs text-amber-100"
                           >
-                            {gap}
+                            <LText text={gap} />
                           </span>
                         ))}
                       </div>
@@ -511,15 +493,13 @@ export default function AppMatchesPage() {
                         disabled={isProcessingDecision}
                         className="rounded-2xl border border-red-300/20 bg-red-300/[0.08] px-4 py-4 text-sm font-semibold text-red-100 transition hover:bg-red-300/[0.14] disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Recusar
-                      </button>
+                        <LText text={"Recusar"} /></button>
 
                       <Link
                         href={`/app/matches/${currentMatch.id}`}
                         className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
                       >
-                        Detalhes
-                      </Link>
+                        <LText text={"Detalhes"} /></Link>
 
                       <button
                         type="button"
@@ -527,13 +507,11 @@ export default function AppMatchesPage() {
                         disabled={isProcessingDecision}
                         className="rounded-2xl bg-cyan-300 px-4 py-4 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        Candidatar
-                      </button>
+                        <LText text={"Candidatar"} /></button>
                     </div>
 
                     <p className="mt-4 text-center text-xs leading-5 text-white/40">
-                      Também podes usar os botões para decidir sem deslizar.
-                    </p>
+                      <LText text={"Também podes usar os botões para decidir sem deslizar."} /></p>
                   </div>
                 </div>
               </article>
@@ -541,13 +519,10 @@ export default function AppMatchesPage() {
           ) : (
             <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 text-center">
               <h2 className="text-xl font-semibold">
-                Sem mais matches disponíveis
-              </h2>
+                <LText text={"Sem mais matches disponíveis"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-white/58">
-                Geraste decisão sobre todas as vagas disponíveis ou ainda não
-                existem matches IA calculados.
-              </p>
+                <LText text={"Geraste decisão sobre todas as vagas disponíveis ou ainda não existem matches IA calculados."} /></p>
 
               <button
                 type="button"
@@ -555,9 +530,9 @@ export default function AppMatchesPage() {
                 disabled={isGeneratingMatches}
                 className="mt-6 rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isGeneratingMatches
+                <LText text={isGeneratingMatches
                   ? "A gerar matches..."
-                  : "Gerar/Recalcular matches IA"}
+                  : "Gerar/Recalcular matches IA"} />
               </button>
             </section>
           )}
@@ -575,12 +550,10 @@ export default function AppMatchesPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-                ARYNQO
-              </p>
+                <LText text={"ARYNQO"} /></p>
 
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-                Matches IA
-              </h1>
+                <LText text={"Matches IA"} /></h1>
             </div>
 
             <button
@@ -588,20 +561,17 @@ export default function AppMatchesPage() {
               onClick={reloadMatches}
               className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.09] hover:text-white"
             >
-              Atualizar
-            </button>
+              <LText text={"Atualizar"} /></button>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-white/58">
-            Uma leitura inteligente do alinhamento entre perfil, oportunidades,
-            competências e potencial profissional.
-          </p>
+            <LText text={"Uma leitura inteligente do alinhamento entre perfil, oportunidades, competências e potencial profissional."} /></p>
         </header>
 
         {(errorMessage || generationMessage) && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-sm leading-6 text-cyan-100/85">
-              {generationMessage || errorMessage}
+              <LText text={generationMessage || errorMessage} />
             </p>
           </section>
         )}
@@ -609,12 +579,12 @@ export default function AppMatchesPage() {
         <section className="mt-6 rounded-[2rem] border border-cyan-300/15 bg-cyan-300/[0.06] p-5">
           <div className="flex items-start justify-between gap-5">
             <div>
-              <p className="text-sm text-cyan-100">Análise inteligente</p>
+              <p className="text-sm text-cyan-100"><LText text={"Análise inteligente"} /></p>
 
               <h2 className="mt-2 text-xl font-semibold">
-                {matches.length > 0
+                <LText text={matches.length > 0
                   ? "Atratividade profissional calculada"
-                  : "Ainda sem matches calculados"}
+                  : "Ainda sem matches calculados"} />
               </h2>
             </div>
 
@@ -623,14 +593,14 @@ export default function AppMatchesPage() {
                 {averageScore}%
               </p>
 
-              <p className="text-[11px] text-white/45">média</p>
+              <p className="text-[11px] text-white/45"><LText text={"média"} /></p>
             </div>
           </div>
 
           <p className="mt-4 text-sm leading-6 text-white/60">
-            {matches.length > 0
+            <LText text={matches.length > 0
               ? "A IA encontrou padrões entre experiência, competências, preferências e vagas disponíveis."
-              : "Gera matches para cruzar o teu perfil com as vagas ativas da plataforma."}
+              : "Gera matches para cruzar o teu perfil com as vagas ativas da plataforma."} />
           </p>
         </section>
 
@@ -650,7 +620,7 @@ export default function AppMatchesPage() {
                       : "shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-white/60 transition hover:bg-white/[0.08] hover:text-white"
                   }
                 >
-                  {filter}
+                  <LText text={filter} />
                 </button>
               );
             })}
@@ -679,7 +649,7 @@ export default function AppMatchesPage() {
                           {match.title}
                         </h2>
 
-                        <span className={getLevelClass(level)}>{level}</span>
+                        <span className={getLevelClass(level)}><LText text={level} /></span>
                       </div>
 
                       <p className="mt-2 text-sm leading-6 text-white/55">
@@ -692,7 +662,7 @@ export default function AppMatchesPage() {
                         {match.score}%
                       </p>
 
-                      <p className="text-[11px] text-emerald-100/70">match</p>
+                      <p className="text-[11px] text-emerald-100/70"><LText text={"match"} /></p>
                     </div>
                   </div>
                 </button>
@@ -701,11 +671,10 @@ export default function AppMatchesPage() {
                   <div className="mt-5 space-y-4 border-t border-white/10 pt-4">
                     <div className="rounded-2xl bg-white/[0.04] p-4">
                       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-                        Porque aparece
-                      </p>
+                        <LText text={"Porque aparece"} /></p>
 
                       <p className="mt-2 text-sm leading-6 text-white/60">
-                        {match.reason}
+                        <LText text={match.reason} />
                       </p>
                     </div>
 
@@ -713,8 +682,7 @@ export default function AppMatchesPage() {
                       href={`/app/matches/${match.id}`}
                       className="block w-full rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
                     >
-                      Ver recomendação completa
-                    </Link>
+                      <LText text={"Ver recomendação completa"} /></Link>
                   </div>
                 )}
               </article>
@@ -724,15 +692,15 @@ export default function AppMatchesPage() {
           {filteredMatches.length === 0 && (
             <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 text-center">
               <h2 className="text-base font-semibold">
-                {matches.length === 0
+                <LText text={matches.length === 0
                   ? "Ainda não tens matches IA"
-                  : "Sem resultados neste filtro"}
+                  : "Sem resultados neste filtro"} />
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-white/55">
-                {matches.length === 0
+                <LText text={matches.length === 0
                   ? "Gera os teus matches para cruzar o perfil com as vagas ativas."
-                  : "Experimenta alterar o filtro para veres outros níveis de compatibilidade."}
+                  : "Experimenta alterar o filtro para veres outros níveis de compatibilidade."} />
               </p>
 
               <button
@@ -745,11 +713,11 @@ export default function AppMatchesPage() {
                 disabled={isGeneratingMatches}
                 className="mt-5 rounded-2xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {matches.length === 0
+                <LText text={matches.length === 0
                   ? isGeneratingMatches
                     ? "A gerar matches..."
                     : "Gerar matches IA"
-                  : "Ver todos os matches"}
+                  : "Ver todos os matches"} />
               </button>
             </section>
           )}

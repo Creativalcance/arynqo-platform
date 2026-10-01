@@ -1,8 +1,11 @@
 "use client";
+import { browserLocalizedPath, localizedPath, normalizeLocale, localeCookie } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
+
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 
 export default function LoginPage({initialNext}:{initialNext:string;initialCompany?:boolean}) {
   const [email, setEmail] = useState("");
@@ -20,7 +23,10 @@ export default function LoginPage({initialNext}:{initialNext:string;initialCompa
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error || !data.user) { setMessage("Não foi possível entrar. Confirma o email e a palavra-passe. Se ainda não confirmaste a conta, pede um novo email de confirmação."); return; }
       if (!data.user.email_confirmed_at) { await supabase.auth.signOut(); setMessage("Confirma o teu email antes de iniciares sessão."); return; }
-      window.location.href = next;
+      const { data: profile } = await supabase.from("profiles").select("locale").eq("id", data.user.id).single();
+      const preferred = normalizeLocale(profile?.locale);
+      document.cookie = `${localeCookie}=${preferred}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`;
+      window.location.href = localizedPath(next, preferred);
     } catch { setMessage("Não foi possível ligar ao serviço. Tenta novamente."); }
     finally { setBusy(false); }
   }
@@ -29,23 +35,20 @@ export default function LoginPage({initialNext}:{initialNext:string;initialCompa
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-20">
       <div className="mx-auto max-w-md rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
         <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          ARYNQO
-        </p>
+          <LText text={"ARYNQO"} /></p>
 
         <h1 className="text-4xl font-semibold tracking-[-0.05em] text-[#07111F]">
-          Entrar
-        </h1>
+          <LText text={"Entrar"} /></h1>
 
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          {next.startsWith("/vagas/") ? "Entra para continuares nesta vaga. Depois de iniciares sessão, regressas à oportunidade que escolheste." : "Acede à tua conta de candidato ou empresa."}
+          <LText text={next.startsWith("/vagas/") ? "Entra para continuares nesta vaga. Depois de iniciares sessão, regressas à oportunidade que escolheste." : "Acede à tua conta de candidato ou empresa."} />
         </p>
 
-        {message && <p role="alert" className="mt-5 text-sm text-red-700">{message}</p>}
+        {message && <p role="alert" className="mt-5 text-sm text-red-700"><LText text={message} /></p>}
         <form onSubmit={handleLogin} className="mt-8 space-y-5">
           <div>
             <label htmlFor="login-email" className="text-sm font-semibold text-[#07111F]">
-              Email
-            </label>
+              <LText text={"Email"} /></label>
             <input
               id="login-email" autoComplete="email" type="email"
               value={email}
@@ -57,8 +60,7 @@ export default function LoginPage({initialNext}:{initialNext:string;initialCompa
 
           <div>
             <label htmlFor="login-password" className="text-sm font-semibold text-[#07111F]">
-              Palavra-passe
-            </label>
+              <LText text={"Palavra-passe"} /></label>
             <input
               id="login-password" autoComplete="current-password" type="password"
               value={password}
@@ -72,12 +74,12 @@ export default function LoginPage({initialNext}:{initialNext:string;initialCompa
             disabled={busy} type="submit"
             className="w-full rounded-full bg-[#07111F] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
           >
-            {busy ? "A entrar…" : "Entrar"}
+            <LText text={busy ? "A entrar…" : "Entrar"} />
           </button>
         </form>
-        <Link href="/recuperar-acesso" className="mt-5 block text-center text-sm font-semibold text-blue-700">Esqueceste-te da palavra-passe?</Link>
-        <Link href={`/registo${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-4 block text-center text-sm underline">Ainda não tens conta? Criar conta</Link>
-        <Link href="/auth/confirm" className="mt-6 block text-center text-sm font-semibold text-[#1683FF]">Precisas de confirmar o email ou pedir um novo link?</Link>
+        <Link href="/recuperar-acesso" className="mt-5 block text-center text-sm font-semibold text-blue-700"><LText text={"Esqueceste-te da palavra-passe?"} /></Link>
+        <Link href={`/registo${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-4 block text-center text-sm underline"><LText text={"Ainda não tens conta? Criar conta"} /></Link>
+        <Link href="/auth/confirm" className="mt-6 block text-center text-sm font-semibold text-[#1683FF]"><LText text={"Precisas de confirmar o email ou pedir um novo link?"} /></Link>
       </div>
     </main>
   );

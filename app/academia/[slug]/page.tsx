@@ -1,3 +1,5 @@
+import { getLocale, getT } from "@/lib/i18n/server";
+import { localizedPath } from "@/lib/i18n/config";
 import { notFound } from "next/navigation";
 import { getPublicPost } from "@/lib/public-content";
 import { serializeStructuredData } from "@/lib/job-schema";
@@ -12,6 +14,7 @@ export async function generateMetadata({params}:Props) {
 }
 export default async function Page({params}:Props) {
  const {slug}=await params; const post=await getPublicPost(slug); if (!post) notFound();
- const article={"@context":"https://schema.org","@type":"Article",headline:post.title,description:post.excerpt,mainEntityOfPage:`${SITE_URL}/academia/${slug}`,...(post.published_at?{datePublished:post.published_at}:{})};
+ const locale=await getLocale(); const t=await getT();
+ const article={"@context":"https://schema.org","@type":"Article",headline:t(post.title),description:t(post.excerpt),inLanguage:locale,mainEntityOfPage:`${SITE_URL}${localizedPath(`/academia/${slug}`,locale)}`,...(post.published_at?{datePublished:post.published_at}:{})};
  return <><script type="application/ld+json" dangerouslySetInnerHTML={{__html:serializeStructuredData(article)}}/><ArticleClient key={slug} params={params} initialPost={post as AcademyPost} /></>;
 }

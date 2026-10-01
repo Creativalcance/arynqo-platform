@@ -1,8 +1,12 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -83,7 +87,7 @@ export default function AdminAcademiaPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -130,7 +134,7 @@ export default function AdminAcademiaPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setPosts([]);
       return;
     }
@@ -166,7 +170,7 @@ export default function AdminAcademiaPage() {
       const accessToken = sessionData.session?.access_token;
 
       if (!accessToken) {
-        window.location.href = "/login";
+        window.location.href = browserLocalizedPath("/login");
         return;
       }
 
@@ -191,7 +195,7 @@ export default function AdminAcademiaPage() {
       };
 
       if (!response.ok || !data.success || !data.post) {
-        alert(data.error || "Não foi possível gerar o artigo.");
+        localizedAlert(data.error || "Não foi possível gerar o artigo.");
         setIsGenerating(false);
         return;
       }
@@ -200,10 +204,10 @@ export default function AdminAcademiaPage() {
       selectPost(data.post);
       setTopic("");
 
-      alert("Artigo gerado como rascunho. Revê antes de publicar.");
+      localizedAlert("Artigo gerado como rascunho. Revê antes de publicar.");
     } catch (error) {
       console.error(error);
-      alert("Erro ao gerar artigo com IA.");
+      localizedAlert("Erro ao gerar artigo com IA.");
     }
 
     setIsGenerating(false);
@@ -244,12 +248,12 @@ export default function AdminAcademiaPage() {
     setIsSaving(false);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
     await loadPosts();
-    alert("Artigo guardado com sucesso.");
+    localizedAlert("Artigo guardado com sucesso.");
   }
 
   async function quickUpdateStatus(nextStatus: AcademyPostStatus) {
@@ -274,7 +278,7 @@ export default function AdminAcademiaPage() {
       .eq("id", selectedPostId);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -314,7 +318,7 @@ export default function AdminAcademiaPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar Academia Admin...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar Academia Admin..."} /></p>
       </main>
     );
   }
@@ -324,19 +328,16 @@ export default function AdminAcademiaPage() {
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-6">
         <section className="max-w-xl rounded-[32px] border border-[#DDE3EA] bg-white p-10 text-center shadow-sm">
           <h1 className="text-3xl font-black tracking-[-0.05em] text-[#07111F]">
-            Acesso reservado.
-          </h1>
+            <LText text={"Acesso reservado."} /></h1>
 
           <p className="mt-4 text-sm leading-6 text-slate-500">
-            Apenas administradores podem gerir artigos da Arynqo Academy.
-          </p>
+            <LText text={"Apenas administradores podem gerir artigos da Arynqo Academy."} /></p>
 
           <Link
             href="/dashboard"
             className="mt-6 inline-flex rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
           >
-            Voltar ao dashboard
-          </Link>
+            <LText text={"Voltar ao dashboard"} /></Link>
         </section>
       </main>
     );
@@ -353,45 +354,37 @@ export default function AdminAcademiaPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Admin Academia
-                </p>
+                  <LText text={"Admin Academia"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Gerir artigos.
-                </h1>
+                  <LText text={"Gerir artigos."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Gere conteúdos, cria rascunhos com IA, revê artigos e publica
-                  recursos na Arynqo Academy.
-                </p>
+                  <LText text={"Gere conteúdos, cria rascunhos com IA, revê artigos e publica recursos na Arynqo Academy."} /></p>
               </div>
 
               <Link
                 href="/academia"
                 className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
               >
-                Ver Academia
-              </Link>
+                <LText text={"Ver Academia"} /></Link>
             </div>
           </div>
         </section>
 
         <section className="mb-8 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            Geração IA
-          </p>
+            <LText text={"Geração IA"} /></p>
 
           <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-            Criar novo artigo
-          </h2>
+            <LText text={"Criar novo artigo"} /></h2>
 
           <div className="mt-6 grid gap-5 md:grid-cols-[1fr_220px_180px]">
             <div>
               <label className="text-sm font-semibold">
-                Tema específico opcional
-              </label>
+                <LText text={"Tema específico opcional"} /></label>
 
-              <input
+              <LElement as="input"
                 value={topic}
                 onChange={(event) => setTopic(event.target.value)}
                 placeholder="Ex: Como criar um CV para sistemas ATS"
@@ -400,7 +393,7 @@ export default function AdminAcademiaPage() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold">Categoria</label>
+              <label className="text-sm font-semibold"><LText text={"Categoria"} /></label>
 
               <select
                 value={category}
@@ -409,14 +402,14 @@ export default function AdminAcademiaPage() {
               >
                 {categories.map((item) => (
                   <option key={item} value={item}>
-                    {item}
+                    <LText text={item} />
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-sm font-semibold">Público</label>
+              <label className="text-sm font-semibold"><LText text={"Público"} /></label>
 
               <select
                 value={audience}
@@ -429,7 +422,7 @@ export default function AdminAcademiaPage() {
               >
                 {audiences.map((item) => (
                   <option key={item} value={item}>
-                    {item}
+                    <LText text={item} />
                   </option>
                 ))}
               </select>
@@ -443,7 +436,7 @@ export default function AdminAcademiaPage() {
               disabled={isGenerating}
               className="rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isGenerating ? "A gerar..." : "Gerar artigo com IA"}
+              <LText text={isGenerating ? "A gerar..." : "Gerar artigo com IA"} />
             </button>
 
             <button
@@ -452,8 +445,7 @@ export default function AdminAcademiaPage() {
               disabled={isGenerating}
               className="rounded-full border border-[#DDE3EA] bg-white px-6 py-3 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Gerar com trend sugerida
-            </button>
+              <LText text={"Gerar com trend sugerida"} /></button>
           </div>
         </section>
 
@@ -461,12 +453,10 @@ export default function AdminAcademiaPage() {
           <aside className="rounded-[32px] border border-[#DDE3EA] bg-white p-4 shadow-[0_24px_80px_rgba(7,17,31,0.06)] lg:sticky lg:top-32 lg:self-start">
             <div className="mb-4 px-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Artigos
-              </p>
+                <LText text={"Artigos"} /></p>
 
               <h2 className="mt-2 text-xl font-semibold tracking-[-0.04em]">
-                {posts.length} artigos
-              </h2>
+                {posts.length} <LText text={" artigos"} /></h2>
             </div>
 
             <div className="space-y-3">
@@ -487,21 +477,21 @@ export default function AdminAcademiaPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="line-clamp-2 text-sm font-semibold text-[#07111F]">
-                          {post.title}
+                          <LText text={post.title} />
                         </p>
 
                         <p className="mt-2 text-xs text-slate-500">
-                          {post.category} · {post.reading_time}
+                          <LText text={post.category} /> · <LText text={post.reading_time} />
                         </p>
                       </div>
 
                       <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-500">
-                        {getStatusLabel(post.status)}
+                        <LText text={getStatusLabel(post.status)} />
                       </span>
                     </div>
 
                     <p className="mt-3 text-[11px] font-medium text-[#1683FF]">
-                      {getSourceLabel(post.source_type)}
+                      <LText text={getSourceLabel(post.source_type)} />
                     </p>
                   </button>
                 );
@@ -510,8 +500,7 @@ export default function AdminAcademiaPage() {
               {posts.length === 0 && (
                 <div className="rounded-[24px] border border-dashed border-[#DDE3EA] p-6 text-center">
                   <p className="text-sm text-slate-500">
-                    Ainda não existem artigos.
-                  </p>
+                    <LText text={"Ainda não existem artigos."} /></p>
                 </div>
               )}
             </div>
@@ -523,12 +512,10 @@ export default function AdminAcademiaPage() {
                 <div className="mb-8 flex flex-wrap items-start justify-between gap-5">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                      Editor
-                    </p>
+                      <LText text={"Editor"} /></p>
 
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                      Editar artigo
-                    </h2>
+                      <LText text={"Editar artigo"} /></h2>
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -538,8 +525,7 @@ export default function AdminAcademiaPage() {
                         onClick={() => quickUpdateStatus("published")}
                         className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F]"
                       >
-                        Publicar
-                      </button>
+                        <LText text={"Publicar"} /></button>
                     )}
 
                     {status !== "archived" && (
@@ -548,8 +534,7 @@ export default function AdminAcademiaPage() {
                         onClick={() => quickUpdateStatus("archived")}
                         className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-red-400 hover:text-red-600"
                       >
-                        Arquivar
-                      </button>
+                        <LText text={"Arquivar"} /></button>
                     )}
 
                     <button
@@ -558,14 +543,14 @@ export default function AdminAcademiaPage() {
                       disabled={isSaving}
                       className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isSaving ? "A guardar..." : "Guardar"}
+                      <LText text={isSaving ? "A guardar..." : "Guardar"} />
                     </button>
                   </div>
                 </div>
 
                 <div className="grid gap-5">
                   <div>
-                    <label className="text-sm font-semibold">Título</label>
+                    <label className="text-sm font-semibold"><LText text={"Título"} /></label>
                     <input
                       value={title}
                       onChange={(event) => setTitle(event.target.value)}
@@ -574,7 +559,7 @@ export default function AdminAcademiaPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold">Slug</label>
+                    <label className="text-sm font-semibold"><LText text={"Slug"} /></label>
                     <input
                       value={slug}
                       onChange={(event) => setSlug(event.target.value)}
@@ -583,7 +568,7 @@ export default function AdminAcademiaPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold">Resumo</label>
+                    <label className="text-sm font-semibold"><LText text={"Resumo"} /></label>
                     <textarea
                       value={excerpt}
                       onChange={(event) => setExcerpt(event.target.value)}
@@ -594,7 +579,7 @@ export default function AdminAcademiaPage() {
 
                   <div className="grid gap-5 md:grid-cols-4">
                     <div>
-                      <label className="text-sm font-semibold">Categoria</label>
+                      <label className="text-sm font-semibold"><LText text={"Categoria"} /></label>
                       <select
                         value={editCategory}
                         onChange={(event) => setEditCategory(event.target.value)}
@@ -602,14 +587,14 @@ export default function AdminAcademiaPage() {
                       >
                         {categories.map((item) => (
                           <option key={item} value={item}>
-                            {item}
+                            <LText text={item} />
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Público</label>
+                      <label className="text-sm font-semibold"><LText text={"Público"} /></label>
                       <select
                         value={editAudience}
                         onChange={(event) =>
@@ -624,14 +609,14 @@ export default function AdminAcademiaPage() {
                       >
                         {audiences.map((item) => (
                           <option key={item} value={item}>
-                            {item}
+                            <LText text={item} />
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Leitura</label>
+                      <label className="text-sm font-semibold"><LText text={"Leitura"} /></label>
                       <input
                         value={readingTime}
                         onChange={(event) => setReadingTime(event.target.value)}
@@ -640,7 +625,7 @@ export default function AdminAcademiaPage() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Estado</label>
+                      <label className="text-sm font-semibold"><LText text={"Estado"} /></label>
                       <select
                         value={status}
                         onChange={(event) =>
@@ -648,16 +633,15 @@ export default function AdminAcademiaPage() {
                         }
                         className={inputClass}
                       >
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                        <option value="archived">Arquivado</option>
+                        <option value="draft"><LText text={"Rascunho"} /></option>
+                        <option value="published"><LText text={"Publicado"} /></option>
+                        <option value="archived"><LText text={"Arquivado"} /></option>
                       </select>
                     </div>
                   </div>
 
                   <label className="flex items-center justify-between rounded-2xl border border-[#DDE3EA] p-4 text-sm font-semibold">
-                    Artigo em destaque
-                    <input
+                    <LText text={"Artigo em destaque"} /><input
                       type="checkbox"
                       checked={featured}
                       onChange={(event) => setFeatured(event.target.checked)}
@@ -665,7 +649,7 @@ export default function AdminAcademiaPage() {
                   </label>
 
                   <div>
-                    <label className="text-sm font-semibold">Conteúdo</label>
+                    <label className="text-sm font-semibold"><LText text={"Conteúdo"} /></label>
                     <textarea
                       value={content}
                       onChange={(event) => setContent(event.target.value)}
@@ -675,7 +659,7 @@ export default function AdminAcademiaPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold">SEO title</label>
+                    <label className="text-sm font-semibold"><LText text={"SEO title"} /></label>
                     <input
                       value={seoTitle}
                       onChange={(event) => setSeoTitle(event.target.value)}
@@ -685,8 +669,7 @@ export default function AdminAcademiaPage() {
 
                   <div>
                     <label className="text-sm font-semibold">
-                      SEO description
-                    </label>
+                      <LText text={"SEO description"} /></label>
                     <textarea
                       value={seoDescription}
                       onChange={(event) =>
@@ -701,13 +684,10 @@ export default function AdminAcademiaPage() {
             ) : (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] p-12 text-center">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                  Seleciona ou gera um artigo.
-                </h2>
+                  <LText text={"Seleciona ou gera um artigo."} /></h2>
 
                 <p className="mt-3 text-sm text-slate-500">
-                  Os artigos gerados pela IA aparecem como rascunho para
-                  revisão antes da publicação.
-                </p>
+                  <LText text={"Os artigos gerados pela IA aparecem como rascunho para revisão antes da publicação."} /></p>
               </div>
             )}
           </section>

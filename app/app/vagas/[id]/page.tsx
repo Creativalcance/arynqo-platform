@@ -1,8 +1,11 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
@@ -49,7 +52,7 @@ function ScoreItem({
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-white/58">{label}</p>
+        <p className="text-sm text-white/58"><LText text={label} /></p>
         <p className="text-sm font-semibold text-cyan-200">{safeValue}%</p>
       </div>
 
@@ -86,13 +89,13 @@ function TagList({
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-        {title}
+        <LText text={title} />
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item) => (
           <span key={item} className={className}>
-            {item}
+            <LText text={item} />
           </span>
         ))}
       </div>
@@ -281,7 +284,7 @@ export default function AppVagaDetailPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -324,7 +327,7 @@ export default function AppVagaDetailPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -392,23 +395,19 @@ export default function AppVagaDetailPage() {
       <main className="min-h-screen bg-[#050816] text-white">
         <section className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-6 pb-28">
           <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            Vaga não encontrada
-          </h1>
+            <LText text={"Vaga não encontrada"} /></h1>
 
           <p className="mt-4 text-sm leading-6 text-white/60">
-            Esta oportunidade já não está disponível ou não está ativa.
-          </p>
+            <LText text={"Esta oportunidade já não está disponível ou não está ativa."} /></p>
 
           <Link
             href="/app/vagas"
             className="mt-8 rounded-2xl bg-cyan-300 px-5 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
           >
-            Voltar às vagas
-          </Link>
+            <LText text={"Voltar às vagas"} /></Link>
         </section>
 
         <MobileBottomNav />
@@ -427,12 +426,10 @@ export default function AppVagaDetailPage() {
             href="/app/vagas"
             className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
           >
-            ← Voltar às vagas
-          </Link>
+            <LText text={"← Voltar às vagas"} /></Link>
 
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             {job.title}
@@ -444,7 +441,7 @@ export default function AppVagaDetailPage() {
         {statusMessage && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-sm leading-6 text-cyan-100/85">
-              {statusMessage}
+              <LText text={statusMessage} />
             </p>
           </section>
         )}
@@ -452,7 +449,7 @@ export default function AppVagaDetailPage() {
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-cyan-950/30">
           <div className="flex items-start justify-between gap-5">
             <div>
-              <p className="text-sm text-white/60">Compatibilidade</p>
+              <p className="text-sm text-white/60"><LText text={"Compatibilidade"} /></p>
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">
@@ -471,7 +468,7 @@ export default function AppVagaDetailPage() {
               disabled={isGeneratingMatch || !studentProfile}
               className="rounded-2xl bg-cyan-400/10 px-3 py-2 text-center text-xs font-semibold text-cyan-100 transition hover:bg-cyan-400/15 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isGeneratingMatch ? "A calcular..." : "Calcular match"}
+              <LText text={isGeneratingMatch ? "A calcular..." : "Calcular match"} />
             </button>
           </div>
 
@@ -484,42 +481,39 @@ export default function AppVagaDetailPage() {
 
           {!studentProfile && (
             <p className="mt-4 text-sm leading-6 text-white/55">
-              Entra como candidato/profissional para calcular o teu match com
-              esta vaga.
-            </p>
+              <LText text={"Entra como candidato/profissional para calcular o teu match com esta vaga."} /></p>
           )}
         </section>
 
         <section className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-            <p className="text-xs text-white/40">Área</p>
+            <p className="text-xs text-white/40"><LText text={"Área"} /></p>
             <p className="mt-1 text-sm font-medium">
-              {job.area || "Não definida"}
+              <LText text={job.area || "Não definida"} />
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-            <p className="text-xs text-white/40">Modelo</p>
+            <p className="text-xs text-white/40"><LText text={"Modelo"} /></p>
             <p className="mt-1 text-sm font-medium">
-              {job.rawWorkModel || job.model}
+              <LText text={job.rawWorkModel || job.model} />
             </p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-            <p className="text-xs text-white/40">Tipo</p>
-            <p className="mt-1 text-sm font-medium">{job.type}</p>
+            <p className="text-xs text-white/40"><LText text={"Tipo"} /></p>
+            <p className="mt-1 text-sm font-medium"><LText text={job.type} /></p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-            <p className="text-xs text-white/40">Localização</p>
+            <p className="text-xs text-white/40"><LText text={"Localização"} /></p>
             <p className="mt-1 text-sm font-medium">{job.location}</p>
           </div>
         </section>
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-            Descrição
-          </p>
+            <LText text={"Descrição"} /></p>
 
           <p className="mt-3 whitespace-pre-line text-sm leading-6 text-white/65">
             {job.description}
@@ -529,11 +523,10 @@ export default function AppVagaDetailPage() {
         {job.candidatePitch && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-100/60">
-              Enquadramento da vaga
-            </p>
+              <LText text={"Enquadramento da vaga"} /></p>
 
             <p className="mt-3 whitespace-pre-line text-sm leading-6 text-white/65">
-              {job.candidatePitch}
+              <LText text={job.candidatePitch} />
             </p>
           </section>
         )}
@@ -541,11 +534,10 @@ export default function AppVagaDetailPage() {
         {aiMatch?.ai_reason && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-100/60">
-              Leitura IA
-            </p>
+              <LText text={"Leitura IA"} /></p>
 
             <p className="mt-3 text-sm leading-6 text-white/65">
-              {aiMatch.ai_reason}
+              <LText text={aiMatch.ai_reason} />
             </p>
           </section>
         )}
@@ -599,13 +591,12 @@ export default function AppVagaDetailPage() {
         {job.companyProfile && (
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-              Empresa
-            </p>
+              <LText text={"Empresa"} /></p>
 
             <div className="mt-4 flex items-center gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/10 text-xl font-semibold">
                 {job.companyProfile.logo_url ? (
-                  <img
+                  <LElement as="img"
                     src={job.companyProfile.logo_url}
                     alt={job.company}
                     className="h-full w-full object-cover"
@@ -619,9 +610,9 @@ export default function AppVagaDetailPage() {
                 <p className="text-base font-semibold">{job.company}</p>
 
                 <p className="mt-1 text-sm text-white/50">
-                  {job.companyProfile.industry ||
+                  <LText text={job.companyProfile.industry ||
                     job.companyProfile.location ||
-                    "Empresa ARYNQO"}
+                    "Empresa ARYNQO"} />
                 </p>
               </div>
             </div>
@@ -635,7 +626,7 @@ export default function AppVagaDetailPage() {
             disabled={isApplying}
             className="w-full rounded-2xl bg-cyan-300 px-4 py-3 text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isApplying ? "A candidatar..." : "Candidatar-me"}
+            <LText text={isApplying ? "A candidatar..." : "Candidatar-me"} />
           </button>
 
           <button
@@ -644,11 +635,11 @@ export default function AppVagaDetailPage() {
             disabled={isSavingJob}
             className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSavingJob
+            <LText text={isSavingJob
               ? "A guardar..."
               : savedJobId
                 ? "Remover dos favoritos"
-                : "Guardar vaga"}
+                : "Guardar vaga"} />
           </button>
         </section>
 

@@ -6,9 +6,9 @@ export function csvCell(value: unknown): string {
         text = "'" + text;
     return '"' + text.replaceAll('"', '""') + '"';
 }
-export function csv(rows: AdminRow[], fields?: string[]): string {
+export function csv(rows: AdminRow[], fields?: string[], translate: (source: string) => string = source => source): string {
     const columns = fields || Array.from(new Set(rows.flatMap(row => Object.keys(row))));
-    return '\uFEFF' + [columns.map(x => csvCell(labelFor(x))).join(';'), ...rows.map(row => columns.map(x => csvCell(row[x])).join(';'))].join('\r\n') + '\r\n';
+    return '\uFEFF' + [columns.map(x => csvCell(translate(labelFor(x)))).join(';'), ...rows.map(row => columns.map(x => csvCell(row[x])).join(';'))].join('\r\n') + '\r\n';
 }
 // ZIP format, stored entries. No executable files or caller-controlled filenames.
 function crc32(data: Buffer) { let n = 0xffffffff; for (const b of data) {

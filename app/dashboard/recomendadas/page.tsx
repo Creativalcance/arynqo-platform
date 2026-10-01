@@ -1,4 +1,8 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -45,7 +49,7 @@ export default function VagasRecomendadasPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -58,8 +62,8 @@ export default function VagasRecomendadasPage() {
       .single();
 
     if (!studentProfile) {
-      alert("Apenas estudantes podem ver recomendações.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas estudantes podem ver recomendações.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -77,7 +81,7 @@ export default function VagasRecomendadasPage() {
         .eq("student_id", studentProfile.id);
 
     if (studentSkillsError) {
-      alert(studentSkillsError.message);
+      localizedAlert(studentSkillsError.message);
       setIsLoading(false);
       return;
     }
@@ -123,7 +127,7 @@ export default function VagasRecomendadasPage() {
       .in("skill_id", studentSkillIds);
 
     if (jobSkillsError) {
-      alert(jobSkillsError.message);
+      localizedAlert(jobSkillsError.message);
       setIsLoading(false);
       return;
     }
@@ -163,7 +167,7 @@ export default function VagasRecomendadasPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <p>A carregar recomendações...</p>
+        <p><LText text={"A carregar recomendações..."} /></p>
       </main>
     );
   }
@@ -172,21 +176,18 @@ export default function VagasRecomendadasPage() {
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10">
-          <p className="text-sm text-neutral-500">Dashboard</p>
+          <p className="text-sm text-neutral-500"><LText text={"Dashboard"} /></p>
 
           <h1 className="text-4xl font-bold tracking-tight">
-            Vagas recomendadas
-          </h1>
+            <LText text={"Vagas recomendadas"} /></h1>
 
           <p className="mt-3 max-w-2xl text-neutral-600">
-            Recomendações geradas com base nas skills que adicionaste ao teu
-            perfil.
-          </p>
+            <LText text={"Recomendações geradas com base nas skills que adicionaste ao teu perfil."} /></p>
         </div>
 
         {studentSkills.length > 0 && (
           <section className="mb-8 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold">As tuas skills</h2>
+            <h2 className="text-xl font-semibold"><LText text={"As tuas skills"} /></h2>
 
             <div className="mt-4 flex flex-wrap gap-3">
               {studentSkills.map((skill) => (
@@ -194,7 +195,7 @@ export default function VagasRecomendadasPage() {
                   key={skill.id}
                   className="rounded-full border border-neutral-300 px-4 py-2 text-sm"
                 >
-                  {skill.name}
+                  <LText text={skill.name} />
                 </span>
               ))}
             </div>
@@ -209,21 +210,19 @@ export default function VagasRecomendadasPage() {
             >
               <div className="flex flex-wrap gap-3">
                 <span className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white">
-                  {job.matchedSkills.length} skill
-                  {job.matchedSkills.length === 1 ? "" : "s"} em comum
+                  {job.matchedSkills.length} <LText text={" skill"} /><LText text={job.matchedSkills.length === 1 ? "" : "s"} /> <LText text={" em comum"} /></span>
+
+                <span className="rounded-full bg-neutral-100 px-4 py-2 text-sm">
+                  <LText text={job.area} />
                 </span>
 
                 <span className="rounded-full bg-neutral-100 px-4 py-2 text-sm">
-                  {job.area}
-                </span>
-
-                <span className="rounded-full bg-neutral-100 px-4 py-2 text-sm">
-                  {job.work_mode}
+                  <LText text={job.work_mode} />
                 </span>
 
                 {job.contract_type && (
                   <span className="rounded-full bg-neutral-100 px-4 py-2 text-sm">
-                    {job.contract_type}
+                    <LText text={job.contract_type} />
                   </span>
                 )}
               </div>
@@ -234,8 +233,7 @@ export default function VagasRecomendadasPage() {
 
               <div className="mt-5">
                 <p className="text-sm font-medium text-neutral-500">
-                  Skills correspondentes
-                </p>
+                  <LText text={"Skills correspondentes"} /></p>
 
                 <div className="mt-3 flex flex-wrap gap-3">
                   {job.matchedSkills.map((skill) => (
@@ -243,7 +241,7 @@ export default function VagasRecomendadasPage() {
                       key={skill.id}
                       className="rounded-full border border-neutral-300 px-4 py-2 text-sm"
                     >
-                      {skill.name}
+                      <LText text={skill.name} />
                     </span>
                   ))}
                 </div>
@@ -253,42 +251,37 @@ export default function VagasRecomendadasPage() {
                 {job.description}
               </p>
 
-              <a
+              <LElement as="a"
                 href={`/vagas/${job.id}`}
                 className="mt-7 inline-flex rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-neutral-800"
               >
-                Ver vaga
-              </a>
+                <LText text={"Ver vaga"} /></LElement>
             </article>
           ))}
 
           {studentSkills.length === 0 && (
             <div className="rounded-3xl border border-dashed border-neutral-300 bg-white p-12 text-center">
               <p className="text-lg text-neutral-500">
-                Ainda não tens skills no teu perfil.
-              </p>
+                <LText text={"Ainda não tens skills no teu perfil."} /></p>
 
-              <a
+              <LElement as="a"
                 href="/dashboard/perfil"
                 className="mt-6 inline-flex rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-neutral-800"
               >
-                Adicionar skills
-              </a>
+                <LText text={"Adicionar skills"} /></LElement>
             </div>
           )}
 
           {studentSkills.length > 0 && recommendedJobs.length === 0 && (
             <div className="rounded-3xl border border-dashed border-neutral-300 bg-white p-12 text-center">
               <p className="text-lg text-neutral-500">
-                Ainda não encontrámos vagas compatíveis com as tuas skills.
-              </p>
+                <LText text={"Ainda não encontrámos vagas compatíveis com as tuas skills."} /></p>
 
-              <a
+              <LElement as="a"
                 href="/vagas"
                 className="mt-6 inline-flex rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-neutral-800"
               >
-                Ver todas as vagas
-              </a>
+                <LText text={"Ver todas as vagas"} /></LElement>
             </div>
           )}
         </div>

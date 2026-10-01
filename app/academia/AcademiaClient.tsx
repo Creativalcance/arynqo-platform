@@ -1,6 +1,8 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -89,7 +91,7 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar Arynqo Academy...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar Arynqo Academy..."} /></p>
       </main>
     );
   }
@@ -102,31 +104,26 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
 
         <div className="relative mx-auto max-w-7xl px-6 py-20 text-center lg:px-12">
           <p className="mx-auto inline-flex rounded-full border border-[#1683FF]/15 bg-[#1683FF]/5 px-5 py-2 text-sm font-semibold text-[#1683FF]">
-            Arynqo Academy
-          </p>
+            <LText text={"Arynqo Academy"} /></p>
 
           <h1 className="mx-auto mt-8 max-w-5xl text-5xl font-black leading-[0.95] tracking-[-0.06em] text-[#07111F] md:text-7xl">
-            Aprende a candidatar-te melhor.
-          </h1>
+            <LText text={"Aprende a candidatar-te melhor."} /></h1>
 
           <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-600 md:text-xl">
-            Guias, dicas e recursos para melhorares o teu CV, preparares
-            candidaturas, evoluíres profissionalmente e acompanhares Tendências de Recrutamento.
-          </p>
+            <LText text={"Guias, dicas e recursos para melhorares o teu CV, preparares candidaturas, evoluíres profissionalmente e acompanhares Tendências de Recrutamento."} /></p>
 
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="#artigos"
               className="rounded-full bg-[#07111F] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
             >
-              Explorar artigos
-            </Link>
+              <LText text={"Explorar artigos"} /></Link>
 
             <Link
               href={isAuthenticated ? "/dashboard" : "/registo"}
               className="rounded-full border border-[#DDE3EA] bg-white px-8 py-4 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
             >
-              {isAuthenticated ? "Ir para dashboard" : "Criar conta"}
+              <LText text={isAuthenticated ? "Ir para dashboard" : "Criar conta"} />
             </Link>
           </div>
         </div>
@@ -136,12 +133,10 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
         <section className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1683FF]">
-              Em destaque
-            </p>
+              <LText text={"Em destaque"} /></p>
 
             <h2 className="mt-3 text-4xl font-black tracking-[-0.05em]">
-              Começa por aqui
-            </h2>
+              <LText text={"Começa por aqui"} /></h2>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -158,12 +153,10 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
       >
         <div className="mb-8 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.05)]">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#1683FF]">
-            Biblioteca
-          </p>
+            <LText text={"Biblioteca"} /></p>
 
           <h2 className="mt-3 text-4xl font-black tracking-[-0.05em]">
-            Artigos e recursos
-          </h2>
+            <LText text={"Artigos e recursos"} /></h2>
 
           <div className="mt-6 flex flex-wrap gap-3">
             {categories.map((category) => (
@@ -177,7 +170,7 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
                     : "border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF] hover:text-[#1683FF]"
                 }`}
               >
-                {category}
+                <LText text={category} />
               </button>
             ))}
           </div>
@@ -192,12 +185,10 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
         ) : (
           <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center">
             <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-              Ainda não existem artigos nesta categoria.
-            </h2>
+              <LText text={"Ainda não existem artigos nesta categoria."} /></h2>
 
             <p className="mt-3 text-sm text-slate-500">
-              Novos conteúdos serão publicados regularmente na Arynqo Academy.
-            </p>
+              <LText text={"Novos conteúdos serão publicados regularmente na Arynqo Academy."} /></p>
           </div>
         )}
       </section>
@@ -207,15 +198,14 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#4BB3FD]">
-                Próximo passo
-              </p>
+                <LText text={"Próximo passo"} /></p>
 
               <h2 className="mt-4 max-w-3xl text-4xl font-black tracking-[-0.05em] md:text-5xl">
-                {cta.title}
+                <LText text={cta.title} />
               </h2>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">
-                {cta.text}
+                <LText text={cta.text} />
               </p>
             </div>
 
@@ -223,7 +213,7 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
               href={cta.href}
               className="inline-flex justify-center rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
             >
-              {cta.label}
+              <LText text={cta.label} />
             </Link>
           </div>
         </div>
@@ -240,27 +230,26 @@ function FeaturedArticleCard({ post }: { post: AcademyPost }) {
     >
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-[#4BB3FD]">
-          {post.category}
+          <LText text={post.category} />
         </span>
 
         <span className="rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-white/70">
-          {post.reading_time}
+          <LText text={post.reading_time} />
         </span>
 
         <span className="rounded-full bg-white/10 px-4 py-2 text-xs font-semibold text-white/70">
-          {post.audience}
+          <LText text={post.audience} />
         </span>
       </div>
 
       <h3 className="mt-8 text-3xl font-black tracking-[-0.04em]">
-        {post.title}
+        <LText text={post.title} />
       </h3>
 
-      <p className="mt-4 text-sm leading-6 text-white/65">{post.excerpt}</p>
+      <p className="mt-4 text-sm leading-6 text-white/65"><LText text={post.excerpt} /></p>
 
       <div className="mt-8 inline-flex text-sm font-semibold text-white transition group-hover:text-[#4BB3FD]">
-        Ler artigo →
-      </div>
+        <LText text={"Ler artigo →"} /></div>
     </Link>
   );
 }
@@ -273,26 +262,26 @@ function ArticleCard({ post }: { post: AcademyPost }) {
     >
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full bg-[#1683FF]/5 px-4 py-2 text-xs font-semibold text-[#1683FF]">
-          {post.category}
+          <LText text={post.category} />
         </span>
 
         <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-500">
-          {post.reading_time}
+          <LText text={post.reading_time} />
         </span>
       </div>
 
       <h3 className="mt-6 text-2xl font-black tracking-[-0.04em] text-[#07111F] transition group-hover:text-[#1683FF]">
-        {post.title}
+        <LText text={post.title} />
       </h3>
 
-      <p className="mt-4 text-sm leading-6 text-slate-600">{post.excerpt}</p>
+      <p className="mt-4 text-sm leading-6 text-slate-600"><LText text={post.excerpt} /></p>
 
       <div className="mt-7 flex items-center justify-between">
         <span className="rounded-full border border-[#DDE3EA] px-4 py-2 text-xs font-semibold text-slate-500">
-          {post.audience}
+          <LText text={post.audience} />
         </span>
 
-        <span className="text-sm font-semibold text-[#1683FF]">Ler →</span>
+        <span className="text-sm font-semibold text-[#1683FF]"><LText text={"Ler →"} /></span>
       </div>
     </Link>
   );

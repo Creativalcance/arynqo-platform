@@ -1,5 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
+
+import { LText, LElement } from "@/lib/i18n/client";
+import Image from "@/lib/i18n/image";
+import Link from "@/lib/i18n/link";
 import { complaintsBookUrl, legalLinks } from "@/lib/legal-navigation";
 
 export default function Footer({ onManageCookies }: { onManageCookies: () => void }) {
@@ -18,68 +20,60 @@ export default function Footer({ onManageCookies }: { onManageCookies: () => voi
           </Link>
 
           <p className="mt-6 max-w-md leading-relaxed text-blue-100">
-            Plataforma inteligente de recrutamento e evolução profissional,
-            desenhada para ligar talento, estudantes e empresas.
-          </p>
+            <LText text={"Plataforma inteligente de recrutamento e evolução profissional, desenhada para ligar talento, estudantes e empresas."} /></p>
         </div>
 
         <div>
-          <h3 className="font-semibold text-white">Plataforma</h3>
+          <h3 className="font-semibold text-white"><LText text={"Plataforma"} /></h3>
 
           <div className="mt-5 grid gap-3 text-sm text-blue-100">
             <Link href="/vagas" className="hover:text-white">
-              Vagas
-            </Link>
+              <LText text={"Vagas"} /></Link>
 
             <Link href="/registo" className="hover:text-white">
-              Criar conta
-            </Link>
+              <LText text={"Criar conta"} /></Link>
 
             <Link href="/login" className="hover:text-white">
-              Entrar
-            </Link>
+              <LText text={"Entrar"} /></Link>
           </div>
         </div>
 
         <div>
-          <h3 className="font-semibold text-white">ARYNQO</h3>
+          <h3 className="font-semibold text-white"><LText text={"ARYNQO"} /></h3>
 
           <div className="mt-5 grid gap-3 text-sm text-blue-100">
-            <span>Estudantes</span>
-            <span>Empresas</span>
-            <span>Candidaturas</span>
-            <span>Matching inteligente</span>
+            <span><LText text={"Estudantes"} /></span>
+            <span><LText text={"Empresas"} /></span>
+            <span><LText text={"Candidaturas"} /></span>
+            <span><LText text={"Matching inteligente"} /></span>
           </div>
         </div>
       </div>
 
       <div className="border-t border-white/10 px-6 py-6">
-        <nav aria-label="Informação legal" className="mx-auto mb-6 flex max-w-7xl flex-wrap justify-center gap-x-7 gap-y-4 text-sm text-blue-100 md:justify-start">
+        <LElement as="nav" aria-label="Informação legal" className="mx-auto mb-6 flex max-w-7xl flex-wrap justify-center gap-x-7 gap-y-4 text-sm text-blue-100 md:justify-start">
           {legalLinks.map(link => (
             <Link key={link.href} href={link.href} className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-              {link.title}
+              <LText text={link.title} />
             </Link>
           ))}
-          <a href={complaintsBookUrl} target="_blank" rel="noopener noreferrer" className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-            Livro de Reclamações<span className="sr-only"> (abre num novo separador)</span>
-          </a>
+          <LElement as="a" href={complaintsBookUrl} target="_blank" rel="noopener noreferrer" className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+            <LText text={"Livro de Reclamações"} /><span className="sr-only"> <LText text={" (abre num novo separador)"} /></span>
+          </LElement>
           <button type="button" onClick={onManageCookies} className="transition hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-            Gerir cookies
-          </button>
-        </nav>
+            <LText text={"Gerir cookies"} /></button>
+        </LElement>
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-center text-sm text-blue-100 md:flex-row">
           <p>
-            © {new Date().getFullYear()} ARYNQO. Todos os direitos reservados.
-          </p>
+            © {new Date().getFullYear()} <LText text={" ARYNQO. Todos os direitos reservados."} /></p>
 
-          <a
+          <LElement as="a"
             href="https://www.creativalcance.com"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium transition hover:text-white"
           >
-            Made by CreativAlcance
-          </a>
+            <LText text={"Made by CreativAlcance"} /></LElement>
         </div>
       </div>
     </footer>

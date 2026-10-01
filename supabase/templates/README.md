@@ -15,3 +15,13 @@ Se o erro ocorre ao enviar, verificar SMTP, remetente/domínio verificado, limit
 Os emails de notificação são enviados separadamente por Resend. `RESEND_API_KEY`, `NOTIFICATION_FROM_EMAIL` e `NEXT_PUBLIC_APP_URL` devem estar configurados no ambiente de produção, sem expor segredos no frontend. O domínio do remetente precisa de estar verificado no Resend. Não se certifica essa configuração apenas pela presença de código.
 
 Validar com destinatário de teste autorizado: receber um novo email, abrir o botão, confirmar, iniciar sessão; repetir o link para verificar a mensagem de utilização/expiração. Não copiar URLs com tokens para relatórios. Para notificações, usar um evento descartável válido e verificar preferências ativas/desativadas, rejeição do fornecedor e receção. `sent` significa aceitação pela API, não entrega à caixa de entrada. Não há webhook de entrega nem fila automática de retentativas neste âmbito.
+
+## Idiomas (2026-10-01)
+
+`confirmation.html` e `recovery.html` contêm seis versões: PT, EN, FR, ES, DE e IT, selecionadas por `.Data.locale`; valor ausente/inválido usa PT. Registo e alteração do idioma da conta atualizam o metadado Auth. Usar assunto neutro ARYNQO enquanto não for validado o suporte de templates no campo de assunto.
+
+Para ativar no Supabase hospedado, aplicar o HTML em **Confirm sign up** e **Reset password**, preservando SMTP e confirmação ativa. Acrescentar confirmação/recuperação/login das seis versões à lista de Redirect URLs (exemplo: `https://www.arynqo.com/en/auth/confirm`, `https://www.arynqo.com/en/auth/recuperar`, `https://www.arynqo.com/en/login`). Preservar destinos existentes. Ler novamente os valores e testar receção, abertura e conclusão com contas de teste por idioma. Confirmação mantém token no fragmento; recuperação usa `.ConfirmationURL`.
+
+**Estado:** templates preparados; aplicação/leitura da configuração Auth e receção por idioma por validar. O conector disponível não permite ler/escrever esta configuração. Nenhum email real foi enviado nesta alteração. Notificações da aplicação usam `profiles.locale` e são uma configuração separada.
+
+Gerar novamente com `node scripts/build-auth-email-templates.mjs`, depois de rever os catálogos; não traduzir variáveis Go/URLs/token.

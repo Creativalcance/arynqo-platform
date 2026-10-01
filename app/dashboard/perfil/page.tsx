@@ -1,4 +1,8 @@
 "use client";
+import { localizedAlert, localizedConfirm } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement, LocaleSelect } from "@/lib/i18n/client";
+
 
 import { CountrySelect, LanguagePicker, TagPicker } from "@/app/components/ProfileFields";
 import { splitTags } from "@/lib/profile-options";
@@ -914,7 +918,7 @@ professional_experience_items: professionalExperienceItems,
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -984,8 +988,8 @@ professional_experience_items,
       .single();
 
     if (error || !studentProfile) {
-      alert("Apenas estudantes podem editar este perfil.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas estudantes podem editar este perfil.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -1081,7 +1085,7 @@ setProfessionalExperienceItems(
   const { data: sessionData } = await supabase.auth.getSession();
 
   if (!sessionData.session) {
-    window.location.href = "/login";
+    window.location.href = browserLocalizedPath("/login");
     return;
   }
 
@@ -1094,7 +1098,7 @@ setProfessionalExperienceItems(
     .eq("id", userId);
 
   if (profileError) {
-    alert(profileError.message);
+    localizedAlert(profileError.message);
     return;
   }
 
@@ -1154,7 +1158,7 @@ professional_experience_items: professionalExperienceItems,
     .eq("user_id", userId);
 
   if (studentError) {
-    alert(studentError.message);
+    localizedAlert(studentError.message);
     return;
   }
 
@@ -1170,7 +1174,7 @@ professional_experience_items: professionalExperienceItems,
 
   await regenerateMatches(profileId);
 
-  alert("Perfil atualizado e matches recalculados com sucesso.");
+  localizedAlert("Perfil atualizado e matches recalculados com sucesso.");
 }
 
   async function handleRemoveSkill(skillId: string) {
@@ -1253,7 +1257,7 @@ professional_experience_items: professionalExperienceItems,
         .eq("id", profileId).eq("user_id", data.user.id).select("id").single();
       if (updateError) throw new Error("O ficheiro foi eliminado, mas não foi possível atualizar o perfil. Tenta novamente.");
       setCvUrl("");
-    } catch (error) { alert(error instanceof Error ? error.message : "Não foi possível eliminar o currículo."); }
+    } catch (error) { localizedAlert(error instanceof Error ? error.message : "Não foi possível eliminar o currículo."); }
     finally { setIsUploadingCV(false); }
   }
 
@@ -1266,7 +1270,7 @@ professional_experience_items: professionalExperienceItems,
 
     if (file.size === 0 || file.size > 10485760 || !/\.(pdf|docx)$/i.test(file.name)
       || !["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"].includes(file.type)) {
-      alert("Seleciona um PDF ou DOCX com até 10 MB."); return;
+      localizedAlert("Seleciona um PDF ou DOCX com até 10 MB."); return;
     }
     setIsUploadingCV(true);
 
@@ -1275,7 +1279,7 @@ professional_experience_items: professionalExperienceItems,
       const user = sessionData.session?.user;
 
       if (!user) {
-        window.location.href = "/login";
+        window.location.href = browserLocalizedPath("/login");
         return;
       }
 
@@ -1295,7 +1299,7 @@ professional_experience_items: professionalExperienceItems,
         });
 
       if (uploadError) {
-        alert(uploadError.message);
+        localizedAlert(uploadError.message);
         setIsUploadingCV(false);
         return;
       }
@@ -1312,7 +1316,7 @@ professional_experience_items: professionalExperienceItems,
         try {
           const old = cvStorageLocation(previousCV, user.id, process.env.NEXT_PUBLIC_SUPABASE_URL!);
           const { error: removeError } = await supabase.storage.from(old.bucket).remove([old.path]);
-          if (removeError) alert("O novo currículo foi guardado, mas não foi possível eliminar o ficheiro anterior.");
+          if (removeError) localizedAlert("O novo currículo foi guardado, mas não foi possível eliminar o ficheiro anterior.");
         } catch { /* Legacy external references are never fetched or deleted. */ }
       }
 
@@ -1327,7 +1331,7 @@ professional_experience_items: professionalExperienceItems,
       const aiData = (await response.json()) as AIProfileResponse;
 
       if (!response.ok) {
-        alert("O currículo foi guardado. " + (aiData.error || "Não foi possível preencher o perfil automaticamente."));
+        localizedAlert("O currículo foi guardado. " + (aiData.error || "Não foi possível preencher o perfil automaticamente."));
         setIsUploadingCV(false);
         return;
       }
@@ -1344,7 +1348,7 @@ professional_experience_items: professionalExperienceItems,
         .eq("user_id", user.id);
 
       if (updateProfileError) {
-        alert(updateProfileError.message);
+        localizedAlert(updateProfileError.message);
         setIsUploadingCV(false);
         return;
       }
@@ -1358,10 +1362,10 @@ professional_experience_items: professionalExperienceItems,
       }
 
       await regenerateMatches(profileId);
-      alert("CV importado e perfil preenchido com sucesso.");
+      localizedAlert("CV importado e perfil preenchido com sucesso.");
     } catch (error) {
       console.error(error);
-      alert("Erro ao processar CV.");
+      localizedAlert("Erro ao processar CV.");
     }
 
     setIsUploadingCV(false);
@@ -1378,7 +1382,7 @@ professional_experience_items: professionalExperienceItems,
   const user = sessionData.session?.user;
 
   if (!user) {
-    window.location.href = "/login";
+    window.location.href = browserLocalizedPath("/login");
     return;
   }
 
@@ -1394,7 +1398,7 @@ professional_experience_items: professionalExperienceItems,
     });
 
   if (uploadError) {
-    alert(uploadError.message);
+    localizedAlert(uploadError.message);
     return;
   }
 
@@ -1414,11 +1418,11 @@ professional_experience_items: professionalExperienceItems,
     .eq("id", profileId);
 
   if (updateError) {
-    alert(updateError.message);
+    localizedAlert(updateError.message);
     return;
   }
 
-  alert("Foto atualizada com sucesso.");
+  localizedAlert("Foto atualizada com sucesso.");
 }
 
 async function regenerateMatches(studentId: string) {
@@ -1437,7 +1441,7 @@ async function regenerateMatches(studentId: string) {
   }
 }
   async function handleGenerateAIProfile() {
-    if (!window.confirm("Apenas será melhorada a escrita; não será alterada a informação. A IA não deve acrescentar factos nem preencher campos vazios. Poderás rever a proposta antes de a aplicar.")) return;
+    if (!localizedConfirm("Apenas será melhorada a escrita; não será alterada a informação. A IA não deve acrescentar factos nem preencher campos vazios. Poderás rever a proposta antes de a aplicar.")) return;
     setIsGeneratingAIProfile(true);
 
     try {
@@ -1445,7 +1449,7 @@ async function regenerateMatches(studentId: string) {
       const user = sessionData.session?.user;
 
       if (!user) {
-        window.location.href = "/login";
+        window.location.href = browserLocalizedPath("/login");
         return;
       }
 
@@ -1460,7 +1464,7 @@ async function regenerateMatches(studentId: string) {
       const aiData = (await response.json()) as AIProfileResponse;
 
       if (!response.ok) {
-        alert(aiData.error || "Não foi possível melhorar perfil com IA.");
+        localizedAlert(aiData.error || "Não foi possível melhorar perfil com IA.");
         setIsGeneratingAIProfile(false);
         return;
       }
@@ -1469,16 +1473,16 @@ async function regenerateMatches(studentId: string) {
         ["Título profissional", aiData.headline], ["Apresentação", aiData.bio],
         ["Objetivos de carreira", aiData.career_goals], ["Resumo profissional", aiData.ai_summary],
       ].map(([label, text]) => `${label}:\n${text || "(sem alterações)"}`).join("\n\n");
-      if (window.confirm(`Revê a proposta de escrita antes de aplicar. Confirma que todos os factos estão corretos.\n\n${draft}\n\nAplicar ao formulário?`)) {
+      if (localizedConfirm(`Revê a proposta de escrita antes de aplicar. Confirma que todos os factos estão corretos.\n\n${draft}\n\nAplicar ao formulário?`)) {
         setHeadline(aiData.headline || headline);
         setBio(aiData.bio || bio);
         setCareerGoals(aiData.career_goals || careerGoals);
         setAiSummary(aiData.ai_summary || aiSummary);
-        alert("Proposta aplicada ao formulário. Revê os textos e guarda o perfil para confirmar.");
+        localizedAlert("Proposta aplicada ao formulário. Revê os textos e guarda o perfil para confirmar.");
       }
     } catch (error) {
       console.error(error);
-      alert("Erro ao melhorar perfil com IA.");
+      localizedAlert("Erro ao melhorar perfil com IA.");
     }
 
     setIsGeneratingAIProfile(false);
@@ -1570,8 +1574,7 @@ function getTrainingItems() {
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
         <div className="rounded-[32px] border border-white/70 bg-white/80 px-8 py-6 shadow-[0_24px_80px_rgba(7,17,31,0.08)] backdrop-blur">
           <p className="text-sm font-medium text-[#07111F]">
-            A carregar perfil...
-          </p>
+            <LText text={"A carregar perfil..."} /></p>
         </div>
       </main>
     );
@@ -1579,6 +1582,7 @@ function getTrainingItems() {
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
+      <LocaleSelect className="mx-auto mb-6 max-w-7xl" />
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 overflow-hidden rounded-[32px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
           <div className="relative px-8 py-10 md:px-10 md:py-12">
@@ -1588,25 +1592,20 @@ function getTrainingItems() {
             <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Perfil ARYNQO
-                </p>
+                  <LText text={"Perfil ARYNQO"} /></p>
 
                 <h1 className="max-w-3xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  O teu perfil profissional.
-                </h1>
+                  <LText text={"O teu perfil profissional."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Organiza o teu percurso por etapas, sem confusão visual, e
-                  transforma o teu CV em dados úteis para matching.
-                </p>
+                  <LText text={"Organiza o teu percurso por etapas, sem confusão visual, e transforma o teu CV em dados úteis para matching."} /></p>
               </div>
 
               <div className="grid gap-4">
                 <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-white/70">
-                      Perfil completo
-                    </p>
+                      <LText text={"Perfil completo"} /></p>
                     <p className="text-2xl font-semibold tracking-[-0.04em] text-white">
                       {profileCompletion}%
                     </p>
@@ -1622,14 +1621,14 @@ function getTrainingItems() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs text-white/50">Score</p>
+                    <p className="text-xs text-white/50"><LText text={"Score"} /></p>
                     <p className="mt-1 text-2xl font-semibold text-white">
                       {aiProfileScore}
                     </p>
                   </div>
 
                   <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <p className="text-xs text-white/50">Empregabilidade</p>
+                    <p className="text-xs text-white/50"><LText text={"Empregabilidade"} /></p>
                     <p className="mt-1 text-2xl font-semibold text-white">
                       {aiEmployabilityScore}
                     </p>
@@ -1645,7 +1644,7 @@ function getTrainingItems() {
             <div className="relative flex flex-col items-center text-center">
   <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-[28px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-4xl font-semibold text-white shadow-[0_20px_60px_rgba(22,131,255,0.25)]">
     {avatarUrl ? (
-      <img
+      <LElement as="img"
         src={avatarUrl}
         alt={name || "Foto de perfil"}
         className="h-full w-full object-cover"
@@ -1656,9 +1655,7 @@ function getTrainingItems() {
   </div>
 
   <label className="mt-4 cursor-pointer rounded-full border border-[#DDE3EA] bg-white px-4 py-2 text-xs font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]">
-    Alterar foto
-
-    <input
+    <LText text={"Alterar foto"} /><input
       type="file"
       accept="image/*"
       onChange={handleAvatarUpload}
@@ -1667,11 +1664,11 @@ function getTrainingItems() {
   </label>
 
   <h2 className="mt-5 text-xl font-semibold tracking-[-0.04em] text-[#07111F]">
-    {name || "O teu nome"}
+    {name || <LText text="O teu nome" />}
   </h2>
 
   <p className="mt-2 text-sm leading-6 text-slate-500">
-    {headline || "Título profissional"}
+    {headline || <LText text="Título profissional" />}
   </p>
 </div>
 
@@ -1692,14 +1689,14 @@ function getTrainingItems() {
                       }`}
                     >
                       <span className="block text-sm font-semibold">
-                        {tab.label}
+                        <LText text={tab.label} />
                       </span>
                       <span
                         className={`mt-1 block text-xs leading-5 ${
                           isActive ? "text-white/60" : "text-slate-400"
                         }`}
                       >
-                        {tab.description}
+                        <LText text={tab.description} />
                       </span>
                     </button>
                   );
@@ -1709,16 +1706,13 @@ function getTrainingItems() {
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Assistente IA
-              </h2>
+                <LText text={"Assistente IA"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                Importa o CV para preencher todos os campos ou melhora o perfil
-                completo com IA.
-              </p>
+                <LText text={"Importa o CV para preencher todos os campos ou melhora o perfil completo com IA."} /></p>
 
               <label className="mt-5 flex cursor-pointer items-center justify-center rounded-2xl bg-[#1683FF] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F]">
-                {isUploadingCV ? "A importar CV..." : "Importar CV com IA"}
+                <LText text={isUploadingCV ? "A importar CV..." : "Importar CV com IA"} />
 
                 <input
                   type="file"
@@ -1735,29 +1729,28 @@ function getTrainingItems() {
                 disabled={isGeneratingAIProfile}
                 className="mt-3 w-full rounded-2xl bg-[#07111F] px-5 py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isGeneratingAIProfile
+                <LText text={isGeneratingAIProfile
                   ? "A melhorar perfil..."
-                  : "Melhorar a escrita com IA"}
+                  : "Melhorar a escrita com IA"} />
               </button>
-              <p className="mt-3 text-xs leading-5 text-slate-500">Apenas será melhorada a escrita; não será alterada a informação. Revê a proposta antes de guardar.</p>
+              <p className="mt-3 text-xs leading-5 text-slate-500"><LText text={"Apenas será melhorada a escrita; não será alterada a informação. Revê a proposta antes de guardar."} /></p>
             </section>
 
             <button
               type="submit"
               className="w-full rounded-full bg-[#1683FF] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(22,131,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#07111F]"
             >
-              Guardar perfil
-            </button>
+              <LText text={"Guardar perfil"} /></button>
           </aside>
 
           <div className="space-y-6">
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                {currentTab?.label}
+                <LText text={currentTab?.label} />
               </p>
 
               <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
-                {currentTab?.description}
+                <LText text={currentTab?.description} />
               </h2>
             </section>
 
@@ -1765,16 +1758,14 @@ function getTrainingItems() {
               <div className="grid gap-6">
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Identidade
-                  </h3>
+                    <LText text={"Identidade"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Dados base para contacto e identificação do candidato.
-                  </p>
+                    <LText text={"Dados base para contacto e identificação do candidato."} /></p>
 
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
                     <div>
-                      <label className="text-sm font-semibold">Nome</label>
+                      <label className="text-sm font-semibold"><LText text={"Nome"} /></label>
                       <input
                         value={name}
                         onChange={(event) => setName(event.target.value)}
@@ -1784,8 +1775,8 @@ function getTrainingItems() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Telefone</label>
-                      <input
+                      <label className="text-sm font-semibold"><LText text={"Telefone"} /></label>
+                      <LElement as="input"
                         value={phone}
                         onChange={(event) => setPhone(event.target.value)}
                         placeholder="Ex: 912 345 678"
@@ -1794,37 +1785,35 @@ function getTrainingItems() {
                     </div>
                     <div>
   <label className="text-sm font-semibold">
-    Perfil de talento
-  </label>
+    <LText text={"Perfil de talento"} /></label>
 
   <select
     value={talentType}
     onChange={(event) => setTalentType(event.target.value)}
     className={inputClass}
   >
-    <option value="student">Estudante</option>
-    <option value="graduate">Recém-licenciado</option>
-    <option value="professional">Profissional</option>
-    <option value="career_change">Em transição de carreira</option>
+    <option value="student"><LText text={"Estudante"} /></option>
+    <option value="graduate"><LText text={"Recém-licenciado"} /></option>
+    <option value="professional"><LText text={"Profissional"} /></option>
+    <option value="career_change"><LText text={"Em transição de carreira"} /></option>
   </select>
 </div>
 
-                    <div><label className="text-sm font-semibold">País</label><CountrySelect value={country} onChange={setCountry} /></div>
+                    <div><label className="text-sm font-semibold"><LText text={"País"} /></label><CountrySelect value={country} onChange={setCountry} /></div>
                     <div>
   <label className="text-sm font-semibold">
-    Localização
-  </label>
+    <LText text={"Localização"} /></label>
 
   <select
     value={location}
     onChange={(event) => setLocation(event.target.value)}
     className={inputClass}
   >
-    <option value="">Selecionar localização</option>
+    <option value=""><LText text={"Selecionar localização"} /></option>
 
     {locationOptions.map((option) => (
       <option key={option} value={option}>
-        {option}
+        <LText text={option} />
       </option>
     ))}
   </select>
@@ -1832,8 +1821,7 @@ function getTrainingItems() {
 
                     <div>
                       <label className="text-sm font-semibold">
-                        Disponibilidade
-                      </label>
+                        <LText text={"Disponibilidade"} /></label>
                       <select
                         value={availability}
                         onChange={(event) =>
@@ -1841,10 +1829,10 @@ function getTrainingItems() {
                         }
                         className={inputClass}
                       >
-                        <option value="">Selecionar</option>
+                        <option value=""><LText text={"Selecionar"} /></option>
                         {availabilityOptions.map((option) => (
                           <option key={option} value={option}>
-                            {option}
+                            <LText text={option} />
                           </option>
                         ))}
                       </select>
@@ -1854,20 +1842,16 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Posicionamento profissional
-                  </h3>
+                    <LText text={"Posicionamento profissional"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Informação curta e clara para a primeira leitura por parte
-                    das empresas.
-                  </p>
+                    <LText text={"Informação curta e clara para a primeira leitura por parte das empresas."} /></p>
 
                   <div className="mt-6 grid gap-5">
                     <div>
                       <label className="text-sm font-semibold">
-                        Título profissional
-                      </label>
-                      <input
+                        <LText text={"Título profissional"} /></label>
+                      <LElement as="input"
                         value={headline}
                         onChange={(event) => setHeadline(event.target.value)}
                         placeholder="Ex: Estudante de Gestão com interesse em Marketing"
@@ -1876,8 +1860,8 @@ function getTrainingItems() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Bio</label>
-                      <textarea
+                      <label className="text-sm font-semibold"><LText text={"Bio"} /></label>
+                      <LElement as="textarea"
                         value={bio}
                         onChange={(event) => setBio(event.target.value)}
                         rows={6}
@@ -1895,18 +1879,13 @@ function getTrainingItems() {
     <section className="overflow-hidden rounded-[32px] border border-[#DDE3EA] bg-white shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
       <div className="border-b border-[#DDE3EA] bg-gradient-to-br from-[#07111F] to-[#10233D] px-6 py-8 text-white md:px-8">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#4BB3FD]">
-          Matriz profissional
-        </p>
+          <LText text={"Matriz profissional"} /></p>
 
         <h3 className="mt-3 max-w-3xl text-3xl font-semibold tracking-[-0.05em] md:text-4xl">
-          Constrói o teu CV.
-        </h3>
+          <LText text={"Constrói o teu CV."} /></h3>
 
         <p className="mt-4 max-w-3xl text-sm leading-6 text-white/65">
-          Adiciona experiência, formação académica e certificações em blocos
-          editáveis. Esta informação é essencial para empresas, matching e
-          recomendações com IA.
-        </p>
+          <LText text={"Adiciona experiência, formação académica e certificações em blocos editáveis. Esta informação é essencial para empresas, matching e recomendações com IA."} /></p>
       </div>
 
       <div className="grid gap-6 p-6 md:p-8">
@@ -1935,12 +1914,10 @@ function getTrainingItems() {
 
         <section className="rounded-[28px] border border-[#DDE3EA] bg-white p-6 md:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            Pré-visualização
-          </p>
+            <LText text={"Pré-visualização"} /></p>
 
           <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            Como a empresa vai ver o teu percurso
-          </h4>
+            <LText text={"Como a empresa vai ver o teu percurso"} /></h4>
 
           <div className="mt-6 grid gap-6">
             <StructuredExperienceTimeline
@@ -1972,12 +1949,10 @@ function getTrainingItems() {
               <div className="grid gap-6">
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Skills técnicas
-                  </h3>
+                    <LText text={"Skills técnicas"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Competências usadas no matching com vagas e empresas.
-                  </p>
+                    <LText text={"Competências usadas no matching com vagas e empresas."} /></p>
 
                   <TagPicker value={skills.map(skill => skill.name)} onChange={async values => {
                     for (const skill of skills) if (!values.includes(skill.name)) await handleRemoveSkill(skill.id);
@@ -1992,16 +1967,14 @@ function getTrainingItems() {
                 <section className="grid gap-6 md:grid-cols-2">
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Idiomas falados
-                    </h3>
+                      <LText text={"Idiomas falados"} /></h3>
 
                     <LanguagePicker value={splitTags(spokenLanguages)} onChange={values => setSpokenLanguages(values.join(", "))} label="idiomas falados" />
                   </div>
 
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Idiomas escritos
-                    </h3>
+                      <LText text={"Idiomas escritos"} /></h3>
 
                     <LanguagePicker value={splitTags(writtenLanguages)} onChange={values => setWrittenLanguages(values.join(", "))} label="idiomas escritos" />
                   </div>
@@ -2009,8 +1982,7 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Resumo de idiomas
-                  </h3>
+                    <LText text={"Resumo de idiomas"} /></h3>
 
                   <LanguagePicker value={splitTags(languages)} onChange={values => setLanguages(values.join(", "))} label="idiomas" />
                 </section>
@@ -2018,16 +1990,14 @@ function getTrainingItems() {
                 <section className="grid gap-6 md:grid-cols-2">
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Soft skills
-                    </h3>
+                      <LText text={"Soft skills"} /></h3>
 
                     <TagPicker value={splitTags(softSkills)} onChange={values => setSoftSkills(values.join(", "))} label="Competências comportamentais" />
                   </div>
 
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Ferramentas e software
-                    </h3>
+                      <LText text={"Ferramentas e software"} /></h3>
 
                     <TagPicker value={splitTags(tools)} onChange={values => setTools(values.join(", "))} label="Ferramentas e software" />
                   </div>
@@ -2039,14 +2009,10 @@ function getTrainingItems() {
               <div className="grid gap-6">
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-    Privacidade e contacto profissional
-  </h3>
+    <LText text={"Privacidade e contacto profissional"} /></h3>
 
   <p className="mt-2 text-sm leading-6 text-slate-500">
-    Define como as empresas podem aceder ao teu perfil quando ainda não te
-    candidataste a uma vaga. Se te candidatares, a empresa dessa vaga poderá
-    contactar-te diretamente.
-  </p>
+    <LText text={"Define como as empresas podem aceder ao teu perfil quando ainda não te candidataste a uma vaga. Se te candidatares, a empresa dessa vaga poderá contactar-te diretamente."} /></p>
 
   <div className="mt-6 grid gap-4">
     <label
@@ -2068,14 +2034,10 @@ function getTrainingItems() {
 
         <div>
           <p className="text-sm font-semibold text-[#07111F]">
-            Disponível para pedidos de empresas
-          </p>
+            <LText text={"Disponível para pedidos de empresas"} /></p>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            As empresas podem consultar a minha síntese profissional e enviar
-            pedidos. A minha identidade só é revelada depois de aceitar um pedido
-            ou de me candidatar a uma vaga da empresa.
-          </p>
+            <LText text={"As empresas podem consultar a minha síntese profissional e enviar pedidos. A minha identidade só é revelada depois de aceitar um pedido ou de me candidatar a uma vaga da empresa."} /></p>
         </div>
       </div>
     </label>
@@ -2099,13 +2061,10 @@ function getTrainingItems() {
 
         <div>
           <p className="text-sm font-semibold text-[#07111F]">
-            Pedir autorização primeiro
-          </p>
+            <LText text={"Pedir autorização primeiro"} /></p>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Empresas podem pedir autorização para ver o meu perfil completo.
-            Eu decido se aceito ou recuso cada pedido.
-          </p>
+            <LText text={"Empresas podem pedir autorização para ver o meu perfil completo. Eu decido se aceito ou recuso cada pedido."} /></p>
         </div>
       </div>
     </label>
@@ -2129,13 +2088,10 @@ function getTrainingItems() {
 
         <div>
           <p className="text-sm font-semibold text-[#07111F]">
-            Perfil fechado
-          </p>
+            <LText text={"Perfil fechado"} /></p>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Só quero ser contactado por empresas quando eu próprio me candidatar
-            a uma vaga.
-          </p>
+            <LText text={"Só quero ser contactado por empresas quando eu próprio me candidatar a uma vaga."} /></p>
         </div>
       </div>
     </label>
@@ -2143,27 +2099,24 @@ function getTrainingItems() {
 </section>
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Tipo de oportunidade
-                  </h3>
+                    <LText text={"Tipo de oportunidade"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Define aquilo que procuras para melhorar o matching.
-                  </p>
+                    <LText text={"Define aquilo que procuras para melhorar o matching."} /></p>
 
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
                     <div>
                       <label className="text-sm font-semibold">
-                        Área pretendida
-                      </label>
+                        <LText text={"Área pretendida"} /></label>
                       <select
                         value={desiredArea}
                         onChange={(event) => setDesiredArea(event.target.value)}
                         className={inputClass}
                       >
-                        <option value="">Selecionar área</option>
+                        <option value=""><LText text={"Selecionar área"} /></option>
                         {professionalAreas.map((area) => (
                           <option key={area} value={area}>
-                            {area}
+                            <LText text={area} />
                           </option>
                         ))}
                       </select>
@@ -2171,8 +2124,7 @@ function getTrainingItems() {
 
                     <div>
                       <label className="text-sm font-semibold">
-                        Tipo de oportunidade
-                      </label>
+                        <LText text={"Tipo de oportunidade"} /></label>
                       <select
                         value={preferredOpportunityType}
                         onChange={(event) =>
@@ -2180,10 +2132,10 @@ function getTrainingItems() {
                         }
                         className={inputClass}
                       >
-                        <option value="">Selecionar tipo</option>
+                        <option value=""><LText text={"Selecionar tipo"} /></option>
                         {opportunityTypes.map((type) => (
                           <option key={type} value={type}>
-                            {type}
+                            <LText text={type} />
                           </option>
                         ))}
                       </select>
@@ -2191,17 +2143,16 @@ function getTrainingItems() {
 
                     <div>
                       <label className="text-sm font-semibold">
-                        Modelo de trabalho
-                      </label>
+                        <LText text={"Modelo de trabalho"} /></label>
                       <select
                         value={workModel}
                         onChange={(event) => setWorkModel(event.target.value)}
                         className={inputClass}
                       >
-                        <option value="">Selecionar modelo</option>
+                        <option value=""><LText text={"Selecionar modelo"} /></option>
                         {workModelOptions.map((option) => (
                           <option key={option.value} value={option.value}>
-                            {option.label}
+                            <LText text={option.label} />
                           </option>
                         ))}
                       </select>
@@ -2209,9 +2160,8 @@ function getTrainingItems() {
 
                     <div>
                       <label className="text-sm font-semibold">
-                        Expectativa salarial
-                      </label>
-                      <input
+                        <LText text={"Expectativa salarial"} /></label>
+                      <LElement as="input"
                         value={expectedSalary}
                         onChange={(event) =>
                           setExpectedSalary(event.target.value)
@@ -2223,12 +2173,10 @@ function getTrainingItems() {
 
                     <div className="md:col-span-2">
   <label className="text-sm font-semibold">
-    Regiões preferidas
-  </label>
+    <LText text={"Regiões preferidas"} /></label>
 
   <p className="mt-2 text-xs leading-5 text-slate-500">
-    Seleciona uma ou várias regiões onde pretendes receber oportunidades.
-  </p>
+    <LText text={"Seleciona uma ou várias regiões onde pretendes receber oportunidades."} /></p>
 
   <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {locationOptions.map((region) => {
@@ -2245,7 +2193,7 @@ function getTrainingItems() {
               : "rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-left text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
           }
         >
-          {region}
+          <LText text={region} />
         </button>
       );
     })}
@@ -2258,15 +2206,14 @@ function getTrainingItems() {
           key={region}
           className="inline-flex items-center gap-2 rounded-full bg-[#1683FF]/10 px-4 py-2 text-xs font-semibold text-[#1683FF]"
         >
-          {region}
+          <LText text={region} />
 
           <button
             type="button"
             onClick={() => removePreferredRegion(region)}
             className="text-[#1683FF]/60 transition hover:text-[#1683FF]"
           >
-            ×
-          </button>
+            <LText text={"×"} /></button>
         </span>
       ))}
     </div>
@@ -2274,8 +2221,7 @@ function getTrainingItems() {
 
   {getSelectedPreferredRegions().length === 0 && (
     <p className="mt-4 text-sm text-slate-400">
-      Ainda não selecionaste regiões preferidas.
-    </p>
+      <LText text={"Ainda não selecionaste regiões preferidas."} /></p>
   )}
 </div>
                   </div>
@@ -2283,12 +2229,10 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Objetivos de carreira
-                  </h3>
+                    <LText text={"Objetivos de carreira"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Ajuda a IA a perceber a tua direção profissional.
-                  </p>
+                    <LText text={"Ajuda a IA a perceber a tua direção profissional."} /></p>
 
                   <textarea
                     value={careerGoals}
@@ -2305,8 +2249,7 @@ function getTrainingItems() {
                 <section className="grid gap-6 md:grid-cols-2">
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Score do perfil
-                    </h3>
+                      <LText text={"Score do perfil"} /></h3>
 
                     <p className="mt-3 text-5xl font-semibold tracking-[-0.06em] text-[#1683FF]">
                       {aiProfileScore}
@@ -2315,8 +2258,7 @@ function getTrainingItems() {
 
                   <div className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                     <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                      Empregabilidade
-                    </h3>
+                      <LText text={"Empregabilidade"} /></h3>
 
                     <p className="mt-3 text-5xl font-semibold tracking-[-0.06em] text-[#1683FF]">
                       {aiEmployabilityScore}
@@ -2326,15 +2268,13 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Dados de matching
-                  </h3>
+                    <LText text={"Dados de matching"} /></h3>
 
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
                     <div>
                       <label className="text-sm font-semibold">
-                        Profissão principal
-                      </label>
-                      <input
+                        <LText text={"Profissão principal"} /></label>
+                      <LElement as="input"
                         value={mainRole}
                         onChange={(event) => setMainRole(event.target.value)}
                         placeholder="Ex: Marketing Specialist"
@@ -2344,17 +2284,16 @@ function getTrainingItems() {
 
                     <div>
                       <label className="text-sm font-semibold">
-                        Senioridade
-                      </label>
+                        <LText text={"Senioridade"} /></label>
                       <select
                         value={seniority}
                         onChange={(event) => setSeniority(event.target.value)}
                         className={inputClass}
                       >
-                        <option value="">Selecionar senioridade</option>
+                        <option value=""><LText text={"Selecionar senioridade"} /></option>
                         {seniorityOptions.map((option) => (
                           <option key={option} value={option}>
-                            {option}
+                            <LText text={option} />
                           </option>
                         ))}
                       </select>
@@ -2364,13 +2303,10 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Resumo profissional
-                  </h3>
+                    <LText text={"Resumo profissional"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    Este texto será usado para apresentar o candidato às
-                    empresas e melhorar o matching.
-                  </p>
+                    <LText text={"Este texto será usado para apresentar o candidato às empresas e melhorar o matching."} /></p>
 
                   <textarea
                     value={aiSummary}
@@ -2382,20 +2318,19 @@ function getTrainingItems() {
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    Documentos e presença digital
-                  </h3>
+                    <LText text={"Documentos e presença digital"} /></h3>
 
                   <div className="mt-6 grid gap-5">
                     <div>
-                      <p className="text-sm font-semibold">Currículo</p>
-                      <p className="mt-2 text-sm text-slate-500">{cvUrl ? "Currículo guardado em armazenamento privado." : "Ainda não carregaste um currículo."}</p>
-                      {cvUrl && <div className="mt-3 flex gap-3"><CandidateCVButton studentId={profileId} className="text-sm font-semibold text-blue-700" /><button type="button" disabled={isUploadingCV} onClick={removeCV} className="text-sm font-semibold text-red-700">Eliminar currículo</button></div>}
+                      <p className="text-sm font-semibold"><LText text={"Currículo"} /></p>
+                      <p className="mt-2 text-sm text-slate-500"><LText text={cvUrl ? "Currículo guardado em armazenamento privado." : "Ainda não carregaste um currículo."} /></p>
+                      {cvUrl && <div className="mt-3 flex gap-3"><CandidateCVButton studentId={profileId} className="text-sm font-semibold text-blue-700" /><button type="button" disabled={isUploadingCV} onClick={removeCV} className="text-sm font-semibold text-red-700"><LText text={"Eliminar currículo"} /></button></div>}
 
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">LinkedIn</label>
-                      <input
+                      <label className="text-sm font-semibold"><LText text={"LinkedIn"} /></label>
+                      <LElement as="input"
                         value={linkedinUrl}
                         onChange={(event) => setLinkedinUrl(event.target.value)}
                         placeholder="https://linkedin.com/in/..."
@@ -2404,8 +2339,8 @@ function getTrainingItems() {
                     </div>
 
                     <div>
-                      <label className="text-sm font-semibold">Portfólio</label>
-                      <input
+                      <label className="text-sm font-semibold"><LText text={"Portfólio"} /></label>
+                      <LElement as="input"
                         value={portfolioUrl}
                         onChange={(event) =>
                           setPortfolioUrl(event.target.value)
@@ -2436,10 +2371,9 @@ function ExperienceTimeline({
     return (
       <section className="rounded-[28px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          Experiência profissional
-        </p>
+          <LText text={"Experiência profissional"} /></p>
 
-        <p className="mt-3 text-sm leading-6 text-slate-400">{empty}</p>
+        <p className="mt-3 text-sm leading-6 text-slate-400"><LText text={empty} /></p>
       </section>
     );
   }
@@ -2449,16 +2383,14 @@ function ExperienceTimeline({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            Experiência profissional
-          </p>
+            <LText text={"Experiência profissional"} /></p>
 
           <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            Cronologia de carreira
-          </h4>
+            <LText text={"Cronologia de carreira"} /></h4>
         </div>
 
         <span className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1683FF] shadow-sm">
-          {items.length} {items.length === 1 ? "experiência" : "experiências"}
+          {items.length} <LText text={items.length === 1 ? "experiência" : "experiências"} />
         </span>
       </div>
 
@@ -2477,7 +2409,7 @@ function ExperienceTimeline({
 
                 <div className="rounded-[24px] border border-[#DDE3EA] bg-white p-5 shadow-sm">
                   <p className="mb-2 inline-flex rounded-full bg-[#07111F] px-3 py-1 text-[11px] font-semibold text-white">
-  {parsed.period || "Data não indicada"}
+  <LText text={parsed.period || "Data não indicada"} />
 </p>
 
                   <h5 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
@@ -2514,10 +2446,10 @@ function EducationTimeline({
     return (
       <section className="rounded-[28px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-6">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          {title}
+          <LText text={title} />
         </p>
 
-        <p className="mt-3 text-sm leading-6 text-slate-400">{empty}</p>
+        <p className="mt-3 text-sm leading-6 text-slate-400"><LText text={empty} /></p>
       </section>
     );
   }
@@ -2527,16 +2459,16 @@ function EducationTimeline({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            {title}
+            <LText text={title} />
           </p>
 
           <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            {subtitle}
+            <LText text={subtitle} />
           </h4>
         </div>
 
         <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-[#1683FF]">
-          {items.length} {items.length === 1 ? "registo" : "registos"}
+          {items.length} <LText text={items.length === 1 ? "registo" : "registos"} />
         </span>
       </div>
 
@@ -2556,7 +2488,7 @@ function EducationTimeline({
                 <div className="rounded-[24px] border border-[#DDE3EA] bg-[#F7F9FC] p-5">
                   {parsed.period && (
                     <p className="mb-2 inline-flex rounded-full bg-[#07111F] px-3 py-1 text-[11px] font-semibold text-white">
-                      {parsed.period}
+                      <LText text={parsed.period} />
                     </p>
                   )}
 
@@ -2566,7 +2498,7 @@ function EducationTimeline({
 
                   {parsed.institution && (
                     <p className="mt-2 text-sm font-semibold text-[#1683FF]">
-                      {parsed.institution}
+                      <LText text={parsed.institution} />
                     </p>
                   )}
 
@@ -2675,17 +2607,13 @@ function EditableExperienceSection({
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <p className="inline-flex rounded-full bg-[#1683FF]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1683FF]">
-            Experiência
-          </p>
+            <LText text={"Experiência"} /></p>
 
           <h4 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            Experiência profissional
-          </h4>
+            <LText text={"Experiência profissional"} /></h4>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
-            Adiciona cada experiência separadamente para criar uma cronologia
-            clara e fácil de ler.
-          </p>
+            <LText text={"Adiciona cada experiência separadamente para criar uma cronologia clara e fácil de ler."} /></p>
         </div>
 
         <button
@@ -2693,8 +2621,7 @@ function EditableExperienceSection({
           onClick={onAdd}
           className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
         >
-          + Adicionar experiência
-        </button>
+          <LText text={"+ Adicionar experiência"} /></button>
       </div>
 
       <div className="mt-6 grid gap-4">
@@ -2705,7 +2632,7 @@ function EditableExperienceSection({
           >
             <div className="mb-5 flex items-center justify-between gap-4">
               <p className="text-sm font-semibold text-[#07111F]">
-                Experiência {index + 1}
+                <LText text={"Experiência "} />{index + 1}
               </p>
 
               <button
@@ -2713,8 +2640,7 @@ function EditableExperienceSection({
                 onClick={() => onRemove(item.id)}
                 className="text-xs font-semibold text-red-500 hover:text-red-600"
               >
-                Remover
-              </button>
+                <LText text={"Remover"} /></button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -2759,9 +2685,7 @@ function EditableExperienceSection({
         {items.length === 0 && (
           <div className="rounded-[24px] border border-dashed border-[#DDE3EA] bg-white p-8 text-center">
             <p className="text-sm text-slate-500">
-              Ainda não adicionaste experiências. Clica em “Adicionar
-              experiência”.
-            </p>
+              <LText text={"Ainda não adicionaste experiências. Clica em “Adicionar experiência”."} /></p>
           </div>
         )}
       </div>
@@ -2789,12 +2713,10 @@ function EditableAcademicSection({
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <p className="inline-flex rounded-full bg-[#1683FF]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1683FF]">
-            Formação
-          </p>
+            <LText text={"Formação"} /></p>
 
           <h4 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            Formação académica
-          </h4>
+            <LText text={"Formação académica"} /></h4>
         </div>
 
         <button
@@ -2802,8 +2724,7 @@ function EditableAcademicSection({
           onClick={onAdd}
           className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
         >
-          + Adicionar
-        </button>
+          <LText text={"+ Adicionar"} /></button>
       </div>
 
       <div className="mt-6 grid gap-4">
@@ -2814,7 +2735,7 @@ function EditableAcademicSection({
           >
             <div className="mb-5 flex items-center justify-between gap-4">
               <p className="text-sm font-semibold text-[#07111F]">
-                Formação {index + 1}
+                <LText text={"Formação "} />{index + 1}
               </p>
 
               <button
@@ -2822,8 +2743,7 @@ function EditableAcademicSection({
                 onClick={() => onRemove(item.id)}
                 className="text-xs font-semibold text-red-500 hover:text-red-600"
               >
-                Remover
-              </button>
+                <LText text={"Remover"} /></button>
             </div>
 
             <SmallInput
@@ -2868,8 +2788,7 @@ function EditableAcademicSection({
         {items.length === 0 && (
           <div className="rounded-[24px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-8 text-center">
             <p className="text-sm text-slate-500">
-              Ainda não adicionaste formação académica.
-            </p>
+              <LText text={"Ainda não adicionaste formação académica."} /></p>
           </div>
         )}
       </div>
@@ -2897,12 +2816,10 @@ function EditableTrainingSection({
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <p className="inline-flex rounded-full bg-[#1683FF]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1683FF]">
-            Certificações
-          </p>
+            <LText text={"Certificações"} /></p>
 
           <h4 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            Formação profissional
-          </h4>
+            <LText text={"Formação profissional"} /></h4>
         </div>
 
         <button
@@ -2910,8 +2827,7 @@ function EditableTrainingSection({
           onClick={onAdd}
           className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
         >
-          + Adicionar
-        </button>
+          <LText text={"+ Adicionar"} /></button>
       </div>
 
       <div className="mt-6 grid gap-4">
@@ -2922,7 +2838,7 @@ function EditableTrainingSection({
           >
             <div className="mb-5 flex items-center justify-between gap-4">
               <p className="text-sm font-semibold text-[#07111F]">
-                Certificação {index + 1}
+                <LText text={"Certificação "} />{index + 1}
               </p>
 
               <button
@@ -2930,8 +2846,7 @@ function EditableTrainingSection({
                 onClick={() => onRemove(item.id)}
                 className="text-xs font-semibold text-red-500 hover:text-red-600"
               >
-                Remover
-              </button>
+                <LText text={"Remover"} /></button>
             </div>
 
             <SmallInput
@@ -2976,8 +2891,7 @@ function EditableTrainingSection({
         {items.length === 0 && (
           <div className="rounded-[24px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-8 text-center">
             <p className="text-sm text-slate-500">
-              Ainda não adicionaste formação profissional ou certificações.
-            </p>
+              <LText text={"Ainda não adicionaste formação profissional ou certificações."} /></p>
           </div>
         )}
       </div>
@@ -3110,10 +3024,10 @@ function SmallInput({
   return (
     <div className="mb-4">
       <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-        {label}
+        <LText text={label} />
       </label>
 
-      <input
+      <LElement as="input"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
@@ -3137,10 +3051,10 @@ function SmallTextarea({
   return (
     <div className="mt-2">
       <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-        {label}
+        <LText text={label} />
       </label>
 
-      <textarea
+      <LElement as="textarea"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         rows={4}
@@ -3155,10 +3069,10 @@ function EmptyPreview({ title, empty }: { title: string; empty: string }) {
   return (
     <section className="rounded-[28px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-        {title}
+        <LText text={title} />
       </p>
 
-      <p className="mt-3 text-sm leading-6 text-slate-400">{empty}</p>
+      <p className="mt-3 text-sm leading-6 text-slate-400"><LText text={empty} /></p>
     </section>
   );
 }
@@ -3176,16 +3090,16 @@ function PreviewHeader({
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          {title}
+          <LText text={title} />
         </p>
 
         <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-          {subtitle}
+          <LText text={subtitle} />
         </h4>
       </div>
 
       <span className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1683FF] shadow-sm">
-        {count} {count === 1 ? "registo" : "registos"}
+        {count} <LText text={count === 1 ? "registo" : "registos"} />
       </span>
     </div>
   );
@@ -3233,22 +3147,22 @@ function PreviewCard({
   return (
     <div className="rounded-[24px] border border-[#DDE3EA] bg-white p-5 shadow-sm">
       <p className="mb-2 inline-flex rounded-full bg-[#07111F] px-3 py-1 text-[11px] font-semibold text-white">
-        {period}
+        <LText text={period} />
       </p>
 
       <h5 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
-        {title}
+        <LText text={title} />
       </h5>
 
       {subtitle && (
         <p className="mt-2 text-sm font-semibold text-[#1683FF]">
-          {subtitle}
+          <LText text={subtitle} />
         </p>
       )}
 
       {description && (
         <p className="mt-3 text-sm leading-7 text-slate-600">
-          {description}
+          <LText text={description} />
         </p>
       )}
     </div>

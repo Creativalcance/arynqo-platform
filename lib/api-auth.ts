@@ -1,8 +1,9 @@
+import { normalizeLocale, type Locale } from "@/lib/i18n/config";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 type Role = "student" | "company" | "admin";
-export type ApiActor = { id: string; role: Role; client: SupabaseClient };
+export type ApiActor = { id: string; role: Role; client: SupabaseClient; locale?: Locale };
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -45,14 +46,14 @@ export async function requireActor(request: Request, roles?: Role[]): Promise<Ap
     throw new ApiError(401, "Sessão inválida ou expirada.");
   }
   const { data: profile, error: profileError } = await client
-    .from("profiles").select("role").eq("id", data.user.id).single();
+    .from("profiles").select("role, locale").eq("id", data.user.id).single();
   if (profileError || !profile || !["student", "company", "admin"].includes(profile.role)) {
     throw new ApiError(403, "Conta sem permissões para esta operação.");
   }
   if (roles && !roles.includes(profile.role)) {
     throw new ApiError(403, "Não tens permissões para esta operação.");
   }
-  return { id: data.user.id, role: profile.role as Role, client };
+  return { id: data.user.id, role: profile.role as Role, client, locale: normalizeLocale(profile.locale) };
 }
 
 export function requireUuid(value: unknown, label: string): asserts value is string {

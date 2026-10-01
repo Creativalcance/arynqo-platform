@@ -1,6 +1,8 @@
-import Link from "next/link";
+
+import { LText, LElement } from "@/lib/i18n/client";
+import Link from "@/lib/i18n/link";
 import { pageMetadata } from "@/lib/seo";
-export const metadata = pageMetadata("Emprego e recrutamento em Portugal", "Descobre oportunidades de emprego e liga o teu perfil às necessidades das empresas. Conhece o recrutamento com apoio de IA da ARYNQO.", "/");
+export async function generateMetadata() { return await pageMetadata("Emprego e recrutamento internacional", "Descobre oportunidades de emprego e liga o teu perfil às necessidades das empresas. Conhece o recrutamento com apoio de IA da ARYNQO.", "/"); }
 export default function HomePage() {
   return (
     <main className="overflow-hidden bg-[#F7F9FC]">
@@ -9,81 +11,61 @@ export default function HomePage() {
 
         <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 pb-24 pt-28 text-center lg:px-12">
           <div className="rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-sm font-medium text-blue-700">
-            Plataforma inteligente de recrutamento e evolução profissional
-          </div>
+            <LText text={"Plataforma inteligente de recrutamento e evolução profissional"} /></div>
 
           <h1 className="mt-8 max-w-5xl text-4xl sm:text-6xl font-black tracking-[-0.06em] text-[#07111F] md:text-7xl">
-            Onde o talento se desenvolve.
-          </h1>
+            <LText text={"Onde o talento se desenvolve."} /></h1>
 
           <p className="mt-8 max-w-3xl text-xl leading-relaxed text-neutral-600">
-            A ARYNQO liga estudantes, profissionais e empresas através de uma
-            plataforma onde podes pesquisar vagas, apresentar competências e consultar recomendações com apoio de IA.
-          </p>
+            <LText text={"A ARYNQO liga estudantes, profissionais e empresas através de uma plataforma onde podes pesquisar vagas, apresentar competências e consultar recomendações com apoio de IA."} /></p>
 
-          <form action="/vagas" className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:flex-row"><label htmlFor="home-search" className="sr-only">Função, área ou localização</label><input id="home-search" name="q" placeholder="Função, área ou localização" className="min-w-0 flex-1 rounded-2xl border border-slate-300 bg-white px-5 py-4"/><button className="rounded-2xl bg-[#07111F] px-6 py-4 font-semibold text-white">Pesquisar vagas</button></form>
-          <p className="mt-5"><Link href="/empresas" className="font-semibold text-blue-700 underline underline-offset-4">Quero recrutar: conhecer a solução para empresas</Link></p>
+          <LElement as="form" action="/vagas" className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:flex-row"><label htmlFor="home-search" className="sr-only"><LText text={"Função, área ou localização"} /></label><LElement as="input" id="home-search" name="q" placeholder="Função, área ou localização" className="min-w-0 flex-1 rounded-2xl border border-slate-300 bg-white px-5 py-4"/><button className="rounded-2xl bg-[#07111F] px-6 py-4 font-semibold text-white"><LText text={"Pesquisar vagas"} /></button></LElement>
+          <p className="mt-5"><Link href="/empresas" className="font-semibold text-blue-700 underline underline-offset-4"><LText text={"Quero recrutar: conhecer a solução para empresas"} /></Link></p>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/vagas"
               className="rounded-full bg-[#07111F] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
             >
-              Explorar vagas
-            </Link>
+              <LText text={"Explorar vagas"} /></Link>
 
             <Link
               href="/registo"
               className="rounded-full border border-neutral-300 bg-white px-8 py-4 text-sm font-semibold transition hover:bg-neutral-100"
             >
-              Criar conta
-            </Link>
+              <LText text={"Criar conta"} /></Link>
           </div>
 
           <div className="mt-24 grid w-full max-w-6xl gap-6 lg:grid-cols-3">
             <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <p className="text-sm font-medium text-blue-600">Estudantes</p>
+              <p className="text-sm font-medium text-blue-600"><LText text={"Estudantes"} /></p>
 
               <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
-                Começa a construir o teu futuro
-              </h2>
+                <LText text={"Começa a construir o teu futuro"} /></h2>
 
               <p className="mt-4 leading-relaxed text-neutral-600">
-                Cria um perfil profissional moderno, descobre oportunidades
-                relevantes e dá os primeiros passos no mercado com mais clareza,
-                confiança e direção.
-              </p>
+                <LText text={"Cria um perfil profissional moderno, descobre oportunidades relevantes e dá os primeiros passos no mercado com mais clareza, confiança e direção."} /></p>
             </div>
 
             <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
               <p className="text-sm font-medium text-blue-600">
-                Profissionais
-              </p>
+                <LText text={"Profissionais"} /></p>
 
               <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em] text-[#07111F]">
-                Evolui para a próxima oportunidade
-              </h2>
+                <LText text={"Evolui para a próxima oportunidade"} /></h2>
 
               <p className="mt-4 leading-relaxed text-neutral-600">
-                Valoriza a tua experiência, identifica novas possibilidades de
-                carreira e encontra oportunidades alinhadas com as tuas
-                competências e ambição.
-              </p>
+                <LText text={"Valoriza a tua experiência, identifica novas possibilidades de carreira e encontra oportunidades alinhadas com as tuas competências e ambição."} /></p>
             </div>
 
             <div className="rounded-3xl border border-neutral-200 bg-[#07111F] p-8 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
               <p className="text-sm font-medium text-blue-300">
-                Empresas & Universidades
-              </p>
+                <LText text={"Empresas & Universidades"} /></p>
 
               <h2 className="mt-4 text-2xl font-bold tracking-[-0.04em]">
-                Liga talento, conhecimento e mercado
-              </h2>
+                <LText text={"Liga talento, conhecimento e mercado"} /></h2>
 
               <p className="mt-4 leading-relaxed text-blue-100">
-                Aproxima organizações, instituições de ensino e talento
-                qualificado através de uma plataforma preparada para
-                recrutamento, IA, empregabilidade e evolução profissional.
-              </p>
+                <LText text={"Aproxima organizações, instituições de ensino e talento qualificado através de uma plataforma preparada para recrutamento, IA, empregabilidade e evolução profissional."} /></p>
             </div>
           </div>
         </div>
@@ -93,17 +75,13 @@ export default function HomePage() {
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-[32px] border border-neutral-200 bg-white p-10 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
             <p className="text-sm font-medium text-blue-600">
-              Para estudantes e profissionais
-            </p>
+              <LText text={"Para estudantes e profissionais"} /></p>
 
             <h2 className="mt-4 text-4xl font-bold tracking-tight text-[#07111F]">
-              Muito mais do que candidaturas
-            </h2>
+              <LText text={"Muito mais do que candidaturas"} /></h2>
 
             <p className="mt-5 max-w-2xl leading-relaxed text-neutral-600">
-              A ARYNQO ajuda cada pessoa a transformar o seu percurso num perfil
-              profissional claro, atrativo e preparado para novas oportunidades.
-            </p>
+              <LText text={"A ARYNQO ajuda cada pessoa a transformar o seu percurso num perfil profissional claro, atrativo e preparado para novas oportunidades."} /></p>
 
             <div className="mt-8 grid gap-5">
               <FeatureItem text="Cria o teu perfil com um clique" />
@@ -116,18 +94,13 @@ export default function HomePage() {
 
           <div className="rounded-[32px] border border-neutral-200 bg-[#07111F] p-10 text-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
             <p className="text-sm font-medium text-blue-300">
-              Para empresas e universidades
-            </p>
+              <LText text={"Para empresas e universidades"} /></p>
 
             <h2 className="mt-4 text-4xl font-bold tracking-tight">
-              Recrutamento inteligente
-            </h2>
+              <LText text={"Recrutamento inteligente"} /></h2>
 
             <p className="mt-5 max-w-2xl leading-relaxed text-blue-100">
-              Uma plataforma criada para aproximar talento, empresas e
-              instituições de ensino através de processos mais rápidos, dados
-              mais úteis e IA aplicada ao recrutamento.
-            </p>
+              <LText text={"Uma plataforma criada para aproximar talento, empresas e instituições de ensino através de processos mais rápidos, dados mais úteis e IA aplicada ao recrutamento."} /></p>
 
             <div className="mt-8 grid gap-5">
               <DarkFeatureItem text="Cria o perfil da organização com um clique" />
@@ -151,32 +124,26 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-6 py-28 lg:px-12">
         <div className="rounded-[40px] bg-[#07111F] px-10 py-20 text-center text-white">
           <p className="text-sm font-medium uppercase tracking-[0.3em] text-blue-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h2 className="mt-6 text-5xl font-black tracking-[-0.05em]">
-            The next step starts here.
-          </h2>
+            <LText text={"The next step starts here."} /></h2>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-blue-100">
-            Junta-te à nova plataforma de recrutamento, talento e evolução
-            profissional.
-          </p>
+            <LText text={"Junta-te à nova plataforma de recrutamento, talento e evolução profissional."} /></p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/registo"
               className="rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-neutral-100"
             >
-              Criar conta
-            </Link>
+              <LText text={"Criar conta"} /></Link>
 
             <Link
               href="/vagas"
               className="rounded-full border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Explorar vagas
-            </Link>
+              <LText text={"Explorar vagas"} /></Link>
           </div>
         </div>
       </section>
@@ -189,7 +156,7 @@ function FeatureItem({ text }: { text: string }) {
     <div className="flex items-center gap-4 rounded-2xl border border-neutral-200 bg-neutral-50 px-5 py-4">
       <div className="h-3 w-3 rounded-full bg-[#1683FF]" />
 
-      <p className="font-medium text-neutral-700">{text}</p>
+      <p className="font-medium text-neutral-700"><LText text={text} /></p>
     </div>
   );
 }
@@ -199,7 +166,7 @@ function DarkFeatureItem({ text }: { text: string }) {
     <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
       <div className="h-3 w-3 rounded-full bg-[#4BB3FD]" />
 
-      <p className="font-medium text-blue-50">{text}</p>
+      <p className="font-medium text-blue-50"><LText text={text} /></p>
     </div>
   );
 }
@@ -208,10 +175,10 @@ function StatItem({ number, label }: { number: string; label: string }) {
   return (
     <div>
       <h3 className="text-6xl font-black tracking-[-0.05em] text-[#07111F]">
-        {number}
+        <LText text={number} />
       </h3>
 
-      <p className="mt-4 text-lg text-neutral-600">{label}</p>
+      <p className="mt-4 text-lg text-neutral-600"><LText text={label} /></p>
     </div>
   );
 }

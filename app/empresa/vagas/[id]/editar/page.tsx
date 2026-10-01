@@ -1,9 +1,13 @@
 "use client";
-import { JobLanguagePicker, TagPicker } from "@/app/components/ProfileFields";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath, normalizeLocale, type Locale } from "@/lib/i18n/config";
+import { LText, LElement, useI18n, LocaleSelect } from "@/lib/i18n/client";
+
+import { JobLanguagePicker, TagPicker, CountryCodeSelect } from "@/app/components/ProfileFields";
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import {
   FormEvent,
   KeyboardEvent,
@@ -25,6 +29,8 @@ type Job = {
   required_skills: string[] | null;
   preferred_skills: string[] | null;
   location: string | null;
+  country_code: string | null;
+  content_locale: string | null;
   work_model: string | null;
   work_mode: LegacyWorkMode | null;
   opportunity_type: string | null;
@@ -162,6 +168,7 @@ export default function EmpresaEditarVagaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { locale } = useI18n();
 
   const [companyId, setCompanyId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -181,6 +188,8 @@ export default function EmpresaEditarVagaPage({
   const [preferredSkills, setPreferredSkills] = useState<string[]>([]);
 
   const [location, setLocation] = useState("");
+  const [countryCode, setCountryCode] = useState("");
+  const [contentLocale, setContentLocale] = useState<Locale>(locale);
   const [workModel, setWorkModel] = useState("Híbrido");
   const [opportunityType, setOpportunityType] = useState("Full-time");
   const [seniority, setSeniority] = useState("Júnior");
@@ -266,7 +275,7 @@ export default function EmpresaEditarVagaPage({
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -279,8 +288,8 @@ export default function EmpresaEditarVagaPage({
       .single();
 
     if (!companyProfile) {
-      alert("Apenas empresas podem editar vagas.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem editar vagas.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -298,6 +307,8 @@ export default function EmpresaEditarVagaPage({
         required_skills,
         preferred_skills,
         location,
+        country_code,
+        content_locale,
         work_model,
         work_mode,
         opportunity_type,
@@ -320,8 +331,8 @@ export default function EmpresaEditarVagaPage({
       .single();
 
     if (error || !data) {
-      alert("Vaga não encontrada.");
-      window.location.href = "/empresa/vagas";
+      localizedAlert("Vaga não encontrada.");
+      window.location.href = browserLocalizedPath("/empresa/vagas");
       return;
     }
 
@@ -334,6 +345,8 @@ export default function EmpresaEditarVagaPage({
     setRequiredSkills(job.required_skills || []);
     setPreferredSkills(job.preferred_skills || []);
     setLocation(job.location || "");
+    setCountryCode(job.country_code || "");
+    setContentLocale(normalizeLocale(job.content_locale));
     setWorkModel(job.work_model || convertLegacyWorkMode(job.work_mode));
     setOpportunityType(job.opportunity_type || job.contract_type || "Full-time");
     setSeniority(job.seniority || "Júnior");
@@ -443,13 +456,13 @@ export default function EmpresaEditarVagaPage({
       try {
         data = rawText ? JSON.parse(rawText) : {};
       } catch {
-        alert("A IA devolveu uma resposta inválida.");
+        localizedAlert("A IA devolveu uma resposta inválida.");
         setIsGeneratingAI(false);
         return;
       }
 
       if (!response.ok) {
-        alert(data.error || "Não foi possível melhorar a vaga com IA.");
+        localizedAlert(data.error || "Não foi possível melhorar a vaga com IA.");
         setIsGeneratingAI(false);
         return;
       }
@@ -520,9 +533,9 @@ export default function EmpresaEditarVagaPage({
         setCandidatePitch(data.candidate_pitch);
       }
 
-      alert("Vaga estruturada com IA. Revê antes de guardar.");
+      localizedAlert("Vaga estruturada com IA. Revê antes de guardar.");
     } catch {
-      alert("Erro ao gerar análise IA da vaga.");
+      localizedAlert("Erro ao gerar análise IA da vaga.");
     }
 
     setIsGeneratingAI(false);
@@ -593,6 +606,8 @@ export default function EmpresaEditarVagaPage({
         required_skills: requiredSkills,
         preferred_skills: preferredSkills,
         location,
+        country_code: countryCode || null,
+        content_locale: contentLocale,
         work_model: workModel,
         opportunity_type: opportunityType,
         seniority,
@@ -611,7 +626,7 @@ export default function EmpresaEditarVagaPage({
       .eq("company_id", companyId);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsSaving(false);
       return;
     }
@@ -619,7 +634,7 @@ export default function EmpresaEditarVagaPage({
     await structureJobWithAI();
     await recalculateJobMatches();
 
-    alert("Vaga atualizada com sucesso.");
+    localizedAlert("Vaga atualizada com sucesso.");
     setIsSaving(false);
   }
 
@@ -639,7 +654,7 @@ export default function EmpresaEditarVagaPage({
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar vaga...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar vaga..."} /></p>
       </main>
     );
   }
@@ -652,8 +667,7 @@ export default function EmpresaEditarVagaPage({
             href="/empresa/vagas"
             className="inline-flex rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
           >
-            ← Voltar às vagas
-          </Link>
+            <LText text={"← Voltar às vagas"} /></Link>
         </div>
 
         <section className="mb-8 overflow-hidden rounded-[40px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
@@ -663,17 +677,13 @@ export default function EmpresaEditarVagaPage({
 
             <div className="relative max-w-4xl">
               <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                Copiloto IA de Recrutamento
-              </p>
+                <LText text={"Copiloto IA de Recrutamento"} /></p>
 
               <h1 className="text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                Editar vaga.
-              </h1>
+                <LText text={"Editar vaga."} /></h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                Atualize a oportunidade com dados claros, editáveis e preparados
-                para matching inteligente entre vaga e candidato.
-              </p>
+                <LText text={"Atualize a oportunidade com dados claros, editáveis e preparados para matching inteligente entre vaga e candidato."} /></p>
             </div>
           </div>
         </section>
@@ -685,17 +695,15 @@ export default function EmpresaEditarVagaPage({
           <div className="space-y-8">
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Informação principal
-              </p>
+                <LText text={"Informação principal"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Dados base da vaga
-              </h2>
+                <LText text={"Dados base da vaga"} /></h2>
 
               <div className="mt-6 grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">Título da vaga</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Título da vaga"} /></label>
+                  <LElement as="input"
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder="Ex: Frontend Developer Júnior"
@@ -705,8 +713,8 @@ export default function EmpresaEditarVagaPage({
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Descrição</label>
-                  <textarea
+                  <label className="text-sm font-semibold"><LText text={"Descrição"} /></label>
+                  <LElement as="textarea"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={8}
@@ -720,37 +728,34 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Matching profissional
-              </p>
+                <LText text={"Matching profissional"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Área, especializações e skills
-              </h2>
+                <LText text={"Área, especializações e skills"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                Selecione competências técnicas, comportamentais e ferramentas no catálogo partilhado com os candidatos. Pode adicionar novas tags quando necessário.
-              </p>
+                <LText text={"Selecione competências técnicas, comportamentais e ferramentas no catálogo partilhado com os candidatos. Pode adicionar novas tags quando necessário."} /></p>
 
               <div className="mt-6 grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">Área profissional</label>
+                  <label className="text-sm font-semibold"><LText text={"Área profissional"} /></label>
                   <select
                     value={area}
                     onChange={(event) => setArea(event.target.value)}
                     required
                     className={selectClass}
                   >
-                    <option value="">Selecionar área profissional</option>
+                    <option value=""><LText text={"Selecionar área profissional"} /></option>
                     {PROFESSIONAL_AREAS.map((professionalArea) => (
                       <option key={professionalArea} value={professionalArea}>
-                        {professionalArea}
+                        <LText text={professionalArea} />
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Especializações</label>
+                  <label className="text-sm font-semibold"><LText text={"Especializações"} /></label>
                   <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
                     <div className="flex flex-wrap gap-2">
                       {specializations.map((specialization) => (
@@ -766,12 +771,12 @@ export default function EmpresaEditarVagaPage({
                           }
                           className={selectedChipClass}
                         >
-                          {specialization}
-                          <span>×</span>
+                          <LText text={specialization} />
+                          <span><LText text={"×"} /></span>
                         </button>
                       ))}
 
-                      <input
+                      <LElement as="input"
                         value={specializationInput}
                         onChange={(event) =>
                           setSpecializationInput(event.target.value)
@@ -795,8 +800,7 @@ export default function EmpresaEditarVagaPage({
                 <div className="grid gap-5 md:grid-cols-2">
                   <div>
                     <label className="text-sm font-semibold">
-                      Competências obrigatórias
-                    </label>
+                      <LText text={"Competências obrigatórias"} /></label>
 
                     <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
                       <TagPicker value={requiredSkills} onChange={setRequiredSkills} />
@@ -805,8 +809,7 @@ export default function EmpresaEditarVagaPage({
 
                   <div>
                     <label className="text-sm font-semibold">
-                      Competências preferenciais
-                    </label>
+                      <LText text={"Competências preferenciais"} /></label>
 
                     <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
                       <TagPicker value={preferredSkills} onChange={setPreferredSkills} />
@@ -820,27 +823,28 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Condições da oportunidade
-              </p>
+                <LText text={"Condições da oportunidade"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Modelo, localização e enquadramento
-              </h2>
+                <LText text={"Modelo, localização e enquadramento"} /></h2>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-semibold">Localização</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"País da vaga"} /></label>
+                  <CountryCodeSelect value={countryCode} onChange={setCountryCode} />
+                  <LocaleSelect className="mt-4" label="Idioma da vaga" save={false} value={contentLocale} onChange={setContentLocale} />
+                  <label className="text-sm font-semibold"><LText text={"Localização"} /></label>
+                  <LElement as="input"
                     value={location}
                     onChange={(event) => setLocation(event.target.value)}
-                    placeholder="Ex: Coimbra, Lisboa, Porto"
+                    placeholder="Ex.: Lisboa, Paris, Berlin"
                     required
                     className={inputClass}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Modelo de trabalho</label>
+                  <label className="text-sm font-semibold"><LText text={"Modelo de trabalho"} /></label>
                   <select
                     value={workModel}
                     onChange={(event) => setWorkModel(event.target.value)}
@@ -848,7 +852,7 @@ export default function EmpresaEditarVagaPage({
                   >
                     {WORK_MODELS.map((model) => (
                       <option key={model} value={model}>
-                        {model}
+                        <LText text={model} />
                       </option>
                     ))}
                   </select>
@@ -856,8 +860,7 @@ export default function EmpresaEditarVagaPage({
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Tipo de oportunidade
-                  </label>
+                    <LText text={"Tipo de oportunidade"} /></label>
                   <select
                     value={opportunityType}
                     onChange={(event) => setOpportunityType(event.target.value)}
@@ -865,14 +868,14 @@ export default function EmpresaEditarVagaPage({
                   >
                     {OPPORTUNITY_TYPES.map((type) => (
                       <option key={type} value={type}>
-                        {type}
+                        <LText text={type} />
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Senioridade</label>
+                  <label className="text-sm font-semibold"><LText text={"Senioridade"} /></label>
                   <select
                     value={seniority}
                     onChange={(event) => setSeniority(event.target.value)}
@@ -880,15 +883,15 @@ export default function EmpresaEditarVagaPage({
                   >
                     {SENIORITY_LEVELS.map((level) => (
                       <option key={level} value={level}>
-                        {level}
+                        <LText text={level} />
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Faixa salarial</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Faixa salarial"} /></label>
+                  <LElement as="input"
                     value={salaryRange}
                     onChange={(event) => setSalaryRange(event.target.value)}
                     placeholder="Ex: 1.200€ - 1.600€ brutos/mês"
@@ -897,7 +900,7 @@ export default function EmpresaEditarVagaPage({
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Idiomas e níveis mínimos</label>
+                  <label className="text-sm font-semibold"><LText text={"Idiomas e níveis mínimos"} /></label>
                   <JobLanguagePicker value={languages} onChange={setLanguages} />
                 </div>
               </div>
@@ -905,19 +908,16 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Requisitos do candidato
-              </p>
+                <LText text={"Requisitos do candidato"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Formação e experiência
-              </h2>
+                <LText text={"Formação e experiência"} /></h2>
 
               <div className="mt-6 grid gap-5">
                 <div>
                   <label className="text-sm font-semibold">
-                    Formação exigida
-                  </label>
-                  <textarea
+                    <LText text={"Formação exigida"} /></label>
+                  <LElement as="textarea"
                     value={educationRequirements}
                     onChange={(event) =>
                       setEducationRequirements(event.target.value)
@@ -930,9 +930,8 @@ export default function EmpresaEditarVagaPage({
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Experiência exigida
-                  </label>
-                  <textarea
+                    <LText text={"Experiência exigida"} /></label>
+                  <LElement as="textarea"
                     value={experienceRequirements}
                     onChange={(event) =>
                       setExperienceRequirements(event.target.value)
@@ -947,21 +946,18 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Avaliação e triagem
-              </p>
+                <LText text={"Avaliação e triagem"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                3 perguntas simples e critérios
-              </h2>
+                <LText text={"3 perguntas simples e critérios"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                Use perguntas rápidas, objetivas e fáceis de responder.
-              </p>
+                <LText text={"Use perguntas rápidas, objetivas e fáceis de responder."} /></p>
 
               <div className="mt-6 grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">Pergunta 1</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Pergunta 1"} /></label>
+                  <LElement as="input"
                     value={screeningQuestionOne}
                     onChange={(event) =>
                       setScreeningQuestionOne(event.target.value)
@@ -972,8 +968,8 @@ export default function EmpresaEditarVagaPage({
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Pergunta 2</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Pergunta 2"} /></label>
+                  <LElement as="input"
                     value={screeningQuestionTwo}
                     onChange={(event) =>
                       setScreeningQuestionTwo(event.target.value)
@@ -984,8 +980,8 @@ export default function EmpresaEditarVagaPage({
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Pergunta 3</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Pergunta 3"} /></label>
+                  <LElement as="input"
                     value={screeningQuestionThree}
                     onChange={(event) =>
                       setScreeningQuestionThree(event.target.value)
@@ -997,8 +993,7 @@ export default function EmpresaEditarVagaPage({
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Critérios de avaliação
-                  </label>
+                    <LText text={"Critérios de avaliação"} /></label>
 
                   <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
                     <div className="flex flex-wrap gap-2">
@@ -1015,12 +1010,12 @@ export default function EmpresaEditarVagaPage({
                           }
                           className={selectedChipClass}
                         >
-                          {criteria}
-                          <span>×</span>
+                          <LText text={criteria} />
+                          <span><LText text={"×"} /></span>
                         </button>
                       ))}
 
-                      <input
+                      <LElement as="input"
                         value={evaluationCriteriaInput}
                         onChange={(event) =>
                           setEvaluationCriteriaInput(event.target.value)
@@ -1043,9 +1038,8 @@ export default function EmpresaEditarVagaPage({
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Enquadramento da Vaga
-                  </label>
-                  <textarea
+                    <LText text={"Enquadramento da Vaga"} /></label>
+                  <LElement as="textarea"
                     value={candidatePitch}
                     onChange={(event) => setCandidatePitch(event.target.value)}
                     rows={4}
@@ -1058,16 +1052,14 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Inteligência artificial
-              </p>
+                <LText text={"Inteligência artificial"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Resumo IA
-              </h2>
+                <LText text={"Resumo IA"} /></h2>
 
               <div className="mt-6">
-                <label className="text-sm font-semibold">Resumo IA</label>
-                <textarea
+                <label className="text-sm font-semibold"><LText text={"Resumo IA"} /></label>
+                <LElement as="textarea"
                   value={aiSummary}
                   onChange={(event) => setAiSummary(event.target.value)}
                   rows={5}
@@ -1081,14 +1073,12 @@ export default function EmpresaEditarVagaPage({
           <aside className="space-y-6 lg:sticky lg:top-32 lg:self-start">
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Qualidade para matching
-              </h2>
+                <LText text={"Qualidade para matching"} /></h2>
 
               <div className="mt-5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-semibold text-slate-700">
-                    Estrutura da vaga
-                  </span>
+                    <LText text={"Estrutura da vaga"} /></span>
                   <span className="font-bold text-[#1683FF]">
                     {matchingScore}%
                   </span>
@@ -1103,20 +1093,16 @@ export default function EmpresaEditarVagaPage({
               </div>
 
               <p className="mt-4 text-sm leading-6 text-slate-500">
-                Quanto mais simples, completa e estruturada for a vaga, melhor
-                será o matching com candidatos.
-              </p>
+                <LText text={"Quanto mais simples, completa e estruturada for a vaga, melhor será o matching com candidatos."} /></p>
             </section>
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Estado da vaga
-              </h2>
+                <LText text={"Estado da vaga"} /></h2>
 
               <div className="mt-5 grid gap-3">
                 <label className="flex items-center justify-between rounded-2xl border border-[#DDE3EA] p-4 text-sm font-semibold">
-                  Vaga ativa
-                  <input
+                  <LText text={"Vaga ativa"} /><input
                     type="checkbox"
                     checked={isActive}
                     onChange={(event) => setIsActive(event.target.checked)}
@@ -1124,8 +1110,7 @@ export default function EmpresaEditarVagaPage({
                 </label>
 
                 <label className="flex items-center justify-between rounded-2xl border border-[#DDE3EA] p-4 text-sm font-semibold">
-                  Vaga em destaque
-                  <input
+                  <LText text={"Vaga em destaque"} /><input
                     type="checkbox"
                     checked={isFeatured}
                     onChange={(event) => setIsFeatured(event.target.checked)}
@@ -1136,13 +1121,10 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Copiloto IA
-              </h2>
+                <LText text={"Copiloto IA"} /></h2>
 
               <p className="mt-4 text-sm leading-6 text-slate-500">
-                Pode usar a IA para acelerar a atualização, mantendo todos os
-                campos editáveis.
-              </p>
+                <LText text={"Pode usar a IA para acelerar a atualização, mantendo todos os campos editáveis."} /></p>
 
               <button
                 type="button"
@@ -1150,7 +1132,7 @@ export default function EmpresaEditarVagaPage({
                 disabled={isGeneratingAI}
                 className="mt-5 w-full rounded-2xl bg-[#07111F] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isGeneratingAI ? "A estruturar..." : "Estruturar com IA"}
+                <LText text={isGeneratingAI ? "A estruturar..." : "Estruturar com IA"} />
               </button>
             </section>
 
@@ -1160,7 +1142,7 @@ export default function EmpresaEditarVagaPage({
                 disabled={isSaving}
                 className="w-full rounded-2xl bg-[#1683FF] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isSaving ? "A guardar..." : "Guardar alterações"}
+                <LText text={isSaving ? "A guardar..." : "Guardar alterações"} />
               </button>
             </section>
           </aside>

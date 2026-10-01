@@ -1,3 +1,4 @@
+import { normalizeLocale } from "@/lib/i18n/config";
 import {createClient} from '@supabase/supabase-js';
 import {sendNotificationEmail} from '@/lib/notification-email';
 export const runtime='nodejs';
@@ -19,11 +20,12 @@ export async function GET(request:Request){
  const rows=(batch.data||[]) as {id:string;lease_id:string;user_id:string;related_type:string;email:string;recipient_name:string|null;title:string;message:string;related_url:string;action_label:string;event_key:string;attempt:number}[];
  for(let offset=0;offset<rows.length;offset+=4){
   await Promise.all(rows.slice(offset,offset+4).map(async row=>{
-   const {data:preferences,error}=await db.from('notification_preferences').select('email_enabled,application_updates_enabled,contact_requests_enabled,match_updates_enabled').eq('user_id',row.user_id).maybeSingle();
+   const [preferenceResult,profileResult]=await Promise.all([db.from('notification_preferences').select('email_enabled,application_updates_enabled,contact_requests_enabled,match_updates_enabled').eq('user_id',row.user_id).maybeSingle(),db.from('profiles').select('locale').eq('id',row.user_id).single()]);
+   const {data:preferences,error}=preferenceResult;
    const category=row.related_type==='application'||row.related_type==='candidate_action'?'application_updates_enabled':row.related_type?.includes('contact')?'contact_requests_enabled':row.related_type?.includes('match')?'match_updates_enabled':null;
    const disabled=!error&&(preferences?.email_enabled===false||(category&&preferences?.[category]===false));
    // Retry keys are stable inside Resend's 24h idempotency window; later attempts get a fresh key.
-   const result=disabled?{sent:false,disabled:true}:error?{sent:false,disabled:false}:await sendNotificationEmail({to:row.email,name:row.recipient_name,title:row.title,message:row.message,relatedUrl:row.related_url,actionLabel:row.action_label,eventKey:row.attempt===1?row.event_key:`${row.event_key}:retry:${row.attempt}`},{apiKey:process.env.RESEND_API_KEY,from:process.env.NOTIFICATION_FROM_EMAIL||'ARYNQO <no-reply@arynqo.com>',baseUrl:process.env.NEXT_PUBLIC_APP_URL||'https://www.arynqo.com'});
+   const result=disabled?{sent:false,disabled:true}:(error||profileResult.error)?{sent:false,disabled:false}:await sendNotificationEmail({locale:normalizeLocale(profileResult.data?.locale),to:row.email,name:row.recipient_name,title:row.title,message:row.message,relatedUrl:row.related_url,actionLabel:row.action_label,eventKey:row.attempt===1?row.event_key:`${row.event_key}:retry:${row.attempt}`},{apiKey:process.env.RESEND_API_KEY,from:process.env.NOTIFICATION_FROM_EMAIL||'ARYNQO <no-reply@arynqo.com>',baseUrl:process.env.NEXT_PUBLIC_APP_URL||'https://www.arynqo.com'});
    const done=await db.rpc('finish_notification_email',{target:row.id,lease:row.lease_id,delivered:result.sent,disabled:!!result.disabled});
    if(done.error||(!result.sent&&!result.disabled))failed++;else if(result.sent)sent++;
   }));

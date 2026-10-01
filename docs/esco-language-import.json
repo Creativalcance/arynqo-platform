@@ -1,0 +1,30 @@
+{
+  "source": "https://ec.europa.eu/esco/api/search",
+  "version": "v1.2.1",
+  "copyright": "© European Union · CC BY 4.0",
+  "languages": {
+    "en": {
+      "concepts": 13939,
+      "sha256": "89a1f9f85ee44ee0c6c9aad776bb1af82cc270c867ec77429b0e928a47df2866"
+    },
+    "fr": {
+      "concepts": 13939,
+      "sha256": "4f9ad4be7f553a3df24fc0ba0f5be21274ad422fe9f17f7ad87065e9f571c595"
+    },
+    "es": {
+      "concepts": 13939,
+      "sha256": "40d799a06b40c7c785aaa7b39bb6758fd8b647d572b7a649d6d831f03ae1d228"
+    },
+    "de": {
+      "concepts": 13939,
+      "sha256": "9cbedab273b30206c8e25917d7d41cff5b59067cc8a2f903a056af4a402b6763"
+    },
+    "it": {
+      "concepts": 13939,
+      "sha256": "48e93c0a6b71a318e434bb4baa4f37542238dfef2045a7a20a580cac7b53148f"
+    }
+  },
+  "imported_concepts_per_language": 13793,
+  "imported_labels": 68965,
+  "canonical_values": "Portuguese labels retained; translation joins the exact source URI and version. The 146 source concepts absent from the existing curated catalog were not created."
+}

@@ -1,6 +1,10 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -38,7 +42,7 @@ export default function DefinicoesNotificacoesPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -62,7 +66,7 @@ export default function DefinicoesNotificacoesPage() {
       .maybeSingle();
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsLoading(false);
       return;
     }
@@ -87,7 +91,7 @@ export default function DefinicoesNotificacoesPage() {
         .single();
 
       if (createError || !createdPreferences) {
-        alert(createError?.message || "Não foi possível criar preferências.");
+        localizedAlert(createError?.message || "Não foi possível criar preferências.");
         setIsLoading(false);
         return;
       }
@@ -144,7 +148,7 @@ export default function DefinicoesNotificacoesPage() {
     setIsSaving(false);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -169,8 +173,7 @@ export default function DefinicoesNotificacoesPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
         <p className="text-sm text-slate-500">
-          A carregar preferências de notificações...
-        </p>
+          <LText text={"A carregar preferências de notificações..."} /></p>
       </main>
     );
   }
@@ -183,13 +186,12 @@ export default function DefinicoesNotificacoesPage() {
             href="/dashboard/notificacoes"
             className="inline-flex rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
           >
-            ← Voltar às notificações
-          </Link>
+            <LText text={"← Voltar às notificações"} /></Link>
         </div>
 
         {successMessage && (
           <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
-            {successMessage}
+            <LText text={successMessage} />
           </div>
         )}
 
@@ -200,18 +202,13 @@ export default function DefinicoesNotificacoesPage() {
 
             <div className="relative">
               <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                Definições
-              </p>
+                <LText text={"Definições"} /></p>
 
               <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                Preferências de notificações.
-              </h1>
+                <LText text={"Preferências de notificações."} /></h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                Define como queres receber atualizações importantes sobre
-                candidaturas, pedidos de contacto, matches e atividade da
-                plataforma.
-              </p>
+                <LText text={"Define como queres receber atualizações importantes sobre candidaturas, pedidos de contacto, matches e atividade da plataforma."} /></p>
             </div>
           </div>
         </section>
@@ -219,17 +216,13 @@ export default function DefinicoesNotificacoesPage() {
         <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-              Canais
-            </p>
+              <LText text={"Canais"} /></p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-              Como queres ser notificado
-            </h2>
+              <LText text={"Como queres ser notificado"} /></h2>
 
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              As notificações dentro da plataforma mantêm-se ativas. Aqui podes
-              gerir os canais adicionais como email e push futuro na app.
-            </p>
+              <LText text={"As notificações dentro da plataforma mantêm-se ativas. Aqui podes gerir os canais adicionais como email e push futuro na app."} /></p>
           </div>
 
           <div className="grid gap-4">
@@ -252,12 +245,10 @@ export default function DefinicoesNotificacoesPage() {
         <section className="mt-8 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-              Tipos de alerta
-            </p>
+              <LText text={"Tipos de alerta"} /></p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-              Que eventos queres acompanhar
-            </h2>
+              <LText text={"Que eventos queres acompanhar"} /></h2>
           </div>
 
           <div className="grid gap-4">
@@ -297,7 +288,7 @@ export default function DefinicoesNotificacoesPage() {
             disabled={isSaving}
             className="rounded-full bg-[#1683FF] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(22,131,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSaving ? "A guardar..." : "Guardar preferências"}
+            <LText text={isSaving ? "A guardar..." : "Guardar preferências"} />
           </button>
         </div>
       </div>
@@ -325,9 +316,9 @@ function PreferenceToggle({
       }`}
     >
       <div className="max-w-2xl">
-        <p className="text-sm font-semibold text-[#07111F]">{title}</p>
+        <p className="text-sm font-semibold text-[#07111F]"><LText text={title} /></p>
 
-        <p className="mt-1 text-sm leading-6 text-slate-500">{description}</p>
+        <p className="mt-1 text-sm leading-6 text-slate-500"><LText text={description} /></p>
       </div>
 
       <button

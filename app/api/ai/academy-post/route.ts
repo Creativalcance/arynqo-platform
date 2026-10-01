@@ -1,3 +1,4 @@
+import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
           content: `
 És editor sénior da Arynqo Academy, uma área editorial sobre carreira, candidaturas, CV, entrevistas, empregabilidade, matching inteligente e recrutamento.
 
-Deves escrever em português de Portugal, com tom claro, profissional, útil e acessível.
+Deves escrever no idioma ${localeNames[actor.locale || "pt"]}, com tom claro, profissional, útil e acessível.
 
 Devolve APENAS JSON válido com esta estrutura:
 

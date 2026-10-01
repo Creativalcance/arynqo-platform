@@ -1,3 +1,4 @@
+import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextResponse } from "next/server";
 
@@ -59,7 +60,7 @@ REGRAS:
 - Responder apenas JSON válido.
 - Não usar markdown.
 - Não inventar informação impossível.
-- Escrever em português de Portugal.
+- Escrever no idioma ${localeNames[actor.locale || "pt"]}. Manter as chaves JSON e os códigos de classificação inalterados.
 - Ser profissional, claro e premium.
 - As skills devem ser curtas e normalizadas.
 - As perguntas de triagem devem ajudar a avaliar candidatos.

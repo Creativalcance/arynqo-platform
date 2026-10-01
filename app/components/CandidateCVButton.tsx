@@ -1,4 +1,6 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
+
 import { useState } from "react";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
@@ -18,5 +20,5 @@ export function CandidateCVButton({ studentId, className }: { studentId: string;
     } catch (failure) { setError(failure instanceof Error ? failure.message : "Não foi possível obter o currículo."); }
     finally { setBusy(false); }
   }
-  return <div><button type="button" disabled={busy} onClick={download} className={className}>{busy ? "A obter currículo…" : "Ver CV"}</button>{error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}</div>;
+  return <div><button type="button" disabled={busy} onClick={download} className={className}><LText text={busy ? "A obter currículo…" : "Ver CV"} /></button>{error && <p role="alert" className="mt-2 text-sm text-red-700"><LText text={error} /></p>}</div>;
 }

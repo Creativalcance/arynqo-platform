@@ -1,6 +1,10 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Image from "next/image";
+
+import Image from "@/lib/i18n/image";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -17,7 +21,7 @@ export default function AdminLoginPage() {
     event.preventDefault();
 
     if (!email.trim() || !password.trim()) {
-      alert("Introduz o email e a palavra-passe.");
+      localizedAlert("Introduz o email e a palavra-passe.");
       return;
     }
 
@@ -30,7 +34,7 @@ export default function AdminLoginPage() {
       });
 
     if (authError || !authData.session) {
-      alert(authError?.message || "Não foi possível iniciar sessão.");
+      localizedAlert(authError?.message || "Não foi possível iniciar sessão.");
       setIsLoading(false);
       return;
     }
@@ -43,7 +47,7 @@ export default function AdminLoginPage() {
 
     if (profileError || !profileData) {
       await supabase.auth.signOut();
-      alert("Perfil não encontrado.");
+      localizedAlert("Perfil não encontrado.");
       setIsLoading(false);
       return;
     }
@@ -52,7 +56,7 @@ export default function AdminLoginPage() {
 
     if (profile.role !== "admin") {
       await supabase.auth.signOut();
-      alert("Este acesso é reservado a administradores.");
+      localizedAlert("Este acesso é reservado a administradores.");
       setIsLoading(false);
       return;
     }
@@ -60,7 +64,7 @@ export default function AdminLoginPage() {
     window.localStorage.setItem("arynqo_admin_unlocked", "true");
     window.dispatchEvent(new Event("arynqo-admin-unlocked"));
 
-    window.location.href = "/admin";
+    window.location.href = browserLocalizedPath("/admin");
   }
 
   return (
@@ -79,24 +83,20 @@ export default function AdminLoginPage() {
 
         <div className="mt-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#1683FF]">
-            Admin
-          </p>
+            <LText text={"Admin"} /></p>
 
           <h1 className="mt-3 text-3xl font-black tracking-[-0.05em]">
-            Acesso reservado.
-          </h1>
+            <LText text={"Acesso reservado."} /></h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-500">
-            Entra com o email e palavra-passe de administrador para desbloquear
-            a área de gestão da ARYNQO.
-          </p>
+            <LText text={"Entra com o email e palavra-passe de administrador para desbloquear a área de gestão da ARYNQO."} /></p>
         </div>
 
         <form onSubmit={handleLogin} className="mt-8 grid gap-5">
           <div>
-            <label className="text-sm font-semibold">Email</label>
+            <label className="text-sm font-semibold"><LText text={"Email"} /></label>
 
-            <input
+            <LElement as="input"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -106,9 +106,9 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label className="text-sm font-semibold">Palavra-passe</label>
+            <label className="text-sm font-semibold"><LText text={"Palavra-passe"} /></label>
 
-            <input
+            <LElement as="input"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -122,7 +122,7 @@ export default function AdminLoginPage() {
             disabled={isLoading}
             className="mt-2 rounded-full bg-[#07111F] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isLoading ? "A validar..." : "Entrar como admin"}
+            <LText text={isLoading ? "A validar..." : "Entrar como admin"} />
           </button>
         </form>
       </section>

@@ -1,0 +1,46 @@
+{
+  "results": [
+    {
+      "locale": "pt",
+      "status": 200,
+      "title": "Emprego e recrutamento internacional | ARYNQO"
+    },
+    {
+      "locale": "en",
+      "status": 200,
+      "title": "International jobs and recruitment | ARYNQO"
+    },
+    {
+      "locale": "fr",
+      "status": 200,
+      "title": "Emploi et recrutement à l’international | ARYNQO"
+    },
+    {
+      "locale": "es",
+      "status": 200,
+      "title": "Empleo y selección internacional | ARYNQO"
+    },
+    {
+      "locale": "de",
+      "status": 200,
+      "title": "Internationale Jobs und Personalgewinnung | ARYNQO"
+    },
+    {
+      "locale": "it",
+      "status": 200,
+      "title": "Lavoro e selezione a livello internazionale | ARYNQO"
+    }
+  ],
+  "checks": [
+    "canonical",
+    "hreflang",
+    "SSR lang",
+    "private noindex",
+    "preference redirect",
+    "manifests",
+    "legal page",
+    "sitemap",
+    "robots",
+    "API isolation"
+  ]
+}

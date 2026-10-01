@@ -1,9 +1,13 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
+
 
 import { createNotification } from "@/lib/create-notification";
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { use, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -142,7 +146,7 @@ export default function EmpresaCandidatoDetalhePage({
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -155,8 +159,8 @@ export default function EmpresaCandidatoDetalhePage({
       .single();
 
     if (companyError || !companyProfile) {
-      alert("Apenas empresas podem aceder a esta página.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem aceder a esta página.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -168,8 +172,8 @@ export default function EmpresaCandidatoDetalhePage({
     catch { data = undefined; }
 
     if (!data) {
-      alert("Candidato não encontrado.");
-      window.location.href = "/empresa/matches";
+      localizedAlert("Candidato não encontrado.");
+      window.location.href = browserLocalizedPath("/empresa/matches");
       return;
     }
 
@@ -256,12 +260,12 @@ export default function EmpresaCandidatoDetalhePage({
   async function requestContactAuthorization() {
     if (isRequestingContact) return;
     if (!company || !student || !jobId) {
-      alert("Não foi possível associar este pedido a uma vaga.");
+      localizedAlert("Não foi possível associar este pedido a uma vaga.");
       return;
     }
 
     if (student.contact_visibility === "closed") {
-      alert("Este candidato não aceita pedidos de contacto sem candidatura.");
+      localizedAlert("Este candidato não aceita pedidos de contacto sem candidatura.");
       return;
     }
 
@@ -286,7 +290,7 @@ export default function EmpresaCandidatoDetalhePage({
       .single();
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsRequestingContact(false);
       return;
     }
@@ -306,17 +310,17 @@ export default function EmpresaCandidatoDetalhePage({
     setContactRequest(data as ContactRequest);
     setIsRequestingContact(false);
 
-    alert("Pedido de contacto enviado ao candidato.");
+    localizedAlert("Pedido de contacto enviado ao candidato.");
   }
 
   async function handleCompanyAction(actionType: "shortlisted" | "accepted") {
     if (!company || !student?.id || !jobId) {
-      alert("Não foi possível associar esta ação a uma vaga.");
+      localizedAlert("Não foi possível associar esta ação a uma vaga.");
       return;
     }
 
     if (!canViewFullProfile) {
-      alert("Precisas de autorização do candidato antes de executar esta ação.");
+      localizedAlert("Precisas de autorização do candidato antes de executar esta ação.");
       return;
     }
 
@@ -330,7 +334,7 @@ export default function EmpresaCandidatoDetalhePage({
     });
 
     if (error && error.code !== "23505") {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsSavingAction(false);
       return;
     }
@@ -350,7 +354,7 @@ export default function EmpresaCandidatoDetalhePage({
 });
     }
 
-    alert(
+    localizedAlert(
       actionType === "accepted"
         ? "Candidato aceite e notificado com sucesso."
         : "Candidato adicionado à shortlist."
@@ -403,7 +407,7 @@ export default function EmpresaCandidatoDetalhePage({
 
   function exportCandidateJSON() {
     if (!canViewFullProfile) {
-      alert("Precisas de autorização do candidato para exportar o perfil.");
+      localizedAlert("Precisas de autorização do candidato para exportar o perfil.");
       return;
     }
 
@@ -418,7 +422,7 @@ export default function EmpresaCandidatoDetalhePage({
 
   function exportCandidateCSV() {
     if (!canViewFullProfile) {
-      alert("Precisas de autorização do candidato para exportar o perfil.");
+      localizedAlert("Precisas de autorização do candidato para exportar o perfil.");
       return;
     }
 
@@ -439,7 +443,7 @@ export default function EmpresaCandidatoDetalhePage({
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar candidato...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar candidato..."} /></p>
       </main>
     );
   }
@@ -456,8 +460,7 @@ export default function EmpresaCandidatoDetalhePage({
             href="/empresa/matches"
             className="inline-flex rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
           >
-            ← Voltar aos matches
-          </Link>
+            <LText text={"← Voltar aos matches"} /></Link>
         </div>
 
         <section className="mb-8 overflow-hidden rounded-[32px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
@@ -468,19 +471,15 @@ export default function EmpresaCandidatoDetalhePage({
             <div className="relative grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Candidate profile
-                </p>
+                  <LText text={"Candidate profile"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  {canViewFullProfile
-                    ? profile?.name || "Candidato"
-                    : student.headline || "Perfil protegido"}
+                  {canViewFullProfile ? profile?.name || <LText text="Candidato" /> : student.headline || <LText text="Perfil protegido" />}
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
                   {student.main_role ||
-                    student.headline ||
-                    "Perfil profissional em análise"}
+                    student.headline || <LText text="Perfil profissional em análise" />}
                 </p>
               </div>
 
@@ -501,13 +500,12 @@ export default function EmpresaCandidatoDetalhePage({
             <div className="flex flex-wrap items-center justify-between gap-5">
               <div>
                 <h2 className="text-xl font-semibold tracking-[-0.04em]">
-                  Perfil protegido
-                </h2>
+                  <LText text={"Perfil protegido"} /></h2>
 
                 <p className="mt-2 max-w-3xl text-sm leading-6">
-                  {contactStatusLabel}
+                  <LText text={contactStatusLabel} />
                 </p>
-                {!jobId && <p className="mt-2 text-sm">Seleciona uma vaga ativa em <Link href="/empresa/talentos" className="underline">Explorar candidatos</Link> para enviar o pedido.</p>}
+                {!jobId && <p className="mt-2 text-sm"><LText text={"Seleciona uma vaga ativa em "} /><Link href="/empresa/talentos" className="underline"><LText text={"Explorar candidatos"} /></Link> <LText text={" para enviar o pedido."} /></p>}
               </div>
 
               {student.contact_visibility !== "closed" &&
@@ -519,9 +517,9 @@ export default function EmpresaCandidatoDetalhePage({
                     disabled={isRequestingContact || !jobId}
                     className="rounded-full bg-[#1683FF] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isRequestingContact
+                    <LText text={isRequestingContact
                       ? "A enviar..."
-                      : "Pedir autorização para ver o perfil"}
+                      : "Pedir autorização para ver o perfil"} />
                   </button>
                 )}
             </div>
@@ -533,21 +531,16 @@ export default function EmpresaCandidatoDetalhePage({
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <div className="flex flex-col items-center text-center">
                 <div className="flex h-28 w-28 items-center justify-center rounded-[32px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-4xl font-semibold text-white shadow-[0_20px_60px_rgba(22,131,255,0.25)]">
-                  {canViewFullProfile && profile?.name
-                    ? profile.name.charAt(0).toUpperCase()
-                    : "T"}
+                  {canViewFullProfile && profile?.name ? profile.name.charAt(0).toUpperCase() : <LText text="T" />}
                 </div>
 
                 <h2 className="mt-6 text-2xl font-semibold tracking-[-0.04em]">
-                  {canViewFullProfile
-                    ? profile?.name || "Candidato"
-                    : "Perfil protegido"}
+                  {canViewFullProfile ? profile?.name || <LText text="Candidato" /> : <LText text="Perfil protegido" />}
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-slate-500">
                   {student.headline ||
-                    student.main_role ||
-                    "Função não definida"}
+                    student.main_role || <LText text="Função não definida" />}
                 </p>
               </div>
 
@@ -571,11 +564,10 @@ export default function EmpresaCandidatoDetalhePage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Estado de contacto
-              </h2>
+                <LText text={"Estado de contacto"} /></h2>
 
               <p className="mt-4 text-sm leading-6 text-slate-500">
-                {contactStatusLabel}
+                <LText text={contactStatusLabel} />
               </p>
 
               {!canViewFullProfile &&
@@ -588,17 +580,16 @@ export default function EmpresaCandidatoDetalhePage({
                     disabled={isRequestingContact || !jobId}
                     className="mt-5 w-full rounded-2xl bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isRequestingContact
+                    <LText text={isRequestingContact
                       ? "A enviar pedido..."
-                      : "Pedir autorização"}
+                      : "Pedir autorização"} />
                   </button>
                 )}
             </section>
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Skills
-              </h2>
+                <LText text={"Skills"} /></h2>
 
               <div className="mt-5 flex flex-wrap gap-2">
                 {skills.map((skill) => (
@@ -606,22 +597,20 @@ export default function EmpresaCandidatoDetalhePage({
                     key={skill.id}
                     className="rounded-full border border-[#1683FF]/20 bg-[#1683FF]/5 px-3 py-2 text-xs font-semibold text-[#07111F]"
                   >
-                    {skill.name}
+                    <LText text={skill.name} />
                   </span>
                 ))}
 
                 {skills.length === 0 && (
                   <p className="text-sm leading-6 text-slate-500">
-                    Sem skills registadas.
-                  </p>
+                    <LText text={"Sem skills registadas."} /></p>
                 )}
               </div>
             </section>
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Documentos e links
-              </h2>
+                <LText text={"Documentos e links"} /></h2>
 
               <div className="mt-5 space-y-3">
                 {canViewFullProfile && student.cv_url && (
@@ -629,32 +618,28 @@ export default function EmpresaCandidatoDetalhePage({
                 )}
 
                 {canViewFullProfile && student.linkedin_url && (
-                  <a
+                  <LElement as="a"
                     href={student.linkedin_url}
                     target="_blank"
                     rel="noreferrer"
                     className="block rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm font-medium transition hover:border-[#1683FF] hover:text-[#1683FF]"
                   >
-                    LinkedIn
-                  </a>
+                    <LText text={"LinkedIn"} /></LElement>
                 )}
 
                 {canViewFullProfile && student.portfolio_url && (
-                  <a
+                  <LElement as="a"
                     href={student.portfolio_url}
                     target="_blank"
                     rel="noreferrer"
                     className="block rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm font-medium transition hover:border-[#1683FF] hover:text-[#1683FF]"
                   >
-                    Portfólio
-                  </a>
+                    <LText text={"Portfólio"} /></LElement>
                 )}
 
                 {!canViewFullProfile && (
                   <p className="text-sm leading-6 text-slate-500">
-                    Documentos e links protegidos até o candidato autorizar o
-                    contacto.
-                  </p>
+                    <LText text={"Documentos e links protegidos até o candidato autorizar o contacto."} /></p>
                 )}
 
                 {canViewFullProfile &&
@@ -662,21 +647,17 @@ export default function EmpresaCandidatoDetalhePage({
                   !student.linkedin_url &&
                   !student.portfolio_url && (
                     <p className="text-sm leading-6 text-slate-500">
-                      Sem documentos ou links disponíveis.
-                    </p>
+                      <LText text={"Sem documentos ou links disponíveis."} /></p>
                   )}
               </div>
             </section>
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                Ações de recrutamento
-              </h2>
+                <LText text={"Ações de recrutamento"} /></h2>
 
               <p className="mt-4 text-sm leading-6 text-slate-500">
-                As ações de recrutamento completas ficam disponíveis quando o
-                contacto estiver autorizado.
-              </p>
+                <LText text={"As ações de recrutamento completas ficam disponíveis quando o contacto estiver autorizado."} /></p>
 
               <div className="mt-5 grid gap-3">
                 <button
@@ -685,8 +666,7 @@ export default function EmpresaCandidatoDetalhePage({
                   disabled={isSavingAction || !jobId || !canViewFullProfile}
                   className="rounded-2xl bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Aceitar candidato
-                </button>
+                  <LText text={"Aceitar candidato"} /></button>
 
                 <button
                   type="button"
@@ -694,8 +674,7 @@ export default function EmpresaCandidatoDetalhePage({
                   disabled={isSavingAction || !jobId || !canViewFullProfile}
                   className="rounded-2xl border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Adicionar à shortlist
-                </button>
+                  <LText text={"Adicionar à shortlist"} /></button>
 
                 <button
                   type="button"
@@ -703,8 +682,7 @@ export default function EmpresaCandidatoDetalhePage({
                   disabled={!canViewFullProfile}
                   className="rounded-2xl border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Exportar JSON
-                </button>
+                  <LText text={"Exportar JSON"} /></button>
 
                 <button
                   type="button"
@@ -712,8 +690,7 @@ export default function EmpresaCandidatoDetalhePage({
                   disabled={!canViewFullProfile}
                   className="rounded-2xl border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Exportar CSV
-                </button>
+                  <LText text={"Exportar CSV"} /></button>
               </div>
             </section>
           </aside>
@@ -738,10 +715,7 @@ export default function EmpresaCandidatoDetalhePage({
             {!canViewFullProfile && (
               <ProfileSection eyebrow="Privacidade" title="Dados protegidos">
                 <p className="text-base leading-7 text-slate-600">
-                  Este candidato ainda não autorizou o acesso ao perfil completo.
-                  Até lá, apenas são apresentados os dados essenciais de
-                  compatibilidade profissional.
-                </p>
+                  <LText text={"Este candidato ainda não autorizou o acesso ao perfil completo. Até lá, apenas são apresentados os dados essenciais de compatibilidade profissional."} /></p>
               </ProfileSection>
             )}
 
@@ -749,7 +723,7 @@ export default function EmpresaCandidatoDetalhePage({
               <>
                 <ProfileSection eyebrow="Percurso" title="Formação académica">
                   <p className="whitespace-pre-line text-base leading-7 text-slate-600">
-                    {student.academic_education || "Não indicado."}
+                    <LText text={student.academic_education || "Não indicado."} />
                   </p>
                 </ProfileSection>
 
@@ -758,13 +732,13 @@ export default function EmpresaCandidatoDetalhePage({
                   title="Experiência profissional"
                 >
                   <p className="whitespace-pre-line text-base leading-7 text-slate-600">
-                    {student.professional_experience || "Não indicado."}
+                    <LText text={student.professional_experience || "Não indicado."} />
                   </p>
                 </ProfileSection>
 
                 <ProfileSection eyebrow="Idiomas" title="Idiomas">
                   <p className="whitespace-pre-line text-base leading-7 text-slate-600">
-                    {student.languages || "Não indicado."}
+                    <LText text={student.languages || "Não indicado."} />
                   </p>
                 </ProfileSection>
               </>
@@ -807,11 +781,11 @@ function ProfileSection({
   return (
     <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-7 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-        {eyebrow}
+        <LText text={eyebrow} />
       </p>
 
       <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-        {title}
+        <LText text={title} />
       </h2>
 
       <div className="mt-6">{children}</div>
@@ -829,11 +803,11 @@ function InfoBox({
   return (
     <div className="rounded-2xl border border-[#DDE3EA] bg-[#F7F9FC] p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-2 text-sm font-semibold text-[#07111F]">
-        {value || "Não indicado"}
+        <LText text={value || "Não indicado"} />
       </p>
     </div>
   );
@@ -849,11 +823,11 @@ function PreviewLine({
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-1 break-words text-sm font-medium">
-        {value || "Ainda não definido"}
+        <LText text={value || "Ainda não definido"} />
       </p>
     </div>
   );
@@ -869,11 +843,11 @@ function PreviewDark({
   return (
     <div className="mb-4 last:mb-0">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-300">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-1 text-sm font-semibold text-white">
-        {value || "Não indicado"}
+        <LText text={value || "Não indicado"} />
       </p>
     </div>
   );

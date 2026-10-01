@@ -1,3 +1,4 @@
+import { emailTranslator } from "@/lib/i18n/email-messages";
 import { NextResponse } from 'next/server';
 import { ApiError, apiErrorResponse } from '@/lib/api-auth';
 import { adminCatalog, isAdminDataset } from '@/lib/admin-catalog';
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
                 if (!isAdminDataset(key))
                     continue;
                 const rows = await exportDataset(db, key, { ...filters, search: '', role: '', confirmed: '', from: null, to: null });
-                const content = csv(rows, adminCatalog[key].fields ? adminCatalog[key].fields.split(',') : undefined);
+                const content = csv(rows, adminCatalog[key].fields ? adminCatalog[key].fields.split(',') : undefined, emailTranslator(actor.locale || "pt"));
                 bytes += Buffer.byteLength(content);
                 if (bytes > 20 * 1024 * 1024)
                     throw new ApiError(422, 'A exportação completa excede 20 MB. Exporta cada conjunto separadamente.');
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
             if (requested && (!requested.length || requested.some(x => !allowed.includes(x))))
                 throw new ApiError(400, 'Colunas inválidas.');
             await audit(db, actor, 'exportar', dataset, filters.user, rows.length);
-            return new Response(csv(rows, requested || allowed), { headers: { ...privateHeaders, 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="arynqo-${dataset}.csv"` } });
+            return new Response(csv(rows, requested || allowed, emailTranslator(actor.locale || "pt")), { headers: { ...privateHeaders, 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="arynqo-${dataset}.csv"` } });
         }
         const raw = url.searchParams.get('page') || '1';
         if (!/^\d{1,6}$/.test(raw) || Number(raw) < 1)

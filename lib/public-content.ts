@@ -10,7 +10,7 @@ export function publicClient() {
 }
 export const getPublicJob = cache(async (id: string) => {
   if (!/^[a-f0-9-]{36}$/.test(id)) return null;
-  const { data, error } = await publicClient().from("jobs").select("id,title,description,area,specializations,required_skills,preferred_skills,location,work_model,work_mode,opportunity_type,contract_type,seniority,languages,salary_range,education_requirements,experience_requirements,screening_questions,evaluation_criteria,candidate_pitch,ai_summary,is_active,created_at,company_profiles(company_name,description,website_url,location,industry,company_type,company_size,logo_url)").eq("id", id).eq("is_active", true).maybeSingle();
+  const { data, error } = await publicClient().from("jobs").select("id,title,description,country_code,content_locale,expires_at,area,specializations,required_skills,preferred_skills,location,work_model,work_mode,opportunity_type,contract_type,seniority,languages,salary_range,education_requirements,experience_requirements,screening_questions,evaluation_criteria,candidate_pitch,ai_summary,is_active,created_at,company_profiles(company_name,description,website_url,location,industry,company_type,company_size,logo_url)").eq("id", id).eq("is_active", true).maybeSingle();
   if (error) throw new Error("Não foi possível consultar a vaga.");
   return data;
 });

@@ -1,6 +1,8 @@
 "use client";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import MobileBottomNav from "../../components/arynqo/MobileBottomNav";
 import { useAppProfile } from "../../hooks/useAppProfile";
 import {
@@ -22,7 +24,7 @@ function InfoCard({
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-      <p className="text-xs text-white/40">{label}</p>
+      <p className="text-xs text-white/40"><LText text={label} /></p>
       <p className="mt-1 text-sm font-medium text-white">{value}</p>
     </div>
   );
@@ -42,7 +44,7 @@ function TagList({
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-        {title}
+        <LText text={title} />
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -51,7 +53,7 @@ function TagList({
             key={item}
             className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.07] px-3 py-1 text-xs text-cyan-100"
           >
-            {item}
+            <LText text={item} />
           </span>
         ))}
       </div>
@@ -73,11 +75,11 @@ function TextSection({
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-        {title}
+        <LText text={title} />
       </p>
 
       <p className="mt-3 whitespace-pre-line text-sm leading-6 text-white/65">
-        {value}
+        <LText text={value} />
       </p>
     </section>
   );
@@ -178,17 +180,13 @@ export default function AppPerfilPage() {
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-              ARYNQO
-            </p>
+              <LText text={"ARYNQO"} /></p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Perfil
-            </h1>
+              <LText text={"Perfil"} /></h1>
 
             <p className="mt-3 text-sm leading-6 text-white/58">
-              Dados reais do teu perfil na plataforma, ligados ao Supabase e à
-              camada de IA.
-            </p>
+              <LText text={"Dados reais do teu perfil na plataforma, ligados ao Supabase e à camada de IA."} /></p>
           </div>
 
           {hasSession && (
@@ -197,34 +195,29 @@ export default function AppPerfilPage() {
               onClick={reloadDetails}
               className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/70 transition hover:bg-white/[0.09] hover:text-white"
             >
-              Atualizar
-            </button>
+              <LText text={"Atualizar"} /></button>
           )}
         </header>
 
         {!hasSession && (
           <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5">
-            <h2 className="text-xl font-semibold">Entra na tua conta</h2>
+            <h2 className="text-xl font-semibold"><LText text={"Entra na tua conta"} /></h2>
 
             <p className="mt-3 text-sm leading-6 text-white/58">
-              Para veres o teu perfil e desbloqueares a experiência ARYNQO na
-              APP, inicia sessão ou cria uma conta.
-            </p>
+              <LText text={"Para veres o teu perfil e desbloqueares a experiência ARYNQO na APP, inicia sessão ou cria uma conta."} /></p>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <Link
                 href="/login"
                 className="rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
               >
-                Entrar
-              </Link>
+                <LText text={"Entrar"} /></Link>
 
               <Link
                 href="/registo"
                 className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                Criar conta
-              </Link>
+                <LText text={"Criar conta"} /></Link>
             </div>
           </section>
         )}
@@ -234,7 +227,7 @@ export default function AppPerfilPage() {
             {errorMessage && (
               <section className="mt-5 rounded-3xl border border-amber-300/15 bg-amber-300/[0.06] p-4">
                 <p className="text-sm leading-6 text-amber-100/80">
-                  {errorMessage}
+                  <LText text={errorMessage} />
                 </p>
               </section>
             )}
@@ -243,7 +236,7 @@ export default function AppPerfilPage() {
               <div className="flex items-center gap-4">
                 <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-3xl font-semibold text-white">
                   {imageUrl ? (
-                    <img
+                    <LElement as="img"
                       src={imageUrl}
                       alt={profileName}
                       className="h-full w-full object-cover"
@@ -255,22 +248,22 @@ export default function AppPerfilPage() {
 
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-300/70">
-                    {roleLabel}
+                    <LText text={roleLabel} />
                   </p>
 
                   <h2 className="mt-1 text-xl font-semibold tracking-tight">
-                    {profileName}
+                    <LText text={profileName} />
                   </h2>
 
                   <p className="mt-1 text-sm leading-5 text-white/55">
-                    {profileSubtitle}
+                    <LText text={profileSubtitle} />
                   </p>
                 </div>
               </div>
 
               <div className="mt-6">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/60">Completude do perfil</p>
+                  <p className="text-sm text-white/60"><LText text={"Completude do perfil"} /></p>
                   <p className="text-xl font-semibold text-cyan-200">
                     {completion}%
                   </p>
@@ -456,23 +449,20 @@ export default function AppPerfilPage() {
                 href={isCompany ? "/empresa" : "/profile"}
                 className="block rounded-3xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-cyan-300/40 hover:bg-white/[0.07]"
               >
-                <h2 className="text-sm font-semibold">Editar perfil completo</h2>
+                <h2 className="text-sm font-semibold"><LText text={"Editar perfil completo"} /></h2>
 
                 <p className="mt-1 text-sm leading-6 text-white/56">
-                  Abre a versão completa do website para editar todos os campos,
-                  importar CV, carregar logotipo ou usar IA.
-                </p>
+                  <LText text={"Abre a versão completa do website para editar todos os campos, importar CV, carregar logotipo ou usar IA."} /></p>
               </Link>
 
               <Link
                 href="/dashboard"
                 className="block rounded-3xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-cyan-300/40 hover:bg-white/[0.07]"
               >
-                <h2 className="text-sm font-semibold">Abrir dashboard</h2>
+                <h2 className="text-sm font-semibold"><LText text={"Abrir dashboard"} /></h2>
 
                 <p className="mt-1 text-sm leading-6 text-white/56">
-                  Acede à área completa da plataforma ARYNQO.
-                </p>
+                  <LText text={"Acede à área completa da plataforma ARYNQO."} /></p>
               </Link>
 
               <button
@@ -481,12 +471,10 @@ export default function AppPerfilPage() {
                 className="block w-full rounded-3xl border border-red-400/20 bg-red-400/[0.06] p-4 text-left transition hover:border-red-300/40 hover:bg-red-400/[0.1]"
               >
                 <h2 className="text-sm font-semibold text-red-200">
-                  Terminar sessão
-                </h2>
+                  <LText text={"Terminar sessão"} /></h2>
 
                 <p className="mt-1 text-sm leading-6 text-red-100/60">
-                  Sair da APP ARYNQO neste dispositivo.
-                </p>
+                  <LText text={"Sair da APP ARYNQO neste dispositivo."} /></p>
               </button>
             </section>
           </>

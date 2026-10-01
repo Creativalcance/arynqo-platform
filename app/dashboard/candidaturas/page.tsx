@@ -1,6 +1,10 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -39,6 +43,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function CandidaturasPage() {
+  const { locale: displayLocale } = useI18n();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -50,7 +55,7 @@ export default function CandidaturasPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -91,7 +96,7 @@ export default function CandidaturasPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsLoading(false);
       return;
     }
@@ -127,7 +132,7 @@ export default function CandidaturasPage() {
   }
 
   function formatDate(date: string) {
-    return new Intl.DateTimeFormat("pt-PT", {
+    return new Intl.DateTimeFormat(displayLocale, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -171,7 +176,7 @@ export default function CandidaturasPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar candidaturas...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar candidaturas..."} /></p>
       </main>
     );
   }
@@ -187,17 +192,13 @@ export default function CandidaturasPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Candidaturas
-                </p>
+                  <LText text={"Candidaturas"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Estado das tuas candidaturas.
-                </h1>
+                  <LText text={"Estado das tuas candidaturas."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Acompanha as oportunidades às quais te candidataste, consulta
-                  o estado de cada processo e volta rapidamente à vaga.
-                </p>
+                  <LText text={"Acompanha as oportunidades às quais te candidataste, consulta o estado de cada processo e volta rapidamente à vaga."} /></p>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
@@ -212,12 +213,10 @@ export default function CandidaturasPage() {
         <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-              Histórico
-            </p>
+              <LText text={"Histórico"} /></p>
 
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-              Processos ativos
-            </h2>
+              <LText text={"Processos ativos"} /></h2>
           </div>
 
           <div className="space-y-4">
@@ -237,7 +236,7 @@ export default function CandidaturasPage() {
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#07111F] to-[#1683FF] text-lg font-semibold text-white">
                         {company?.logo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <LElement as="img"
                             src={company.logo_url}
                             alt={company.company_name || "Empresa"}
                             className="h-full w-full object-cover"
@@ -256,25 +255,25 @@ export default function CandidaturasPage() {
                               application.status
                             )}`}
                           >
-                            {getStatusLabel(application.status)}
+                            <LText text={getStatusLabel(application.status)} />
                           </span>
 
                           <span className="text-xs font-medium text-slate-400">
-                            {formatDate(application.created_at)}
+                            <LText text={formatDate(application.created_at)} />
                           </span>
                         </div>
 
                         <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-                          {job?.title || "Vaga indisponível"}
+                          <LText text={job?.title || "Vaga indisponível"} />
                         </h3>
 
                         <p className="mt-2 text-sm text-slate-500">
-                          {company?.company_name || "Empresa"}
+                          {company?.company_name || <LText text="Empresa" />}
                         </p>
 
                         <div className="mt-4 flex flex-wrap gap-2">
                           {job?.area && (
-                            <Badge>{job.area}</Badge>
+                            <Badge><LText text={job.area} /></Badge>
                           )}
 
                           {job?.location && (
@@ -282,7 +281,7 @@ export default function CandidaturasPage() {
                           )}
 
                           {job?.work_mode && (
-                            <Badge>{job.work_mode}</Badge>
+                            <Badge><LText text={job.work_mode} /></Badge>
                           )}
                         </div>
                       </div>
@@ -293,8 +292,7 @@ export default function CandidaturasPage() {
                         href={`/vagas/${job.id}`}
                         className="rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                       >
-                        Ver vaga
-                      </Link>
+                        <LText text={"Ver vaga"} /></Link>
                     )}
                   </div>
                 </article>
@@ -304,20 +302,16 @@ export default function CandidaturasPage() {
             {applications.length === 0 && (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-12 text-center">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                  Ainda não tens candidaturas.
-                </h2>
+                  <LText text={"Ainda não tens candidaturas."} /></h2>
 
                 <p className="mt-4 text-sm leading-6 text-slate-500">
-                  Explora vagas compatíveis e candidata-te às oportunidades que
-                  mais se alinham com o teu perfil.
-                </p>
+                  <LText text={"Explora vagas compatíveis e candidata-te às oportunidades que mais se alinham com o teu perfil."} /></p>
 
                 <Link
                   href="/vagas"
                   className="mt-6 inline-flex rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                 >
-                  Explorar vagas
-                </Link>
+                  <LText text={"Explorar vagas"} /></Link>
               </div>
             )}
           </div>
@@ -330,7 +324,7 @@ export default function CandidaturasPage() {
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-[110px] rounded-[24px] border border-white/10 bg-white/10 p-4 text-white backdrop-blur">
-      <p className="text-xs font-medium text-white/60">{label}</p>
+      <p className="text-xs font-medium text-white/60"><LText text={label} /></p>
 
       <p className="mt-2 text-3xl font-semibold tracking-[-0.05em]">
         {value}

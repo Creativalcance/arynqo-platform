@@ -1,4 +1,8 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement, LocaleSelect } from "@/lib/i18n/client";
+
 import { CountrySelect } from "@/app/components/ProfileFields";
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
@@ -94,7 +98,7 @@ export default function PerfilEmpresaPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -125,8 +129,8 @@ export default function PerfilEmpresaPage() {
       .single();
 
     if (error || !data) {
-      alert("Apenas empresas podem editar este perfil.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem editar este perfil.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -182,7 +186,7 @@ export default function PerfilEmpresaPage() {
     setIsSaving(false);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -202,7 +206,7 @@ export default function PerfilEmpresaPage() {
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size === 0 || file.size > 5242880) {
-      alert("Seleciona uma imagem JPEG, PNG ou WebP com até 5 MB.");
+      localizedAlert("Seleciona uma imagem JPEG, PNG ou WebP com até 5 MB.");
       return;
     }
 
@@ -219,7 +223,7 @@ export default function PerfilEmpresaPage() {
       });
 
     if (uploadError) {
-      alert(uploadError.message);
+      localizedAlert(uploadError.message);
       setIsUploadingLogo(false);
       return;
     }
@@ -238,7 +242,7 @@ export default function PerfilEmpresaPage() {
     }
 
     if (!websiteUrl.trim()) {
-      alert("Introduz primeiro o website da empresa.");
+      localizedAlert("Introduz primeiro o website da empresa.");
       return;
     }
 
@@ -259,13 +263,13 @@ export default function PerfilEmpresaPage() {
       try {
         data = rawText ? JSON.parse(rawText) : {};
       } catch {
-        alert("A IA devolveu uma resposta inválida.");
+        localizedAlert("A IA devolveu uma resposta inválida.");
         setIsAutoFilling(false);
         return;
       }
 
       if (!response.ok) {
-        alert(data.error || "Não foi possível analisar o website.");
+        localizedAlert(data.error || "Não foi possível analisar o website.");
         setIsAutoFilling(false);
         return;
       }
@@ -286,7 +290,7 @@ export default function PerfilEmpresaPage() {
 
       setSuccessMessage("Dados preenchidos automaticamente. Revê e guarda o perfil.");
     } catch {
-      alert("Erro ao analisar website.");
+      localizedAlert("Erro ao analisar website.");
     }
 
     setIsAutoFilling(false);
@@ -322,8 +326,7 @@ export default function PerfilEmpresaPage() {
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
         <div className="rounded-[32px] border border-white/70 bg-white/80 px-8 py-6 shadow-[0_24px_80px_rgba(7,17,31,0.08)] backdrop-blur">
           <p className="text-sm font-medium text-[#07111F]">
-            A carregar perfil da empresa...
-          </p>
+            <LText text={"A carregar perfil da empresa..."} /></p>
         </div>
       </main>
     );
@@ -331,10 +334,11 @@ export default function PerfilEmpresaPage() {
 
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
+      <LocaleSelect className="mx-auto mb-6 max-w-7xl" />
       <div className="mx-auto max-w-6xl">
         {successMessage && (
           <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
-            {successMessage}
+            <LText text={successMessage} />
           </div>
         )}
 
@@ -344,7 +348,7 @@ export default function PerfilEmpresaPage() {
               <div className="flex flex-col items-center text-center">
                 <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[32px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-4xl font-semibold text-white shadow-[0_20px_60px_rgba(22,131,255,0.25)]">
                   {logoUrl ? (
-                    <img
+                    <LElement as="img"
                       src={logoUrl}
                       alt={companyName || "Logo da empresa"}
                       className="h-full w-full object-cover"
@@ -361,7 +365,7 @@ export default function PerfilEmpresaPage() {
                       : "cursor-not-allowed opacity-50"
                   }`}
                 >
-                  {isUploadingLogo ? "A carregar..." : "Carregar logotipo"}
+                  <LText text={isUploadingLogo ? "A carregar..." : "Carregar logotipo"} />
 
                   <input
                     type="file"
@@ -374,18 +378,18 @@ export default function PerfilEmpresaPage() {
 
                 <div className="mt-6">
                   <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                    {companyName || "Nome da empresa"}
+                    {companyName || <LText text="Nome da empresa" />}
                   </h2>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    {city || location || "Localização da empresa"}
+                    <LText text={city || location || "Localização da empresa"} />
                   </p>
                 </div>
               </div>
 
               <div className="mt-6 rounded-[24px] bg-[#F7F9FC] p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">Perfil completo</p>
+                  <p className="text-sm font-semibold"><LText text={"Perfil completo"} /></p>
                   <p className="text-xl font-semibold text-[#1683FF]">
                     {profileCompletion}%
                   </p>
@@ -406,17 +410,15 @@ export default function PerfilEmpresaPage() {
               <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                    Perfil da empresa
-                  </p>
+                    <LText text={"Perfil da empresa"} /></p>
 
                   <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                    Informação editável
-                  </h2>
+                    <LText text={"Informação editável"} /></h2>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    {isEditing
+                    <LText text={isEditing
                       ? "Edita os dados da empresa ou usa a IA para preencher automaticamente."
-                      : "Os campos estão fechados. Clica em Editar para alterar o perfil."}
+                      : "Os campos estão fechados. Clica em Editar para alterar o perfil."} />
                   </p>
                 </div>
 
@@ -426,16 +428,16 @@ export default function PerfilEmpresaPage() {
                   disabled={!isEditing || isAutoFilling}
                   className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isAutoFilling
+                  <LText text={isAutoFilling
                     ? "A analisar website..."
-                    : "✨ Preencher automaticamente com IA"}
+                    : "✨ Preencher automaticamente com IA"} />
                 </button>
               </div>
 
               <div className="grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">Website</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Website"} /></label>
+                  <LElement as="input"
                     value={websiteUrl}
                     onChange={(event) => setWebsiteUrl(event.target.value)}
                     placeholder="https://www.empresa.com"
@@ -446,8 +448,7 @@ export default function PerfilEmpresaPage() {
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Nome da empresa
-                  </label>
+                    <LText text={"Nome da empresa"} /></label>
                   <input
                     value={companyName}
                     onChange={(event) => setCompanyName(event.target.value)}
@@ -459,26 +460,25 @@ export default function PerfilEmpresaPage() {
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Setor de atividade
-                  </label>
+                    <LText text={"Setor de atividade"} /></label>
                   <select
                     value={industry}
                     onChange={(event) => setIndustry(event.target.value)}
                     className={inputClass}
                     disabled={!isEditing}
                   >
-                    <option value="">Selecionar setor</option>
+                    <option value=""><LText text={"Selecionar setor"} /></option>
                     {INDUSTRIES.map((item) => (
                       <option key={item} value={item}>
-                        {item}
+                        <LText text={item} />
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Descrição</label>
-                  <textarea
+                  <label className="text-sm font-semibold"><LText text={"Descrição"} /></label>
+                  <LElement as="textarea"
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={8}
@@ -492,28 +492,25 @@ export default function PerfilEmpresaPage() {
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Caracterização
-              </p>
+                <LText text={"Caracterização"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Tipo e dimensão
-              </h2>
+                <LText text={"Tipo e dimensão"} /></h2>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <div>
                   <label className="text-sm font-semibold">
-                    Tipo de empresa
-                  </label>
+                    <LText text={"Tipo de empresa"} /></label>
                   <select
                     value={companyType}
                     onChange={(event) => setCompanyType(event.target.value)}
                     className={inputClass}
                     disabled={!isEditing}
                   >
-                    <option value="">Selecionar tipo</option>
+                    <option value=""><LText text={"Selecionar tipo"} /></option>
                     {COMPANY_TYPES.map((item) => (
                       <option key={item} value={item}>
-                        {item}
+                        <LText text={item} />
                       </option>
                     ))}
                   </select>
@@ -521,18 +518,17 @@ export default function PerfilEmpresaPage() {
 
                 <div>
                   <label className="text-sm font-semibold">
-                    Dimensão da empresa
-                  </label>
+                    <LText text={"Dimensão da empresa"} /></label>
                   <select
                     value={companySize}
                     onChange={(event) => setCompanySize(event.target.value)}
                     className={inputClass}
                     disabled={!isEditing}
                   >
-                    <option value="">Selecionar dimensão</option>
+                    <option value=""><LText text={"Selecionar dimensão"} /></option>
                     {COMPANY_SIZES.map((item) => (
                       <option key={item} value={item}>
-                        {item}
+                        <LText text={item} />
                       </option>
                     ))}
                   </select>
@@ -542,12 +538,11 @@ export default function PerfilEmpresaPage() {
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Contactos
-              </p>
+                <LText text={"Contactos"} /></p>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-semibold">Email</label>
+                  <label className="text-sm font-semibold"><LText text={"Email"} /></label>
                   <input
                     type="email"
                     value={contactEmail}
@@ -558,7 +553,7 @@ export default function PerfilEmpresaPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Telefone</label>
+                  <label className="text-sm font-semibold"><LText text={"Telefone"} /></label>
                   <input
                     value={contactPhone}
                     onChange={(event) => setContactPhone(event.target.value)}
@@ -571,13 +566,12 @@ export default function PerfilEmpresaPage() {
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Localização
-              </p>
+                <LText text={"Localização"} /></p>
 
               <div className="mt-6 grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">Localização</label>
-                  <input
+                  <label className="text-sm font-semibold"><LText text={"Localização"} /></label>
+                  <LElement as="input"
                     value={location}
                     onChange={(event) => setLocation(event.target.value)}
                     placeholder="Ex: Coimbra"
@@ -587,7 +581,7 @@ export default function PerfilEmpresaPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold">Morada</label>
+                  <label className="text-sm font-semibold"><LText text={"Morada"} /></label>
                   <input
                     value={address}
                     onChange={(event) => setAddress(event.target.value)}
@@ -599,8 +593,7 @@ export default function PerfilEmpresaPage() {
                 <div className="grid gap-5 md:grid-cols-3">
                   <div>
                     <label className="text-sm font-semibold">
-                      Código postal
-                    </label>
+                      <LText text={"Código postal"} /></label>
                     <input
                       value={postalCode}
                       onChange={(event) => setPostalCode(event.target.value)}
@@ -610,7 +603,7 @@ export default function PerfilEmpresaPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold">Cidade</label>
+                    <label className="text-sm font-semibold"><LText text={"Cidade"} /></label>
                     <input
                       value={city}
                       onChange={(event) => setCity(event.target.value)}
@@ -620,7 +613,7 @@ export default function PerfilEmpresaPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-semibold">País</label>
+                    <label className="text-sm font-semibold"><LText text={"País"} /></label>
                     <CountrySelect value={country} onChange={setCountry} disabled={!isEditing} />
                   </div>
                 </div>
@@ -637,8 +630,7 @@ export default function PerfilEmpresaPage() {
                   }}
                   className="rounded-full bg-[#07111F] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(7,17,31,0.18)] transition hover:-translate-y-0.5 hover:bg-[#1683FF]"
                 >
-                  Editar
-                </button>
+                  <LText text={"Editar"} /></button>
               ) : (
                 <button
                   type="button"
@@ -646,7 +638,7 @@ export default function PerfilEmpresaPage() {
                   disabled={isSaving}
                   className="rounded-full bg-[#1683FF] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(22,131,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSaving ? "A guardar..." : "Guardar perfil da empresa"}
+                  <LText text={isSaving ? "A guardar..." : "Guardar perfil da empresa"} />
                 </button>
               )}
             </div>

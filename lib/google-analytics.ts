@@ -17,7 +17,7 @@ export function stopAnalyticsFrame(frame: HTMLIFrameElement) {
 }
 
 export function clearAnalyticsCookies() {
-  document.querySelectorAll<HTMLIFrameElement>('iframe[title="Medição estatística autorizada"]').forEach(stopAnalyticsFrame);
+  document.querySelectorAll<HTMLIFrameElement>('iframe[data-arynqo-analytics="true"]').forEach(stopAnalyticsFrame);
   const domains = ["", ...window.location.hostname.split(".").map((_, i, parts) => parts.slice(i).join(".")).flatMap(domain => [domain, `.${domain}`])];
   for (const cookie of document.cookie.split(";")) {
     const name = cookie.split("=")[0].trim();

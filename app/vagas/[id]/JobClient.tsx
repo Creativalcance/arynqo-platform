@@ -1,6 +1,10 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
-import Image from "next/image";
+
+import Image from "@/lib/i18n/image";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { use, useEffect, useState } from "react";
@@ -77,6 +81,7 @@ export default function JobPage({
   initialJob: Job;
   params: Promise<{ id: string }>;
 }) {
+  const { locale: displayLocale } = useI18n();
   const { id } = use(params);
 
   const [job] = useState<Job | null>(initialJob);
@@ -236,12 +241,12 @@ export default function JobPage({
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = `/login?next=${encodeURIComponent(`/vagas/${id}`)}`;
+      window.location.href = browserLocalizedPath(`/login?next=${encodeURIComponent(`/vagas/${id}`)}`);
       return;
     }
 
     if (!studentProfile) {
-      alert("Apenas candidatos podem candidatar-se.");
+      localizedAlert("Apenas candidatos podem candidatar-se.");
       return;
     }
 
@@ -258,7 +263,7 @@ export default function JobPage({
       .single();
 
     if (error) {
-      alert(error.code === "23505" ? "Já enviaste uma candidatura para esta vaga." : error.code === "P0001" ? "Não foi possível enviar a candidatura. Confirma que a vaga continua disponível." : "Não foi possível enviar a candidatura. Tenta novamente.");
+      localizedAlert(error.code === "23505" ? "Já enviaste uma candidatura para esta vaga." : error.code === "P0001" ? "Não foi possível enviar a candidatura. Confirma que a vaga continua disponível." : "Não foi possível enviar a candidatura. Tenta novamente.");
       setIsApplying(false);
       return;
     }
@@ -270,7 +275,7 @@ export default function JobPage({
       (applicationData as ApplicationInsertResponse).id
     );
 
-    alert("Candidatura enviada com sucesso.");
+    localizedAlert("Candidatura enviada com sucesso.");
     setIsApplying(false);
   }
 
@@ -278,12 +283,12 @@ export default function JobPage({
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = `/login?next=${encodeURIComponent(`/vagas/${id}`)}`;
+      window.location.href = browserLocalizedPath(`/login?next=${encodeURIComponent(`/vagas/${id}`)}`);
       return;
     }
 
     if (!studentProfile) {
-      alert("Apenas candidatos podem guardar vagas.");
+      localizedAlert("Apenas candidatos podem guardar vagas.");
       return;
     }
 
@@ -294,7 +299,7 @@ export default function JobPage({
         .eq("id", savedJobId);
 
       if (error) {
-        alert(error.message);
+        localizedAlert(error.message);
         return;
       }
 
@@ -312,7 +317,7 @@ export default function JobPage({
       .single();
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -346,7 +351,7 @@ export default function JobPage({
   if (isLoading || !job) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-neutral-600">A carregar oportunidade...</p>
+        <p className="text-neutral-600"><LText text={"A carregar oportunidade..."} /></p>
       </main>
     );
   }
@@ -370,12 +375,12 @@ export default function JobPage({
         <div className="relative mx-auto max-w-7xl px-6 py-20 lg:px-12">
           <div className="max-w-5xl">
             <div className="flex flex-wrap gap-3">
-              {job.area && <HeroPill>{job.area}</HeroPill>}
-              {getWorkModelLabel() && <HeroPill>{getWorkModelLabel()}</HeroPill>}
+              {job.area && <HeroPill><LText text={job.area} /></HeroPill>}
+              {getWorkModelLabel() && <HeroPill><LText text={getWorkModelLabel()} /></HeroPill>}
               {getOpportunityTypeLabel() && (
-                <HeroPill>{getOpportunityTypeLabel()}</HeroPill>
+                <HeroPill><LText text={getOpportunityTypeLabel()} /></HeroPill>
               )}
-              {job.seniority && <HeroPill>{job.seniority}</HeroPill>}
+              {job.seniority && <HeroPill><LText text={job.seniority} /></HeroPill>}
             </div>
 
             <h1 className="mt-8 text-5xl font-black leading-[0.95] tracking-[-0.06em] text-white md:text-7xl">
@@ -383,8 +388,8 @@ export default function JobPage({
             </h1>
 
             <div className="mt-8 flex flex-wrap items-center gap-4 text-white/70">
-              <p className="mt-4 text-sm text-white/80">Publicada em {new Intl.DateTimeFormat("pt-PT", { timeZone: "Europe/Lisbon" }).format(new Date(job.created_at))}</p>
-              {!company?.company_name && <p className="mt-3 text-sm text-white/80">Empresa não identificada neste anúncio.</p>}
+              <p className="mt-4 text-sm text-white/80"><LText text={"Publicada em "} /><LText text={new Intl.DateTimeFormat(displayLocale, { timeZone: "Europe/Lisbon" }).format(new Date(job.created_at))} /></p>
+              {!company?.company_name && <p className="mt-3 text-sm text-white/80"><LText text={"Empresa não identificada neste anúncio."} /></p>}
               {company?.company_name && (
                 <span className="text-lg font-semibold text-white">
                   {company.company_name}
@@ -404,14 +409,14 @@ export default function JobPage({
                 disabled={isApplying}
                 className="rounded-full bg-white px-8 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isApplying ? "A candidatar..." : "Candidatar-me"}
+                <LText text={isApplying ? "A candidatar..." : "Candidatar-me"} />
               </button>
 
               <button
                 onClick={handleToggleSaveJob}
                 className="rounded-full border border-white/15 bg-white/10 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white hover:text-[#07111F]"
               >
-                {savedJobId ? "Remover dos favoritos" : "Guardar vaga"}
+                <LText text={savedJobId ? "Remover dos favoritos" : "Guardar vaga"} />
               </button>
             </div>
           </div>
@@ -425,12 +430,10 @@ export default function JobPage({
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div>
                   <p className="text-sm font-semibold text-[#1683FF]">
-                    Compatibilidade
-                  </p>
+                    <LText text={"Compatibilidade"} /></p>
 
                   <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#07111F]">
-                    A tua correspondência com esta vaga
-                  </h2>
+                    <LText text={"A tua correspondência com esta vaga"} /></h2>
                 </div>
 
                 <button
@@ -439,7 +442,7 @@ export default function JobPage({
                   disabled={isGeneratingMatch}
                   className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isGeneratingMatch ? "A calcular..." : "Calcular match"}
+                  <LText text={isGeneratingMatch ? "A calcular..." : "Calcular match"} />
                 </button>
               </div>
 
@@ -451,8 +454,7 @@ export default function JobPage({
                         {aiMatch.match_score}%
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-500">
-                        Compatibilidade estimada
-                      </p>
+                        <LText text={"Compatibilidade estimada"} /></p>
                     </div>
 
                     <div className="h-4 flex-1 overflow-hidden rounded-full bg-slate-100">
@@ -465,7 +467,7 @@ export default function JobPage({
 
                   {aiMatch.ai_reason && (
                     <p className="mt-6 rounded-3xl bg-[#F7F9FC] p-5 text-sm leading-6 text-slate-600">
-                      {aiMatch.ai_reason}
+                      <LText text={aiMatch.ai_reason} />
                     </p>
                   )}
 
@@ -501,10 +503,7 @@ export default function JobPage({
                 </div>
               ) : (
                 <p className="mt-6 rounded-3xl bg-[#F7F9FC] p-5 text-sm leading-6 text-slate-600">
-                  Ainda não existe match calculado para esta vaga. Clica em
-                  “Calcular match” para veres a compatibilidade com o teu
-                  perfil.
-                </p>
+                  <LText text={"Ainda não existe match calculado para esta vaga. Clica em “Calcular match” para veres a compatibilidade com o teu perfil."} /></p>
               )}
             </section>
           )}
@@ -512,7 +511,7 @@ export default function JobPage({
           {job.candidate_pitch && !/^\s*(sou|tenho|o meu)\b/i.test(job.candidate_pitch) && (
             <ContentSection title="Perfil procurado" eyebrow="Contexto">
               <p className="whitespace-pre-line text-lg leading-relaxed text-neutral-700">
-                {job.candidate_pitch}
+                <LText text={job.candidate_pitch} />
               </p>
             </ContentSection>
           )}
@@ -542,7 +541,7 @@ export default function JobPage({
             <ContentSection title="Especializações" eyebrow="Perfil ideal">
               <div className="flex flex-wrap gap-3">
                 {specializations.map((item) => (
-                  <Chip key={item}>{item}</Chip>
+                  <Chip key={item}><LText text={item} /></Chip>
                 ))}
               </div>
             </ContentSection>
@@ -572,7 +571,7 @@ export default function JobPage({
             <ContentSection title="Critérios de avaliação" eyebrow="Processo">
               <div className="flex flex-wrap gap-3">
                 {evaluationCriteria.map((item) => (
-                  <Chip key={item}>{item}</Chip>
+                  <Chip key={item}><LText text={item} /></Chip>
                 ))}
               </div>
             </ContentSection>
@@ -589,7 +588,7 @@ export default function JobPage({
 
         <aside className="space-y-8 lg:sticky lg:top-32 lg:self-start">
           <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
-            <p className="text-sm font-semibold text-[#1683FF]">Resumo</p>
+            <p className="text-sm font-semibold text-[#1683FF]"><LText text={"Resumo"} /></p>
 
             <div className="mt-6 grid gap-4">
               <SummaryItem label="Área" value={job.area} />
@@ -603,11 +602,10 @@ export default function JobPage({
             {languages.length > 0 && (
               <div className="mt-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Idiomas
-                </p>
+                  <LText text={"Idiomas"} /></p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {languages.map((language) => (
-                    <Chip key={language}>{language}</Chip>
+                    <Chip key={language}><LText text={language} /></Chip>
                   ))}
                 </div>
               </div>
@@ -619,21 +617,21 @@ export default function JobPage({
                 disabled={isApplying}
                 className="rounded-full bg-[#07111F] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isApplying ? "A candidatar..." : "Candidatar-me"}
+                <LText text={isApplying ? "A candidatar..." : "Candidatar-me"} />
               </button>
 
               <button
                 onClick={handleToggleSaveJob}
                 className="rounded-full border border-[#DDE3EA] px-6 py-4 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
               >
-                {savedJobId ? "Remover dos favoritos" : "Guardar vaga"}
+                <LText text={savedJobId ? "Remover dos favoritos" : "Guardar vaga"} />
               </button>
             </div>
           </section>
 
           {company && (
             <section className="rounded-[32px] border border-[#DDE3EA] bg-[#07111F] p-8 text-white shadow-sm">
-              <p className="text-sm font-semibold text-blue-300">Empresa</p>
+              <p className="text-sm font-semibold text-blue-300"><LText text={"Empresa"} /></p>
 
               <div className="mt-5 flex items-center gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/10 text-2xl font-black">
@@ -662,12 +660,12 @@ export default function JobPage({
               </div>
 
               <div className="mt-6 flex flex-wrap gap-2">
-                {company.industry && <DarkChip>{company.industry}</DarkChip>}
+                {company.industry && <DarkChip><LText text={company.industry} /></DarkChip>}
                 {company.company_type && (
-                  <DarkChip>{company.company_type}</DarkChip>
+                  <DarkChip><LText text={company.company_type} /></DarkChip>
                 )}
                 {company.company_size && (
-                  <DarkChip>{company.company_size}</DarkChip>
+                  <DarkChip><LText text={company.company_size} /></DarkChip>
                 )}
               </div>
 
@@ -678,14 +676,13 @@ export default function JobPage({
               )}
 
               {company.website_url && (
-                <a
+                <LElement as="a"
                   href={company.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-8 inline-flex rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
-                  Visitar website
-                </a>
+                  <LText text={"Visitar website"} /></LElement>
               )}
             </section>
           )}
@@ -714,10 +711,10 @@ function ContentSection({
 }) {
   return (
     <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
-      <p className="text-sm font-semibold text-[#1683FF]">{eyebrow}</p>
+      <p className="text-sm font-semibold text-[#1683FF]"><LText text={eyebrow} /></p>
 
       <h2 className="mt-2 text-3xl font-black tracking-[-0.04em] text-[#07111F]">
-        {title}
+        <LText text={title} />
       </h2>
 
       <div className="mt-6">{children}</div>
@@ -728,11 +725,11 @@ function ContentSection({
 function SkillGroup({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="mb-6 last:mb-0">
-      <h3 className="mb-3 text-sm font-semibold text-slate-500">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold text-slate-500"><LText text={title} /></h3>
 
       <div className="flex flex-wrap gap-3">
         {items.map((item) => (
-          <Chip key={item}>{item}</Chip>
+          <Chip key={item}><LText text={item} /></Chip>
         ))}
       </div>
     </div>
@@ -759,11 +756,11 @@ function InfoBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-3xl bg-[#F7F9FC] p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-        {label}
+        <LText text={label} />
       </p>
 
       <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-700">
-        {value}
+        <LText text={value} />
       </p>
     </div>
   );
@@ -783,10 +780,10 @@ function SummaryItem({
   return (
     <div className="rounded-2xl bg-[#F7F9FC] p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
-        {label}
+        <LText text={label} />
       </p>
 
-      <p className="mt-2 font-semibold text-[#07111F]">{value}</p>
+      <p className="mt-2 font-semibold text-[#07111F]"><LText text={value} /></p>
     </div>
   );
 }
@@ -803,7 +800,7 @@ function ScoreItem({
   return (
     <div className="rounded-3xl bg-[#F7F9FC] p-5">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold text-slate-600">{label}</p>
+        <p className="text-sm font-semibold text-slate-600"><LText text={label} /></p>
         <p className="text-lg font-black text-[#1683FF]">{safeValue}%</p>
       </div>
 
@@ -824,7 +821,7 @@ function MatchList({ title, items }: { title: string; items: string[] }) {
 
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-black text-[#07111F]">{title}</h3>
+      <h3 className="text-sm font-black text-[#07111F]"><LText text={title} /></h3>
 
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
@@ -832,7 +829,7 @@ function MatchList({ title, items }: { title: string; items: string[] }) {
             key={item}
             className="rounded-2xl bg-[#F7F9FC] px-4 py-3 text-sm leading-6 text-slate-700"
           >
-            {item}
+            <LText text={item} />
           </li>
         ))}
       </ul>

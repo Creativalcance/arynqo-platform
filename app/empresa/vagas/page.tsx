@@ -1,6 +1,10 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, useI18n } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -26,6 +30,7 @@ const workModeLabels: Record<string, string> = {
 };
 
 export default function EmpresaVagasPage() {
+  const { locale: displayLocale } = useI18n();
   const [companyId, setCompanyId] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +44,7 @@ export default function EmpresaVagasPage() {
       const { data, error } = await supabase.rpc("confirm_job_renewal", { job_id: job.id, expected_expiry: job.expires_at });
       if (error) throw error;
       setJobs(current => current.map(item => item.id === job.id ? { ...item, expires_at: data, renewal_deadline: null } : item));
-      setRenewalMessages(current => ({ ...current, [job.id]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString("pt-PT")}.` }));
+      setRenewalMessages(current => ({ ...current, [job.id]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString(displayLocale)}.` }));
     } catch {
       setRenewalMessages(current => ({ ...current, [job.id]: "Não foi possível confirmar. Atualiza a página para verificar o estado da vaga e tenta novamente." }));
     } finally {
@@ -55,7 +60,7 @@ export default function EmpresaVagasPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -68,8 +73,8 @@ export default function EmpresaVagasPage() {
       .single();
 
     if (!companyProfile) {
-      alert("Apenas empresas podem aceder a esta página.");
-      window.location.href = "/dashboard";
+      localizedAlert("Apenas empresas podem aceder a esta página.");
+      window.location.href = browserLocalizedPath("/dashboard");
       return;
     }
 
@@ -97,7 +102,7 @@ export default function EmpresaVagasPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       setIsLoading(false);
       return;
     }
@@ -109,7 +114,7 @@ export default function EmpresaVagasPage() {
   async function toggleJobStatus(jobId: string, currentStatus: boolean | null) {
     if (!currentStatus) {
       const {error}=await supabase.rpc('renew_job_publication',{job_id:jobId});
-      if(error){alert('Não foi possível renovar a vaga.');return;}
+      if(error){localizedAlert('Não foi possível renovar a vaga.');return;}
       await loadCompanyJobs();return;
     }
     const { error } = await supabase
@@ -121,7 +126,7 @@ export default function EmpresaVagasPage() {
       .eq("company_id", companyId);
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -133,7 +138,7 @@ export default function EmpresaVagasPage() {
   }
 
   function formatDate(date: string) {
-    return new Intl.DateTimeFormat("pt-PT", {
+    return new Intl.DateTimeFormat(displayLocale, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -147,7 +152,7 @@ export default function EmpresaVagasPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar vagas da empresa...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar vagas da empresa..."} /></p>
       </main>
     );
   }
@@ -163,26 +168,20 @@ export default function EmpresaVagasPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Gestão de vagas
-                </p>
+                  <LText text={"Gestão de vagas"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  As vagas da sua empresa.
-                </h1>
+                  <LText text={"As vagas da sua empresa."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Consulte oportunidades publicadas, ative ou desative vagas,
-                  veja candidatos compatíveis e acompanhe o processo de
-                  recrutamento.
-                </p>
+                  <LText text={"Consulte oportunidades publicadas, ative ou desative vagas, veja candidatos compatíveis e acompanhe o processo de recrutamento."} /></p>
               </div>
 
               <Link
                 href="/empresa/vagas/nova"
                 className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
               >
-                Publicar nova vaga
-              </Link>
+                <LText text={"Publicar nova vaga"} /></Link>
             </div>
 
             <div className="relative mt-10 grid gap-4 md:grid-cols-3">
@@ -197,17 +196,14 @@ export default function EmpresaVagasPage() {
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Backoffice
-              </p>
+                <LText text={"Backoffice"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Lista de vagas publicadas
-              </h2>
+                <LText text={"Lista de vagas publicadas"} /></h2>
             </div>
 
             <p className="text-sm font-medium text-slate-500">
-              {jobs.length} vaga{jobs.length === 1 ? "" : "s"} registada
-              {jobs.length === 1 ? "" : "s"}
+              {jobs.length} <LText text={" vaga"} /><LText text={jobs.length === 1 ? "" : "s"} /> <LText text={" registada"} /><LText text={jobs.length === 1 ? "" : "s"} />
             </p>
           </div>
 
@@ -227,17 +223,16 @@ export default function EmpresaVagasPage() {
                             : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
                         }
                       >
-                        {job.is_active ? "Ativa" : "Inativa"}
+                        <LText text={job.is_active ? "Ativa" : "Inativa"} />
                       </span>
 
                       {job.is_featured && (
                         <span className="rounded-full border border-[#1683FF]/20 bg-[#1683FF]/10 px-3 py-1 text-xs font-semibold text-[#1683FF]">
-                          Destaque
-                        </span>
+                          <LText text={"Destaque"} /></span>
                       )}
 
                       <span className="text-xs font-medium text-slate-400">
-                        Publicada em {formatDate(job.created_at)}
+                        <LText text={"Publicada em "} /><LText text={formatDate(job.created_at)} />
                       </span>
                     </div>
 
@@ -250,41 +245,39 @@ export default function EmpresaVagasPage() {
                     </p>
 
                     <div className="mt-5 flex flex-wrap gap-2">
-                      {job.area && <Badge>{job.area}</Badge>}
+                      {job.area && <Badge><LText text={job.area} /></Badge>}
                       {job.location && <Badge>{job.location}</Badge>}
 
                       {job.work_mode && (
-                        <Badge>{workModeLabels[job.work_mode]}</Badge>
+                        <Badge><LText text={workModeLabels[job.work_mode]} /></Badge>
                       )}
 
-                      {job.contract_type && <Badge>{job.contract_type}</Badge>}
+                      {job.contract_type && <Badge><LText text={job.contract_type} /></Badge>}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap justify-end gap-3">
-                    <Link href={`/empresa/candidatos?jobId=${job.id}`} className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold">Ver candidaturas</Link>
-                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p>Confirma até {new Date(job.renewal_deadline).toLocaleDateString('pt-PT')} se continuas a recrutar.</p><button type="button" disabled={!!renewingId} className="mt-2 font-semibold underline disabled:opacity-50" onClick={() => confirmRenewal(job)}>{renewingId === job.id ? "A confirmar…" : "Sim, renovar por 30 dias"}</button><button type="button" disabled={!!renewingId} className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}>Não, desativar</button></div>}
-                    {renewalMessages[job.id] && <p role="status" className="w-full text-sm">{renewalMessages[job.id]}</p>}
+                    <Link href={`/empresa/candidatos?jobId=${job.id}`} className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold"><LText text={"Ver candidaturas"} /></Link>
+                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p><LText text={"Confirma até "} /><LText text={new Date(job.renewal_deadline).toLocaleDateString(displayLocale)} /> <LText text={" se continuas a recrutar."} /></p><button type="button" disabled={!!renewingId} className="mt-2 font-semibold underline disabled:opacity-50" onClick={() => confirmRenewal(job)}><LText text={renewingId === job.id ? "A confirmar…" : "Sim, renovar por 30 dias"} /></button><button type="button" disabled={!!renewingId} className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}><LText text={"Não, desativar"} /></button></div>}
+                    {renewalMessages[job.id] && <p role="status" className="w-full text-sm"><LText text={renewalMessages[job.id]} /></p>}
                     <Link
                       href={`/empresa/matches?jobId=${job.id}`}
                       className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                     >
-                      Ver matches
-                    </Link>
+                      <LText text={"Ver matches"} /></Link>
 
                     <Link
                       href={`/empresa/vagas/${job.id}/editar`}
                       className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                     >
-                      Editar
-                    </Link>
+                      <LText text={"Editar"} /></Link>
 
                     <button
                       type="button"
                       onClick={() => toggleJobStatus(job.id, job.is_active)}
                       className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold text-slate-500 transition hover:border-[#1683FF] hover:text-[#1683FF]"
                     >
-                      {job.is_active ? "Desativar" : "Ativar"}
+                      <LText text={job.is_active ? "Desativar" : "Ativar"} />
                     </button>
                   </div>
                 </div>
@@ -294,21 +287,16 @@ export default function EmpresaVagasPage() {
             {jobs.length === 0 && (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-12 text-center">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                  Ainda não existem vagas publicadas.
-                </h2>
+                  <LText text={"Ainda não existem vagas publicadas."} /></h2>
 
                 <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
-                  Crie a primeira oportunidade para começar a receber
-                  candidaturas e gerar candidatos compatíveis através do motor
-                  de matching da ARYNQO.
-                </p>
+                  <LText text={"Crie a primeira oportunidade para começar a receber candidaturas e gerar candidatos compatíveis através do motor de matching da ARYNQO."} /></p>
 
                 <Link
                   href="/empresa/vagas/nova"
                   className="mt-6 inline-flex rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                 >
-                  Publicar primeira vaga
-                </Link>
+                  <LText text={"Publicar primeira vaga"} /></Link>
               </div>
             )}
           </div>
@@ -321,7 +309,7 @@ export default function EmpresaVagasPage() {
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur">
-      <p className="text-sm font-medium text-white/60">{label}</p>
+      <p className="text-sm font-medium text-white/60"><LText text={label} /></p>
 
       <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-white">
         {value}

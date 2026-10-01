@@ -1,8 +1,12 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
+
 
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -84,7 +88,7 @@ export default function CandidateMatchesPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = "/login";
+      window.location.href = browserLocalizedPath("/login");
       return;
     }
 
@@ -210,7 +214,7 @@ export default function CandidateMatchesPage() {
         .eq("action_type", actionType);
 
       if (error) {
-        alert(error.message);
+        localizedAlert(error.message);
         return;
       }
 
@@ -231,7 +235,7 @@ export default function CandidateMatchesPage() {
     });
 
     if (error) {
-      alert(error.message);
+      localizedAlert(error.message);
       return;
     }
 
@@ -259,7 +263,7 @@ export default function CandidateMatchesPage() {
       await loadMatches();
     } catch (error) {
       console.error(error);
-      alert("Não foi possível recalcular os matches.");
+      localizedAlert("Não foi possível recalcular os matches.");
     }
 
     setIsRegenerating(false);
@@ -274,7 +278,7 @@ export default function CandidateMatchesPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar matches...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar matches..."} /></p>
       </main>
     );
   }
@@ -290,17 +294,13 @@ export default function CandidateMatchesPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  AI Matching
-                </p>
+                  <LText text={"AI Matching"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Vagas compatíveis contigo.
-                </h1>
+                  <LText text={"Vagas compatíveis contigo."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Ranking inteligente baseado no teu perfil, competências,
-                  preferências, senioridade e objetivos profissionais.
-                </p>
+                  <LText text={"Ranking inteligente baseado no teu perfil, competências, preferências, senioridade e objetivos profissionais."} /></p>
               </div>
 
               <button
@@ -309,7 +309,7 @@ export default function CandidateMatchesPage() {
                 disabled={isRegenerating}
                 className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isRegenerating ? "A recalcular..." : "Recalcular matches"}
+                <LText text={isRegenerating ? "A recalcular..." : "Recalcular matches"} />
               </button>
             </div>
           </div>
@@ -318,13 +318,10 @@ export default function CandidateMatchesPage() {
         {visibleMatches.length === 0 ? (
           <section className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center shadow-sm">
             <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-              Ainda não existem matches disponíveis.
-            </h2>
+              <LText text={"Ainda não existem matches disponíveis."} /></h2>
 
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
-              Importa o teu CV, melhora o perfil com IA ou recalcula os matches
-              para encontrar vagas compatíveis.
-            </p>
+              <LText text={"Importa o teu CV, melhora o perfil com IA ou recalcula os matches para encontrar vagas compatíveis."} /></p>
 
             <button
               type="button"
@@ -332,7 +329,7 @@ export default function CandidateMatchesPage() {
               disabled={isRegenerating}
               className="mt-6 rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F]"
             >
-              {isRegenerating ? "A recalcular..." : "Gerar matches"}
+              <LText text={isRegenerating ? "A recalcular..." : "Gerar matches"} />
             </button>
           </section>
         ) : (
@@ -354,8 +351,7 @@ export default function CandidateMatchesPage() {
                     <div className="flex flex-col justify-between bg-[#07111F] p-8 text-white">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD]">
-                          Índice de compatibilidade
-                        </p>
+                          <LText text={"Índice de compatibilidade"} /></p>
 
                         <p className="mt-4 text-6xl font-semibold tracking-[-0.08em]">
                           {match.match_score}%
@@ -363,10 +359,10 @@ export default function CandidateMatchesPage() {
                       </div>
 
                       <div className="mt-10 space-y-3 text-sm text-white/60">
-                        <p>Skills: {match.skills_score}%</p>
-                        <p>Função: {match.role_score}%</p>
-                        <p>Localização: {match.location_score}%</p>
-                        <p>Modelo: {match.work_model_score}%</p>
+                        <p><LText text={"Skills: "} />{match.skills_score}%</p>
+                        <p><LText text={"Função: "} />{match.role_score}%</p>
+                        <p><LText text={"Localização: "} />{match.location_score}%</p>
+                        <p><LText text={"Modelo: "} />{match.work_model_score}%</p>
                       </div>
                     </div>
 
@@ -374,7 +370,7 @@ export default function CandidateMatchesPage() {
                       <div className="flex flex-wrap items-start justify-between gap-6">
                         <div>
                           <p className="text-sm font-medium text-slate-500">
-                            {company?.company_name || "Empresa"}
+                            {company?.company_name || <LText text="Empresa" />}
                           </p>
 
                           <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-[#07111F]">
@@ -384,7 +380,7 @@ export default function CandidateMatchesPage() {
                           <div className="mt-4 flex flex-wrap gap-2">
                             {job.area && (
                               <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                {job.area}
+                                <LText text={job.area} />
                               </span>
                             )}
 
@@ -396,13 +392,13 @@ export default function CandidateMatchesPage() {
 
                             {job.work_model && (
                               <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                {workModelLabels[job.work_model] || job.work_model}
+                                <LText text={workModelLabels[job.work_model] || job.work_model} />
                               </span>
                             )}
 
                             {job.contract_type && (
                               <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                {job.contract_type}
+                                <LText text={job.contract_type} />
                               </span>
                             )}
                           </div>
@@ -412,49 +408,45 @@ export default function CandidateMatchesPage() {
                           href={`/vagas/${job.id}`}
                           className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                         >
-                          Ver vaga
-                        </Link>
+                          <LText text={"Ver vaga"} /></Link>
                       </div>
 
                       <div className="mt-8 rounded-[24px] bg-[#F7F9FC] p-5">
                         <p className="text-sm font-semibold text-[#07111F]">
-                          Justificação IA
-                        </p>
+                          <LText text={"Justificação IA"} /></p>
 
                         <p className="mt-2 text-sm leading-6 text-slate-600">
-                          {match.ai_reason}
+                          <LText text={match.ai_reason} />
                         </p>
                       </div>
 
                       <div className="mt-6 grid gap-6 md:grid-cols-2">
                         <div>
                           <p className="text-sm font-semibold text-[#07111F]">
-                            Pontos fortes
-                          </p>
+                            <LText text={"Pontos fortes"} /></p>
 
                           <ul className="mt-3 space-y-2 text-sm text-slate-600">
                             {match.strengths.length > 0 ? (
                               match.strengths.map((item) => (
-                                <li key={item}>✓ {item}</li>
+                                <li key={item}>✓ <LText text={item} /></li>
                               ))
                             ) : (
-                              <li>Sem pontos fortes detalhados.</li>
+                              <li><LText text={"Sem pontos fortes detalhados."} /></li>
                             )}
                           </ul>
                         </div>
 
                         <div>
                           <p className="text-sm font-semibold text-[#07111F]">
-                            Gaps
-                          </p>
+                            <LText text={"Gaps"} /></p>
 
                           <ul className="mt-3 space-y-2 text-sm text-slate-600">
                             {match.gaps.length > 0 ? (
                               match.gaps.map((item) => (
-                                <li key={item}>• {item}</li>
+                                <li key={item}>• <LText text={item} /></li>
                               ))
                             ) : (
-                              <li>Sem gaps relevantes identificados.</li>
+                              <li><LText text={"Sem gaps relevantes identificados."} /></li>
                             )}
                           </ul>
                         </div>
@@ -470,20 +462,18 @@ export default function CandidateMatchesPage() {
                               : "border border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF] hover:text-[#1683FF]"
                           }`}
                         >
-                          {hasAction(job.id, "saved") ? "Guardada" : "Guardar"}
+                          <LText text={hasAction(job.id, "saved") ? "Guardada" : "Guardar"} />
                         </button>
 
                         <Link href={`/vagas/${job.id}`} className="rounded-full bg-[#1683FF]/10 px-5 py-3 text-sm font-semibold text-[#1683FF] transition hover:bg-[#1683FF] hover:text-white">
-                          Candidatar-me
-                        </Link>
+                          <LText text={"Candidatar-me"} /></Link>
 
                         <button
                           type="button"
                           onClick={() => handleAction(job.id, "ignored")}
                           className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold text-slate-500 transition hover:border-red-200 hover:text-red-500"
                         >
-                          Ignorar
-                        </button>
+                          <LText text={"Ignorar"} /></button>
                       </div>
                     </div>
                   </div>

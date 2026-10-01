@@ -1,0 +1,821 @@
+{
+  "Entrar": [
+    "Sign in",
+    "Se connecter",
+    "Iniciar sesión",
+    "Anmelden",
+    "Accedi"
+  ],
+  "Sair": [
+    "Sign out",
+    "Se déconnecter",
+    "Cerrar sesión",
+    "Abmelden",
+    "Esci"
+  ],
+  "Criar conta": [
+    "Create an account",
+    "Créer un compte",
+    "Crear una cuenta",
+    "Konto erstellen",
+    "Crea un account"
+  ],
+  "Guardar": [
+    "Save",
+    "Enregistrer",
+    "Guardar",
+    "Speichern",
+    "Salva"
+  ],
+  "Guardar alterações": [
+    "Save changes",
+    "Enregistrer les modifications",
+    "Guardar cambios",
+    "Änderungen speichern",
+    "Salva le modifiche"
+  ],
+  "Cancelar": [
+    "Cancel",
+    "Annuler",
+    "Cancelar",
+    "Abbrechen",
+    "Annulla"
+  ],
+  "Eliminar": [
+    "Delete",
+    "Supprimer",
+    "Eliminar",
+    "Löschen",
+    "Elimina"
+  ],
+  "Editar": [
+    "Edit",
+    "Modifier",
+    "Editar",
+    "Bearbeiten",
+    "Modifica"
+  ],
+  "Fechar": [
+    "Close",
+    "Fermer",
+    "Cerrar",
+    "Schließen",
+    "Chiudi"
+  ],
+  "Voltar": [
+    "Back",
+    "Retour",
+    "Volver",
+    "Zurück",
+    "Indietro"
+  ],
+  "Continuar": [
+    "Continue",
+    "Continuer",
+    "Continuar",
+    "Weiter",
+    "Continua"
+  ],
+  "Adicionar": [
+    "Add",
+    "Ajouter",
+    "Añadir",
+    "Hinzufügen",
+    "Aggiungi"
+  ],
+  "Remover": [
+    "Remove",
+    "Retirer",
+    "Quitar",
+    "Entfernen",
+    "Rimuovi"
+  ],
+  "Pesquisar": [
+    "Search",
+    "Rechercher",
+    "Buscar",
+    "Suchen",
+    "Cerca"
+  ],
+  "Nome": [
+    "Name",
+    "Nom",
+    "Nombre",
+    "Name",
+    "Nome"
+  ],
+  "Nome da empresa": [
+    "Company name",
+    "Nom de l’entreprise",
+    "Nombre de la empresa",
+    "Unternehmensname",
+    "Nome dell’azienda"
+  ],
+  "Palavra-passe": [
+    "Password",
+    "Mot de passe",
+    "Contraseña",
+    "Passwort",
+    "Password"
+  ],
+  "Email": [
+    "Email",
+    "E-mail",
+    "Correo electrónico",
+    "E-Mail",
+    "Email"
+  ],
+  "Vagas": [
+    "Jobs",
+    "Offres d’emploi",
+    "Ofertas de empleo",
+    "Stellenangebote",
+    "Offerte di lavoro"
+  ],
+  "Vaga": [
+    "Job",
+    "Offre d’emploi",
+    "Oferta de empleo",
+    "Stellenangebot",
+    "Offerta di lavoro"
+  ],
+  "Candidatos": [
+    "Candidates",
+    "Candidats",
+    "Candidatos",
+    "Bewerber",
+    "Candidati"
+  ],
+  "Candidato": [
+    "Candidate",
+    "Candidat",
+    "Candidato",
+    "Bewerber",
+    "Candidato"
+  ],
+  "Empresas": [
+    "Companies",
+    "Entreprises",
+    "Empresas",
+    "Unternehmen",
+    "Aziende"
+  ],
+  "Empresa": [
+    "Company",
+    "Entreprise",
+    "Empresa",
+    "Unternehmen",
+    "Azienda"
+  ],
+  "Candidaturas": [
+    "Applications",
+    "Candidatures",
+    "Candidaturas",
+    "Bewerbungen",
+    "Candidature"
+  ],
+  "Candidatura": [
+    "Application",
+    "Candidature",
+    "Candidatura",
+    "Bewerbung",
+    "Candidatura"
+  ],
+  "Candidatar-me": [
+    "Apply",
+    "Postuler",
+    "Presentar candidatura",
+    "Bewerben",
+    "Candidati"
+  ],
+  "Ver candidaturas": [
+    "View applications",
+    "Voir les candidatures",
+    "Ver candidaturas",
+    "Bewerbungen ansehen",
+    "Visualizza le candidature"
+  ],
+  "Ver candidato": [
+    "View candidate",
+    "Voir le candidat",
+    "Ver candidato",
+    "Bewerber ansehen",
+    "Visualizza il candidato"
+  ],
+  "Ver vagas": [
+    "View jobs",
+    "Voir les offres d’emploi",
+    "Ver ofertas de empleo",
+    "Stellenangebote ansehen",
+    "Visualizza le offerte"
+  ],
+  "Explorar vagas": [
+    "Explore jobs",
+    "Découvrir les offres d’emploi",
+    "Explorar ofertas de empleo",
+    "Stellenangebote entdecken",
+    "Esplora le offerte di lavoro"
+  ],
+  "Pesquisar vagas": [
+    "Search jobs",
+    "Rechercher des offres d’emploi",
+    "Buscar ofertas de empleo",
+    "Stellenangebote suchen",
+    "Cerca offerte di lavoro"
+  ],
+  "Explorar candidatos": [
+    "Explore candidates",
+    "Découvrir les candidats",
+    "Explorar candidatos",
+    "Bewerber entdecken",
+    "Esplora i candidati"
+  ],
+  "Perfil": [
+    "Profile",
+    "Profil",
+    "Perfil",
+    "Profil",
+    "Profilo"
+  ],
+  "Perfil ARYNQO": [
+    "ARYNQO profile",
+    "Profil ARYNQO",
+    "Perfil ARYNQO",
+    "ARYNQO-Profil",
+    "Profilo ARYNQO"
+  ],
+  "Resumo profissional": [
+    "Professional summary",
+    "Résumé professionnel",
+    "Resumen profesional",
+    "Berufliches Kurzprofil",
+    "Profilo professionale"
+  ],
+  "Resumo": [
+    "Overview",
+    "Résumé",
+    "Resumen",
+    "Übersicht",
+    "Riepilogo"
+  ],
+  "Compatibilidade": [
+    "Compatibility",
+    "Compatibilité",
+    "Compatibilidad",
+    "Übereinstimmung",
+    "Compatibilità"
+  ],
+  "Competências": [
+    "Skills",
+    "Compétences",
+    "Competencias",
+    "Kompetenzen",
+    "Competenze"
+  ],
+  "Skills": [
+    "Skills",
+    "Compétences",
+    "Competencias",
+    "Kompetenzen",
+    "Competenze"
+  ],
+  "Gaps": [
+    "Gaps",
+    "Écarts",
+    "Carencias",
+    "Lücken",
+    "Lacune"
+  ],
+  "Ações": [
+    "Actions",
+    "Actions",
+    "Acciones",
+    "Aktionen",
+    "Azioni"
+  ],
+  "Experiência": [
+    "Experience",
+    "Expérience",
+    "Experiencia",
+    "Erfahrung",
+    "Esperienza"
+  ],
+  "Formação": [
+    "Education",
+    "Formation",
+    "Formación",
+    "Ausbildung",
+    "Formazione"
+  ],
+  "Idiomas": [
+    "Languages",
+    "Langues",
+    "Idiomas",
+    "Sprachen",
+    "Lingue"
+  ],
+  "País": [
+    "Country",
+    "Pays",
+    "País",
+    "Land",
+    "Paese"
+  ],
+  "Localização": [
+    "Location",
+    "Localisation",
+    "Ubicación",
+    "Standort",
+    "Località"
+  ],
+  "Selecionar país": [
+    "Select a country",
+    "Sélectionner un pays",
+    "Seleccionar país",
+    "Land auswählen",
+    "Seleziona un paese"
+  ],
+  "Selecionar idioma": [
+    "Select a language",
+    "Sélectionner une langue",
+    "Seleccionar idioma",
+    "Sprache auswählen",
+    "Seleziona una lingua"
+  ],
+  "Idioma da plataforma": [
+    "Platform language",
+    "Langue de la plateforme",
+    "Idioma de la plataforma",
+    "Plattformsprache",
+    "Lingua della piattaforma"
+  ],
+  "Idioma da vaga": [
+    "Job language",
+    "Langue de l’offre",
+    "Idioma de la oferta",
+    "Sprache der Stellenanzeige",
+    "Lingua dell’offerta"
+  ],
+  "País da vaga": [
+    "Job country",
+    "Pays de l’offre",
+    "País de la oferta",
+    "Land der Stelle",
+    "Paese dell’offerta"
+  ],
+  "Nativo": [
+    "Native",
+    "Langue maternelle",
+    "Nativo",
+    "Muttersprache",
+    "Madrelingua"
+  ],
+  "Estudante": [
+    "Student",
+    "Étudiant",
+    "Estudiante",
+    "Studierende",
+    "Studente"
+  ],
+  "Recém-licenciado": [
+    "Recent graduate",
+    "Jeune diplômé",
+    "Recién graduado",
+    "Hochschulabsolvent",
+    "Neolaureato"
+  ],
+  "Profissional": [
+    "Professional",
+    "Professionnel",
+    "Profesional",
+    "Berufstätige",
+    "Professionista"
+  ],
+  "Em transição de carreira": [
+    "Changing careers",
+    "En reconversion professionnelle",
+    "En transición profesional",
+    "Berufliche Neuorientierung",
+    "In transizione professionale"
+  ],
+  "Talento": [
+    "Talent",
+    "Talent",
+    "Talento",
+    "Talent",
+    "Talento"
+  ],
+  "Notificações": [
+    "Notifications",
+    "Notifications",
+    "Notificaciones",
+    "Benachrichtigungen",
+    "Notifiche"
+  ],
+  "Marcar como lida": [
+    "Mark as read",
+    "Marquer comme lue",
+    "Marcar como leída",
+    "Als gelesen markieren",
+    "Segna come letta"
+  ],
+  "Marcar todas como lidas": [
+    "Mark all as read",
+    "Tout marquer comme lu",
+    "Marcar todas como leídas",
+    "Alle als gelesen markieren",
+    "Segna tutte come lette"
+  ],
+  "Pendente": [
+    "Pending",
+    "En attente",
+    "Pendiente",
+    "Ausstehend",
+    "In attesa"
+  ],
+  "Aceite": [
+    "Accepted",
+    "Accepté",
+    "Aceptada",
+    "Angenommen",
+    "Accettata"
+  ],
+  "Recusado": [
+    "Declined",
+    "Refusé",
+    "Rechazado",
+    "Abgelehnt",
+    "Rifiutato"
+  ],
+  "Aceitar": [
+    "Accept",
+    "Accepter",
+    "Aceptar",
+    "Annehmen",
+    "Accetta"
+  ],
+  "Recusar": [
+    "Decline",
+    "Refuser",
+    "Rechazar",
+    "Ablehnen",
+    "Rifiuta"
+  ],
+  "Novo pedido": [
+    "New request",
+    "Nouvelle demande",
+    "Nueva solicitud",
+    "Neue Anfrage",
+    "Nuova richiesta"
+  ],
+  "Pedido de contacto recebido": [
+    "Contact request received",
+    "Demande de contact reçue",
+    "Solicitud de contacto recibida",
+    "Kontaktanfrage erhalten",
+    "Richiesta di contatto ricevuta"
+  ],
+  "Nova candidatura recebida": [
+    "New application received",
+    "Nouvelle candidature reçue",
+    "Nueva candidatura recibida",
+    "Neue Bewerbung erhalten",
+    "Nuova candidatura ricevuta"
+  ],
+  "Candidatura aceite": [
+    "Application accepted",
+    "Candidature acceptée",
+    "Candidatura aceptada",
+    "Bewerbung angenommen",
+    "Candidatura accettata"
+  ],
+  "Candidatura recusada": [
+    "Application declined",
+    "Candidature refusée",
+    "Candidatura rechazada",
+    "Bewerbung abgelehnt",
+    "Candidatura rifiutata"
+  ],
+  "A tua candidatura à vaga \"{0}\" foi aceite.": [
+    "Your application for \"{0}\" has been accepted.",
+    "Votre candidature pour le poste « {0} » a été acceptée.",
+    "Tu candidatura para «{0}» ha sido aceptada.",
+    "Deine Bewerbung für „{0}“ wurde angenommen.",
+    "La tua candidatura per «{0}» è stata accettata."
+  ],
+  "A tua candidatura à vaga \"{0}\" foi recusada.": [
+    "Your application for \"{0}\" has been declined.",
+    "Votre candidature pour le poste « {0} » a été refusée.",
+    "Tu candidatura para «{0}» ha sido rechazada.",
+    "Deine Bewerbung für „{0}“ wurde abgelehnt.",
+    "La tua candidatura per «{0}» è stata rifiutata."
+  ],
+  "Recebeste uma nova candidatura para a vaga \"{0}\".": [
+    "You received a new application for \"{0}\".",
+    "Vous avez reçu une nouvelle candidature pour le poste « {0} ».",
+    "Has recibido una nueva candidatura para «{0}».",
+    "Du hast eine neue Bewerbung für „{0}“ erhalten.",
+    "Hai ricevuto una nuova candidatura per «{0}»."
+  ],
+  "A vaga continua ativa?": [
+    "Are you still hiring?",
+    "Recrutez-vous toujours ?",
+    "¿Sigues buscando candidatos?",
+    "Suchst du weiterhin Bewerber?",
+    "Stai ancora cercando candidati?"
+  ],
+  "Confirmar vaga": [
+    "Confirm job",
+    "Confirmer l’offre",
+    "Confirmar oferta",
+    "Stellenangebot bestätigen",
+    "Conferma l’offerta"
+  ],
+  "Vaga confirmada": [
+    "Job confirmed",
+    "Offre confirmée",
+    "Oferta confirmada",
+    "Stellenangebot bestätigt",
+    "Offerta confermata"
+  ],
+  "Vaga desativada": [
+    "Job deactivated",
+    "Offre désactivée",
+    "Oferta desactivada",
+    "Stellenangebot deaktiviert",
+    "Offerta disattivata"
+  ],
+  "Confirma nos próximos sete dias se continuas a recrutar para \"{0}\". Sem resposta, a vaga será desativada automaticamente.": [
+    "Confirm within the next seven days whether you are still hiring for \"{0}\". Without a response, the job will be deactivated automatically.",
+    "Confirmez dans les sept prochains jours si vous recrutez toujours pour le poste « {0} ». Sans réponse, l’offre sera désactivée automatiquement.",
+    "Confirma en los próximos siete días si sigues buscando candidatos para «{0}». Si no respondes, la oferta se desactivará automáticamente.",
+    "Bestätige innerhalb der nächsten sieben Tage, ob du noch für „{0}“ einstellst. Ohne Antwort wird das Stellenangebot automatisch deaktiviert.",
+    "Conferma entro i prossimi sette giorni se stai ancora cercando candidati per «{0}». Senza una risposta, l’offerta verrà disattivata automaticamente."
+  ],
+  "A vaga \"{0}\" foi desativada por falta de confirmação. Podes voltar a ativá-la na área da empresa.": [
+    "The job \"{0}\" was deactivated because it was not confirmed. You can reactivate it in your company area.",
+    "L’offre « {0} » a été désactivée faute de confirmation. Vous pouvez la réactiver dans votre espace entreprise.",
+    "La oferta «{0}» se ha desactivado por falta de confirmación. Puedes reactivarla en el área de empresa.",
+    "Das Stellenangebot „{0}“ wurde mangels Bestätigung deaktiviert. Du kannst es im Unternehmensbereich wieder aktivieren.",
+    "L’offerta «{0}» è stata disattivata perché non è stata confermata. Puoi riattivarla nell’area aziendale."
+  ],
+  "Onde o talento se desenvolve.": [
+    "Where talent evolves.",
+    "Là où les talents évoluent.",
+    "Donde el talento evoluciona.",
+    "Wo Talente sich entwickeln.",
+    "Dove il talento cresce."
+  ],
+  "Emprego e recrutamento internacional": [
+    "International jobs and recruitment",
+    "Emploi et recrutement à l’international",
+    "Empleo y selección internacional",
+    "Internationale Jobs und Personalgewinnung",
+    "Lavoro e selezione a livello internazionale"
+  ],
+  "Oportunidades de emprego em todo o mundo": [
+    "Job opportunities worldwide",
+    "Des opportunités d’emploi dans le monde entier",
+    "Oportunidades de empleo en todo el mundo",
+    "Jobangebote weltweit",
+    "Opportunità di lavoro in tutto il mondo"
+  ],
+  "ARYNQO liga candidatos e empresas em todo o mundo. Descobre oportunidades de emprego, apresenta o teu perfil e recruta talento.": [
+    "ARYNQO connects candidates and companies worldwide. Discover job opportunities, showcase your profile and recruit talent.",
+    "ARYNQO met en relation candidats et entreprises dans le monde entier. Découvrez des offres d’emploi, présentez votre profil et recrutez des talents.",
+    "ARYNQO conecta candidatos y empresas en todo el mundo. Descubre oportunidades de empleo, presenta tu perfil y encuentra talento.",
+    "ARYNQO verbindet Bewerber und Unternehmen weltweit. Entdecke Jobangebote, präsentiere dein Profil und finde passende Talente.",
+    "ARYNQO mette in contatto candidati e aziende in tutto il mondo. Scopri opportunità di lavoro, presenta il tuo profilo e trova nuovi talenti."
+  ],
+  "Política de Cookies": [
+    "Cookie policy",
+    "Politique relative aux cookies",
+    "Política de cookies",
+    "Cookie-Richtlinie",
+    "Informativa sui cookie"
+  ],
+  "Política de Privacidade": [
+    "Privacy policy",
+    "Politique de confidentialité",
+    "Política de privacidad",
+    "Datenschutzerklärung",
+    "Informativa sulla privacy"
+  ],
+  "Aviso Legal": [
+    "Legal notice",
+    "Mentions légales",
+    "Aviso legal",
+    "Rechtliche Hinweise",
+    "Note legali"
+  ],
+  "Aceitar estatísticas": [
+    "Accept analytics",
+    "Accepter les statistiques",
+    "Aceptar estadísticas",
+    "Statistik-Cookies akzeptieren",
+    "Accetta le statistiche"
+  ],
+  "Recusar estatísticas": [
+    "Reject analytics",
+    "Refuser les statistiques",
+    "Rechazar estadísticas",
+    "Statistik-Cookies ablehnen",
+    "Rifiuta le statistiche"
+  ],
+  "Gerir cookies": [
+    "Manage cookies",
+    "Gérer les cookies",
+    "Gestionar cookies",
+    "Cookies verwalten",
+    "Gestisci i cookie"
+  ],
+  "Home": [
+    "Home",
+    "Accueil",
+    "Inicio",
+    "Startseite",
+    "Home"
+  ],
+  "Olá": [
+    "Hello",
+    "Bonjour",
+    "Hola",
+    "Hallo",
+    "Ciao"
+  ],
+  "A TUA ATIVIDADE NA ARYNQO": [
+    "YOUR ACTIVITY ON ARYNQO",
+    "VOTRE ACTIVITÉ SUR ARYNQO",
+    "TU ACTIVIDAD EN ARYNQO",
+    "DEINE AKTIVITÄT AUF ARYNQO",
+    "LA TUA ATTIVITÀ SU ARYNQO"
+  ],
+  "Gerir notificações": [
+    "Manage notifications",
+    "Gérer les notifications",
+    "Gestionar notificaciones",
+    "Benachrichtigungen verwalten",
+    "Gestisci le notifiche"
+  ],
+  "Gerir preferências de notificação": [
+    "Manage notification preferences",
+    "Gérer les préférences de notification",
+    "Gestionar preferencias de notificación",
+    "Benachrichtigungseinstellungen verwalten",
+    "Gestisci le preferenze di notifica"
+  ],
+  "Abrir na ARYNQO": [
+    "Open in ARYNQO",
+    "Ouvrir dans ARYNQO",
+    "Abrir en ARYNQO",
+    "In ARYNQO öffnen",
+    "Apri in ARYNQO"
+  ],
+  "Recebeste esta mensagem porque tens notificações por email ativas na ARYNQO.": [
+    "You received this message because email notifications are enabled for your ARYNQO account.",
+    "Vous avez reçu ce message car les notifications par e-mail sont activées sur votre compte ARYNQO.",
+    "Has recibido este mensaje porque tienes activadas las notificaciones por correo de ARYNQO.",
+    "Du erhältst diese Nachricht, weil E-Mail-Benachrichtigungen für dein ARYNQO-Konto aktiviert sind.",
+    "Hai ricevuto questo messaggio perché le notifiche email sono attive per il tuo account ARYNQO."
+  ],
+  "Esta é uma mensagem automática. Consulta os detalhes na plataforma.": [
+    "This is an automated message. See the details on the platform.",
+    "Ce message est automatique. Consultez les détails sur la plateforme.",
+    "Este es un mensaje automático. Consulta los detalles en la plataforma.",
+    "Dies ist eine automatische Nachricht. Details findest du auf der Plattform.",
+    "Questo è un messaggio automatico. Consulta i dettagli sulla piattaforma."
+  ],
+  "Não foi possível guardar o idioma. Tenta novamente.": [
+    "Your language preference could not be saved. Please try again.",
+    "Votre préférence linguistique n’a pas pu être enregistrée. Veuillez réessayer.",
+    "No se ha podido guardar el idioma. Inténtalo de nuevo.",
+    "Deine Spracheinstellung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "Non è stato possibile salvare la lingua. Riprova."
+  ],
+  "Confirmar conta": [
+    "Confirm your account",
+    "Confirmer votre compte",
+    "Confirmar tu cuenta",
+    "Konto bestätigen",
+    "Conferma il tuo account"
+  ],
+  "Confirma o teu email para começares a utilizar a ARYNQO.": [
+    "Confirm your email to start using ARYNQO.",
+    "Confirmez votre adresse e-mail pour commencer à utiliser ARYNQO.",
+    "Confirma tu correo electrónico para empezar a utilizar ARYNQO.",
+    "Bestätige deine E-Mail-Adresse, um ARYNQO zu nutzen.",
+    "Conferma il tuo indirizzo email per iniziare a usare ARYNQO."
+  ],
+  "Recuperar palavra-passe": [
+    "Reset your password",
+    "Réinitialiser votre mot de passe",
+    "Restablecer tu contraseña",
+    "Passwort zurücksetzen",
+    "Reimposta la password"
+  ],
+  "Recebemos um pedido para recuperar o acesso à tua conta ARYNQO.": [
+    "We received a request to reset the password for your ARYNQO account.",
+    "Nous avons reçu une demande de réinitialisation du mot de passe de votre compte ARYNQO.",
+    "Hemos recibido una solicitud para restablecer la contraseña de tu cuenta ARYNQO.",
+    "Wir haben eine Anfrage zum Zurücksetzen des Passworts für dein ARYNQO-Konto erhalten.",
+    "Abbiamo ricevuto una richiesta per reimpostare la password del tuo account ARYNQO."
+  ],
+  "Se não fizeste este pedido, ignora este email.": [
+    "If you did not request this, you can ignore this email.",
+    "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.",
+    "Si no has solicitado este cambio, ignora este correo.",
+    "Wenn du diese Anfrage nicht gestellt hast, ignoriere diese E-Mail.",
+    "Se non hai fatto questa richiesta, ignora questa email."
+  ],
+  "O candidato aceitou o pedido relativo à vaga \"{0}\".": [
+    "The candidate accepted the request for the job \"{0}\".",
+    "Le candidat a accepté la demande pour l’offre « {0} ».",
+    "El candidato aceptó la solicitud para la oferta \"{0}\".",
+    "Der Bewerber hat die Anfrage zur Stelle „{0}“ angenommen.",
+    "Il candidato ha accettato la richiesta per l’offerta \"{0}\"."
+  ],
+  "O candidato recusou o pedido relativo à vaga \"{0}\".": [
+    "The candidate declined the request for the job \"{0}\".",
+    "Le candidat a refusé la demande pour l’offre « {0} ».",
+    "El candidato rechazó la solicitud para la oferta \"{0}\".",
+    "Der Bewerber hat die Anfrage zur Stelle „{0}“ abgelehnt.",
+    "Il candidato ha rifiutato la richiesta per l’offerta \"{0}\"."
+  ],
+  "Seleciona uma sugestão para distinguir competências com o mesmo nome.": [
+    "Select a suggestion to distinguish skills with the same name.",
+    "Sélectionnez une suggestion pour distinguer les compétences portant le même nom.",
+    "Selecciona una sugerencia para distinguir competencias con el mismo nombre.",
+    "Wähle einen Vorschlag, um Kompetenzen mit demselben Namen zu unterscheiden.",
+    "Seleziona un suggerimento per distinguere competenze con lo stesso nome."
+  ],
+  "Recebemos um pedido para recuperar o acesso à tua conta. Utiliza o botão para definir uma nova palavra-passe.": [
+    "We received a request to recover access to your account. Use the button to set a new password.",
+    "Nous avons reçu une demande de récupération de votre compte. Utilisez le bouton pour définir un nouveau mot de passe.",
+    "Hemos recibido una solicitud para recuperar el acceso a tu cuenta. Utiliza el botón para establecer una nueva contraseña.",
+    "Wir haben eine Anfrage zur Wiederherstellung deines Kontozugangs erhalten. Verwende die Schaltfläche, um ein neues Passwort festzulegen.",
+    "Abbiamo ricevuto una richiesta per recuperare l’accesso al tuo account. Usa il pulsante per impostare una nuova password."
+  ],
+  "Definir nova palavra-passe": [
+    "Set a new password",
+    "Définir un nouveau mot de passe",
+    "Establecer nueva contraseña",
+    "Neues Passwort festlegen",
+    "Imposta una nuova password"
+  ],
+  "O link é pessoal, tem validade limitada e só pode ser utilizado uma vez.": [
+    "This link is personal, expires and can only be used once.",
+    "Ce lien est personnel, expire et ne peut être utilisé qu’une seule fois.",
+    "Este enlace es personal, caduca y solo puede utilizarse una vez.",
+    "Dieser Link ist persönlich, läuft ab und kann nur einmal verwendet werden.",
+    "Questo link è personale, scade e può essere utilizzato una sola volta."
+  ],
+  "Se não pediste esta alteração, ignora esta mensagem.": [
+    "If you did not request this change, ignore this message.",
+    "Si vous n’avez pas demandé cette modification, ignorez ce message.",
+    "Si no has solicitado este cambio, ignora este mensaje.",
+    "Wenn du diese Änderung nicht angefordert hast, ignoriere diese Nachricht.",
+    "Se non hai richiesto questa modifica, ignora questo messaggio."
+  ],
+  "Esta é uma mensagem automática relacionada com a tua conta.": [
+    "This is an automated message about your account.",
+    "Ceci est un message automatique concernant votre compte.",
+    "Este es un mensaje automático relacionado con tu cuenta.",
+    "Dies ist eine automatische Nachricht zu deinem Konto.",
+    "Questo è un messaggio automatico relativo al tuo account."
+  ],
+  "Pedido de contacto aceite": [
+    "Contact request accepted",
+    "Demande de contact acceptée",
+    "Solicitud de contacto aceptada",
+    "Kontaktanfrage angenommen",
+    "Richiesta di contatto accettata"
+  ],
+  "Pedido de contacto recusado": [
+    "Contact request declined",
+    "Demande de contact refusée",
+    "Solicitud de contacto rechazada",
+    "Kontaktanfrage abgelehnt",
+    "Richiesta di contatto rifiutata"
+  ],
+  "Pedido respondido": [
+    "Request answered",
+    "Demande traitée",
+    "Solicitud respondida",
+    "Anfrage beantwortet",
+    "Richiesta gestita"
+  ],
+  "A empresa {0} quer contactar-te sobre a vaga \"{1}\".": [
+    "The company {0} wants to contact you about the job \"{1}\".",
+    "L’entreprise {0} souhaite vous contacter au sujet de l’offre « {1} ».",
+    "La empresa {0} quiere contactarte sobre la oferta \"{1}\".",
+    "Das Unternehmen {0} möchte dich zur Stelle „{1}“ kontaktieren.",
+    "L’azienda {0} desidera contattarti per l’offerta \"{1}\"."
+  ],
+  "A empresa {0} quer ver o teu perfil completo para a vaga \"{1}\". Podes aceitar ou recusar na área de notificações.": [
+    "The company {0} wants to view your full profile for the job \"{1}\". You can accept or decline in notifications.",
+    "L’entreprise {0} souhaite consulter votre profil complet pour l’offre « {1} ». Vous pouvez accepter ou refuser dans les notifications.",
+    "La empresa {0} quiere ver tu perfil completo para la oferta \"{1}\". Puedes aceptar o rechazar en las notificaciones.",
+    "Das Unternehmen {0} möchte dein vollständiges Profil zur Stelle „{1}“ sehen. Du kannst in den Benachrichtigungen zustimmen oder ablehnen.",
+    "L’azienda {0} desidera vedere il tuo profilo completo per l’offerta \"{1}\". Puoi accettare o rifiutare nelle notifiche."
+  ]
+}

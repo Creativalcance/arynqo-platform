@@ -1,6 +1,8 @@
 "use client";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { createNotification } from "@/lib/create-notification";
@@ -109,61 +111,59 @@ export default function CompanyTalentDirectory() {
       <div className="mx-auto max-w-7xl">
         <CompanyLaunchOffer />
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Explorar candidatos</h1>
-          <Link href="/empresa/matches" className="font-semibold text-[#1683FF] underline">Ver compatibilidade por vaga</Link>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl"><LText text={"Explorar candidatos"} /></h1>
+          <Link href="/empresa/matches" className="font-semibold text-[#1683FF] underline"><LText text={"Ver compatibilidade por vaga"} /></Link>
         </div>
-        <p className="mb-6 max-w-3xl text-sm leading-6 text-slate-600">Consulta todos os perfis disponíveis, incluindo candidatos que ainda não têm um match calculado. Pesquisa por função, área ou localização. Escolhe uma vaga ativa para enviar um pedido de contacto.</p>
+        <p className="mb-6 max-w-3xl text-sm leading-6 text-slate-600"><LText text={"Consulta todos os perfis disponíveis, incluindo candidatos que ainda não têm um match calculado. Pesquisa por função, área ou localização. Escolhe uma vaga ativa para enviar um pedido de contacto."} /></p>
         <form onSubmit={event => { event.preventDefault(); setFilters(current => ({ ...current, query: searchInput.trim(), page: 1 })); }}
           className="mb-6 grid gap-4 rounded-3xl border border-[#DDE3EA] bg-white p-5 md:grid-cols-[1fr_1fr_auto]">
-          <label className="min-w-0 text-sm font-semibold">Pesquisar candidatos
-            <input maxLength={100} value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Função, área ou localização"
+          <label className="min-w-0 text-sm font-semibold"><LText text={"Pesquisar candidatos"} /><LElement as="input" maxLength={100} value={searchInput} onChange={event => setSearchInput(event.target.value)} placeholder="Função, área ou localização"
               className="mt-2 w-full rounded-xl border border-[#DDE3EA] px-4 py-3 font-normal" />
           </label>
-          <label className="min-w-0 text-sm font-semibold">Vaga para o pedido
-            <select disabled={!!sendingId} value={filters.jobId} onChange={event => { setFeedback(""); setFilters(current => ({ ...current, jobId: event.target.value, page: 1 })); }}
+          <label className="min-w-0 text-sm font-semibold"><LText text={"Vaga para o pedido"} /><select disabled={!!sendingId} value={filters.jobId} onChange={event => { setFeedback(""); setFilters(current => ({ ...current, jobId: event.target.value, page: 1 })); }}
               className="mt-2 w-full rounded-xl border border-[#DDE3EA] bg-white px-4 py-3 font-normal">
-              {!jobs.length && <option value="">Sem vagas ativas</option>}
+              {!jobs.length && <option value=""><LText text={"Sem vagas ativas"} /></option>}
               {jobs.map(job => <option key={job.id} value={job.id}>{job.title}</option>)}
             </select>
           </label>
-          <button type="submit" className="self-end rounded-full bg-[#07111F] px-6 py-3 font-semibold text-white">Pesquisar</button>
+          <button type="submit" className="self-end rounded-full bg-[#07111F] px-6 py-3 font-semibold text-white"><LText text={"Pesquisar"} /></button>
         </form>
-        {!jobs.length && company && <p className="mb-6 text-sm">Podes consultar os candidatos. <Link href="/empresa/vagas/nova" className="text-[#1683FF] underline">Publica uma vaga</Link> para enviar pedidos.</p>}
-        {feedback && <p role="status" className="mb-6 rounded-xl bg-white p-4 text-sm">{feedback}</p>}
-        {error && <div role="alert" className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error} <button type="button" onClick={() => company ? setReload(current => current + 1) : setInitializationAttempt(current => current + 1)} className="underline">Tentar novamente</button></div>}
-        {loading ? <p role="status">A carregar candidatos…</p> : (
+        {!jobs.length && company && <p className="mb-6 text-sm"><LText text={"Podes consultar os candidatos. "} /><Link href="/empresa/vagas/nova" className="text-[#1683FF] underline"><LText text={"Publica uma vaga"} /></Link> <LText text={" para enviar pedidos."} /></p>}
+        {feedback && <p role="status" className="mb-6 rounded-xl bg-white p-4 text-sm"><LText text={feedback} /></p>}
+        {error && <div role="alert" className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-800"><LText text={error} /> <button type="button" onClick={() => company ? setReload(current => current + 1) : setInitializationAttempt(current => current + 1)} className="underline"><LText text={"Tentar novamente"} /></button></div>}
+        {loading ? <p role="status"><LText text={"A carregar candidatos…"} /></p> : (
           <>
-            <p className="mb-4 text-sm text-slate-600">{total} {total === 1 ? "candidato disponível" : "candidatos disponíveis"}</p>
-            {!candidates.length && !error && <p className="rounded-3xl bg-white p-8">Não existem candidatos para esta pesquisa.</p>}
+            <p className="mb-4 text-sm text-slate-600">{total} <LText text={total === 1 ? "candidato disponível" : "candidatos disponíveis"} /></p>
+            {!candidates.length && !error && <p className="rounded-3xl bg-white p-8"><LText text={"Não existem candidatos para esta pesquisa."} /></p>}
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {candidates.map(candidate => (
                 <article key={candidate.id} className="min-w-0 rounded-3xl border border-[#DDE3EA] bg-white p-6 [overflow-wrap:anywhere]">
-                  <p className="mb-2 text-xs font-semibold text-[#1683FF]">{candidate.profiles ? "Identidade autorizada" : "Identidade protegida"}</p>
-                  <h2 className="text-lg font-semibold">{candidate.profiles?.name || candidate.headline || "Candidato"}</h2>
+                  <p className="mb-2 text-xs font-semibold text-[#1683FF]"><LText text={candidate.profiles ? "Identidade autorizada" : "Identidade protegida"} /></p>
+                  <h2 className="text-lg font-semibold">{candidate.profiles?.name || candidate.headline || <LText text="Candidato" />}</h2>
                   {candidate.profiles && <p className="mt-2 text-sm text-slate-600">{candidate.headline}</p>}
-                  <p className="mt-3 text-sm text-slate-600">{[candidate.desired_area, candidate.location, candidate.seniority].filter(Boolean).join(" · ")}</p>
+                  <p className="mt-3 text-sm text-slate-600"><LText text={[candidate.desired_area, candidate.location, candidate.seniority].filter(Boolean).join(" · ")} /></p>
                   <div className="mt-5">
                     {candidate.profiles ? (
-                      <Link href={`/empresa/candidatos/${candidate.id}${filters.jobId ? `?jobId=${filters.jobId}` : ""}`} className="font-semibold text-[#1683FF] underline">Ver perfil e contacto</Link>
+                      <Link href={`/empresa/candidatos/${candidate.id}${filters.jobId ? `?jobId=${filters.jobId}` : ""}`} className="font-semibold text-[#1683FF] underline"><LText text={"Ver perfil e contacto"} /></Link>
                     ) : candidate.contact_request_status ? (
-                      <p className="text-sm">{candidate.contact_request_status === "pending" ? "Pedido enviado. A aguardar resposta." : candidate.contact_request_status === "rejected" ? "O candidato recusou este pedido." : "Contacto indisponível."}</p>
+                      <p className="text-sm"><LText text={candidate.contact_request_status === "pending" ? "Pedido enviado. A aguardar resposta." : candidate.contact_request_status === "rejected" ? "O candidato recusou este pedido." : "Contacto indisponível."} /></p>
                     ) : candidate.contact_visibility === "closed" ? (
-                      <p className="text-sm">Este candidato não aceita pedidos de contacto.</p>
+                      <p className="text-sm"><LText text={"Este candidato não aceita pedidos de contacto."} /></p>
                     ) : (
                       <button type="button" disabled={!filters.jobId || !!sendingId || loading} onClick={() => requestContact(candidate)}
                         className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
-                        {sendingId === candidate.id ? "A enviar…" : "Pedir autorização"}
+                        <LText text={sendingId === candidate.id ? "A enviar…" : "Pedir autorização"} />
                       </button>
                     )}
                   </div>
                 </article>
               ))}
             </div>
-            {total > 24 && <nav aria-label="Páginas de candidatos" className="mt-6 flex flex-wrap items-center gap-4 text-sm">
-              <button type="button" disabled={filters.page === 1 || loading || !!sendingId} onClick={() => setFilters(current => ({ ...current, page: current.page - 1 }))} className="rounded-full border px-5 py-3 disabled:opacity-50">Anterior</button>
-              <span>Página {filters.page} de {Math.ceil(total / 24)}</span>
-              <button type="button" disabled={filters.page * 24 >= total || loading || !!sendingId} onClick={() => setFilters(current => ({ ...current, page: current.page + 1 }))} className="rounded-full border px-5 py-3 disabled:opacity-50">Seguinte</button>
-            </nav>}
+            {total > 24 && <LElement as="nav" aria-label="Páginas de candidatos" className="mt-6 flex flex-wrap items-center gap-4 text-sm">
+              <button type="button" disabled={filters.page === 1 || loading || !!sendingId} onClick={() => setFilters(current => ({ ...current, page: current.page - 1 }))} className="rounded-full border px-5 py-3 disabled:opacity-50"><LText text={"Anterior"} /></button>
+              <span><LText text={"Página "} />{filters.page} <LText text={" de "} />{Math.ceil(total / 24)}</span>
+              <button type="button" disabled={filters.page * 24 >= total || loading || !!sendingId} onClick={() => setFilters(current => ({ ...current, page: current.page + 1 }))} className="rounded-full border px-5 py-3 disabled:opacity-50"><LText text={"Seguinte"} /></button>
+            </LElement>}
           </>
         )}
       </div>

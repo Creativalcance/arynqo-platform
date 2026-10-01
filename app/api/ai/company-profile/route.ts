@@ -1,3 +1,4 @@
+import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
 import { NextResponse } from "next/server";
 
@@ -34,7 +35,7 @@ Localização: ${body.location || "Não indicada"}
 Descrição atual: ${body.currentDescription || "Não indicada"}
 
 Regras:
-- Escrever em português de Portugal.
+- Escrever no idioma ${localeNames[actor.locale || "pt"]}. Manter as chaves JSON e os códigos de classificação inalterados.
 - Tom profissional, moderno e credível.
 - Não inventar dados concretos que não foram fornecidos.
 - Não usar emojis.

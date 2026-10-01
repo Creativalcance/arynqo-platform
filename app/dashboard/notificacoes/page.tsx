@@ -1,8 +1,11 @@
 "use client";
+import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { LText, LElement, useI18n } from "@/lib/i18n/client";
+
 
 import { createNotification } from "@/lib/create-notification";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/lib/i18n/link";
+import { useRouter } from "@/lib/i18n/navigation";
 import { persistNotificationReads, notifyNotificationsChanged } from "@/lib/notification-read";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -103,6 +106,7 @@ const pushStatusLabels: Record<string, string> = {
 };
 
 export default function NotificacoesPage() {
+  const { locale: displayLocale } = useI18n();
   const router = useRouter();
   const readRevision = useRef(0);
   const [isMarkingRead, setIsMarkingRead] = useState(false);
@@ -127,7 +131,7 @@ export default function NotificacoesPage() {
       readRevision.current++;
       setNotifications(current => current.map(item => item.id === notificationId ? { ...item, action_label: "Vaga confirmada", is_read: true } : item));
       notifyNotificationsChanged();
-      setRenewalMessages(current => ({ ...current, [notificationId]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString("pt-PT")}.` }));
+      setRenewalMessages(current => ({ ...current, [notificationId]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString(displayLocale)}.` }));
     } catch {
       setRenewalMessages(current => ({ ...current, [notificationId]: "Não foi possível confirmar. Verifica a sessão e o estado da vaga na área da empresa e tenta novamente." }));
     } finally {
@@ -175,7 +179,7 @@ export default function NotificacoesPage() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        alert(error.message);
+        localizedAlert(error.message);
         return;
       }
 
@@ -335,7 +339,7 @@ export default function NotificacoesPage() {
   }
 
   function formatDate(date: string) {
-    return new Intl.DateTimeFormat("pt-PT", {
+    return new Intl.DateTimeFormat(displayLocale, {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -368,7 +372,7 @@ export default function NotificacoesPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A carregar notificações...</p>
+        <p className="text-sm text-slate-500"><LText text={"A carregar notificações..."} /></p>
       </main>
     );
   }
@@ -384,22 +388,18 @@ export default function NotificacoesPage() {
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div>
                 <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                  Centro de notificações
-                </p>
+                  <LText text={"Centro de notificações"} /></p>
 
                 <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                  Notificações ARYNQO.
-                </h1>
+                  <LText text={"Notificações ARYNQO."} /></h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                  Acompanha candidaturas, decisões, empresas interessadas,
-                  pedidos de contacto e atividade relevante na plataforma.
-                </p>
+                  <LText text={"Acompanha candidaturas, decisões, empresas interessadas, pedidos de contacto e atividade relevante na plataforma."} /></p>
               </div>
 
               <div className="grid gap-3">
   <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur">
-    <p className="text-sm font-medium text-white/70">Pendentes</p>
+    <p className="text-sm font-medium text-white/70"><LText text={"Pendentes"} /></p>
 
     <p className="mt-2 text-4xl font-semibold tracking-[-0.05em] text-white">
       {totalPendingItems}
@@ -410,30 +410,25 @@ export default function NotificacoesPage() {
     href="/definicoes/notificacoes"
     className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
   >
-    Preferências
-  </Link>
+    <LText text={"Preferências"} /></Link>
 </div>
             </div>
           </div>
         </section>
 
-        {contactFeedback && <p role="status" className="mb-6 rounded-2xl bg-white p-4 text-sm">{contactFeedback}</p>}
+        {contactFeedback && <p role="status" className="mb-6 rounded-2xl bg-white p-4 text-sm"><LText text={contactFeedback} /></p>}
 
         {pendingContactRequests.length > 0 && (
           <section className="mb-8 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
             <div className="mb-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Pedidos de contacto
-              </p>
+                <LText text={"Pedidos de contacto"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Empresas querem ver o teu perfil
-              </h2>
+                <LText text={"Empresas querem ver o teu perfil"} /></h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                As empresas pedem autorização para consultar o teu perfil completo.
-                Podes aceitar ou recusar cada pedido.
-              </p>
+                <LText text={"As empresas pedem autorização para consultar o teu perfil completo. Podes aceitar ou recusar cada pedido."} /></p>
             </div>
 
             <div className="space-y-4">
@@ -459,12 +454,10 @@ export default function NotificacoesPage() {
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                Atualizações
-              </p>
+                <LText text={"Atualizações"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                Histórico de atividade
-              </h2>
+                <LText text={"Histórico de atividade"} /></h2>
             </div>
 
             <button
@@ -473,11 +466,10 @@ export default function NotificacoesPage() {
               disabled={unreadCount === 0 || isMarkingRead}
               className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Marcar todas como lidas
-            </button>
+              <LText text={"Marcar todas como lidas"} /></button>
           </div>
 
-          {readError && <p role="alert" className="mb-4 text-sm text-red-700">{readError}</p>}
+          {readError && <p role="alert" className="mb-4 text-sm text-red-700"><LText text={readError} /></p>}
           <div className="space-y-4">
             {visibleNotifications.map((notification) => (
               <article
@@ -496,30 +488,30 @@ export default function NotificacoesPage() {
                       )}
 
                       <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
-                        {notification.title}
+                        <LText text={notification.title} />
                       </h3>
                     </div>
 
                     <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                      {notification.message}
+                      <LText text={notification.message} />
                     </p>
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       <p className="text-xs font-medium text-slate-400">
-                        {formatDate(notification.created_at)}
+                        <LText text={formatDate(notification.created_at)} />
                       </p>
 
                       {notification.email_status && (
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
-                          {emailStatusLabels[notification.email_status] ||
-                            notification.email_status}
+                          <LText text={emailStatusLabels[notification.email_status] ||
+                            notification.email_status} />
                         </span>
                       )}
 
                       {notification.push_status && (
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">
-                          {pushStatusLabels[notification.push_status] ||
-                            notification.push_status}
+                          <LText text={pushStatusLabels[notification.push_status] ||
+                            notification.push_status} />
                         </span>
                       )}
                     </div>
@@ -530,7 +522,7 @@ export default function NotificacoesPage() {
                       <button type="button" disabled={!!renewingId || notification.action_label === "Vaga confirmada"}
                         onClick={() => confirmRenewal(notification.id)}
                         className="rounded-full bg-[#07111F] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
-                        {renewingId === notification.id ? "A confirmar…" : notification.action_label}
+                        <LText text={renewingId === notification.id ? "A confirmar…" : notification.action_label} />
                       </button>
                     ) : notification.related_url && (
                       <Link
@@ -542,7 +534,7 @@ export default function NotificacoesPage() {
                         aria-disabled={isMarkingRead}
                         className="rounded-full bg-[#07111F] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1683FF]"
                       >
-                        {notification.action_label || "Abrir"}
+                        <LText text={notification.action_label || "Abrir"} />
                       </Link>
                     )}
 
@@ -553,20 +545,18 @@ export default function NotificacoesPage() {
                         onClick={() => markAsRead(notification.id)}
                         className="rounded-full border border-[#DDE3EA] px-4 py-2 text-xs font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                       >
-                        Marcar como lida
-                      </button>
+                        <LText text={"Marcar como lida"} /></button>
                     )}
                   </div>
                 </div>
-                {renewalMessages[notification.id] && <p role="status" className="mt-4 text-sm">{renewalMessages[notification.id]}</p>}
+                {renewalMessages[notification.id] && <p role="status" className="mt-4 text-sm"><LText text={renewalMessages[notification.id]} /></p>}
               </article>
             ))}
 
             {resolvedContactRequests.length > 0 && (
               <div className="pt-4">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  Pedidos de contacto tratados
-                </p>
+                  <LText text={"Pedidos de contacto tratados"} /></p>
 
                 <div className="space-y-4">
                   {resolvedContactRequests.map((request) => (
@@ -583,12 +573,10 @@ export default function NotificacoesPage() {
             {notifications.length === 0 && contactRequests.length === 0 && (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-12 text-center">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
-                  Ainda não tens notificações.
-                </h2>
+                  <LText text={"Ainda não tens notificações."} /></h2>
 
                 <p className="mt-4 text-sm leading-6 text-slate-500">
-                  Quando houver atividade relevante, vais encontrá-la aqui.
-                </p>
+                  <LText text={"Quando houver atividade relevante, vais encontrá-la aqui."} /></p>
               </div>
             )}
           </div>
@@ -617,7 +605,7 @@ function ContactRequestCard({
         <div className="flex gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-gradient-to-br from-[#07111F] to-[#1683FF] text-lg font-semibold text-white">
             {request.company?.logo_url ? (
-              <img
+              <LElement as="img"
                 src={request.company.logo_url}
                 alt={request.company.company_name || "Empresa"}
                 className="h-full w-full object-cover"
@@ -630,7 +618,7 @@ function ContactRequestCard({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-semibold tracking-[-0.03em]">
-                {request.company?.company_name || "Empresa"}
+                {request.company?.company_name || <LText text="Empresa" />}
               </h3>
 
               <span
@@ -638,33 +626,33 @@ function ContactRequestCard({
                   statusStyles[request.status]
                 }`}
               >
-                {statusLabels[request.status]}
+                <LText text={statusLabels[request.status]} />
               </span>
             </div>
 
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              {request.message ||
-                "A empresa pretende ver o teu perfil completo para uma vaga compatível."}
+              <LText text={request.message ||
+                "A empresa pretende ver o teu perfil completo para uma vaga compatível."} />
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {request.job?.title && <Badge>{request.job.title}</Badge>}
-              {request.job?.area && <Badge>{request.job.area}</Badge>}
-              {request.job?.location && <Badge>{request.job.location}</Badge>}
+              {request.job?.title && <Badge><LText text={request.job.title} /></Badge>}
+              {request.job?.area && <Badge><LText text={request.job.area} /></Badge>}
+              {request.job?.location && <Badge><LText text={request.job.location} /></Badge>}
               {(request.job?.work_model || request.job?.work_mode) && (
-                <Badge>{request.job.work_model || request.job.work_mode}</Badge>
+                <Badge><LText text={request.job.work_model || request.job.work_mode} /></Badge>
               )}
               {(request.job?.opportunity_type ||
                 request.job?.contract_type) && (
                 <Badge>
-                  {request.job.opportunity_type || request.job.contract_type}
+                  <LText text={request.job.opportunity_type || request.job.contract_type} />
                 </Badge>
               )}
-              {request.job?.seniority && <Badge>{request.job.seniority}</Badge>}
+              {request.job?.seniority && <Badge><LText text={request.job.seniority} /></Badge>}
             </div>
 
             <p className="mt-4 text-xs font-medium text-slate-400">
-              {formatDate(request.created_at)}
+              <LText text={formatDate(request.created_at)} />
             </p>
           </div>
         </div>
@@ -676,8 +664,7 @@ function ContactRequestCard({
             disabled={isUpdating}
             className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold text-[#07111F] transition hover:border-red-200 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Recusar
-          </button>
+            <LText text={"Recusar"} /></button>
 
           <button
             type="button"
@@ -685,7 +672,7 @@ function ContactRequestCard({
             disabled={isUpdating}
             className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isUpdating ? "A guardar..." : "Aceitar contacto"}
+            <LText text={isUpdating ? "A guardar..." : "Aceitar contacto"} />
           </button>
         </div>
       </div>
@@ -706,7 +693,7 @@ function ResolvedContactRequestCard({
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h3 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
-              {request.company?.company_name || "Empresa"}
+              {request.company?.company_name || <LText text="Empresa" />}
             </h3>
 
             <span
@@ -714,17 +701,17 @@ function ResolvedContactRequestCard({
                 statusStyles[request.status]
               }`}
             >
-              {statusLabels[request.status]}
+              <LText text={statusLabels[request.status]} />
             </span>
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-            Pedido de contacto para a vaga{" "}
-            <strong>{request.job?.title || "vaga"}</strong>.
+            <LText text={"Pedido de contacto para a vaga"} /><LText text={" "} />
+            <strong><LText text={request.job?.title || "vaga"} /></strong>.
           </p>
 
           <p className="mt-4 text-xs font-medium text-slate-400">
-            {formatDate(request.created_at)}
+            <LText text={formatDate(request.created_at)} />
           </p>
         </div>
       </div>

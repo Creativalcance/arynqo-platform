@@ -1,6 +1,9 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -20,7 +23,7 @@ export default function AdminEntryPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-  window.location.href = "/admin/login";
+  window.location.href = browserLocalizedPath("/admin/login");
   return;
 }
 
@@ -54,7 +57,7 @@ export default function AdminEntryPage() {
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-sm text-slate-500">A validar acesso admin...</p>
+        <p className="text-sm text-slate-500"><LText text={"A validar acesso admin..."} /></p>
       </main>
     );
   }
@@ -64,24 +67,19 @@ export default function AdminEntryPage() {
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-6">
         <section className="max-w-xl rounded-[32px] border border-[#DDE3EA] bg-white p-10 text-center shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-500">
-            Acesso reservado
-          </p>
+            <LText text={"Acesso reservado"} /></p>
 
           <h1 className="mt-4 text-3xl font-black tracking-[-0.05em] text-[#07111F]">
-            Não tens permissões de administrador.
-          </h1>
+            <LText text={"Não tens permissões de administrador."} /></h1>
 
           <p className="mt-4 text-sm leading-6 text-slate-500">
-            Esta área está disponível apenas para utilizadores com permissões
-            administrativas.
-          </p>
+            <LText text={"Esta área está disponível apenas para utilizadores com permissões administrativas."} /></p>
 
           <Link
             href="/dashboard"
             className="mt-6 inline-flex rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
           >
-            Voltar ao dashboard
-          </Link>
+            <LText text={"Voltar ao dashboard"} /></Link>
         </section>
       </main>
     );
@@ -97,34 +95,28 @@ export default function AdminEntryPage() {
 
             <div className="relative">
               <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                Admin Arynqo
-              </p>
+                <LText text={"Admin Arynqo"} /></p>
 
               <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
-                Área de administração.
-              </h1>
+                <LText text={"Área de administração."} /></h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                Acesso desbloqueado. A partir de agora, o botão Admin fica
-                disponível no Header deste browser.
-              </p>
+                <LText text={"Acesso desbloqueado. A partir de agora, o botão Admin fica disponível no Header deste browser."} /></p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/admin/competencias" className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F]">Catálogo de competências</Link>
-                <Link href="/admin/contas" className="rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white">Contas e dados</Link>
+                <Link href="/admin/competencias" className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F]"><LText text={"Catálogo de competências"} /></Link>
+                <Link href="/admin/contas" className="rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white"><LText text={"Contas e dados"} /></Link>
                 <Link
                   href="/admin/academia"
                   className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
                 >
-                  Gerir Academia
-                </Link>
+                  <LText text={"Gerir Academia"} /></Link>
 
                 <Link
                   href="/dashboard"
                   className="rounded-full border border-white/20 px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
-                  Voltar ao dashboard
-                </Link>
+                  <LText text={"Voltar ao dashboard"} /></Link>
               </div>
             </div>
           </div>

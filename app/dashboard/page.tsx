@@ -1,6 +1,9 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -43,7 +46,7 @@ export default function DashboardPage() {
       const { data: sessionData } = await supabase.auth.getSession();
 
       if (!sessionData.session) {
-        window.location.href = "/login";
+        window.location.href = browserLocalizedPath("/login");
         return;
       }
 
@@ -87,13 +90,13 @@ export default function DashboardPage() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.href = browserLocalizedPath("/");
   }
 
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
-        <p className="text-neutral-600">A carregar dashboard...</p>
+        <p className="text-neutral-600"><LText text={"A carregar dashboard..."} /></p>
       </main>
     );
   }
@@ -103,19 +106,17 @@ export default function DashboardPage() {
       <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-6">
         <div className="max-w-md rounded-[32px] border border-[#DDE3EA] bg-white p-8 text-center shadow-sm">
           <h1 className="text-2xl font-bold text-[#07111F]">
-            Não foi possível carregar o dashboard
-          </h1>
+            <LText text={"Não foi possível carregar o dashboard"} /></h1>
 
           <p className="mt-4 text-sm text-neutral-600">
-            {errorMessage || "Tenta iniciar sessão novamente."}
+            <LText text={errorMessage || "Tenta iniciar sessão novamente."} />
           </p>
 
           <Link
             href="/login"
             className="mt-6 inline-flex rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1683FF]"
           >
-            Ir para login
-          </Link>
+            <LText text={"Ir para login"} /></Link>
         </div>
       </main>
     );
@@ -142,34 +143,32 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div>
               <div className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-sm font-semibold text-[#1683FF]">
-                Dashboard Arynqo
-              </div>
+                <LText text={"Dashboard Arynqo"} /></div>
 
               <h1 className="mt-6 text-5xl font-black tracking-[-0.06em] text-[#07111F] md:text-6xl">
-                Olá, {profile.name}
+                <LText text={"Olá, "} />{profile.name}
               </h1>
 
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-neutral-600">
-                {isTalent
+                <LText text={isTalent
                   ? "Desenvolve o teu perfil profissional, descobre oportunidades compatíveis e deixa a IA encontrar os melhores matches para ti."
                   : isCompany
                     ? "Gere a presença da sua empresa, publique oportunidades e acompanhe candidatos numa experiência simples e inteligente."
-                    : "Acede à área de administração da plataforma Arynqo."}
+                    : "Acede à área de administração da plataforma Arynqo."} />
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <span className="rounded-full bg-[#07111F] px-4 py-2 text-sm font-semibold text-white">
-                  {isTalent ? ({student: "Estudante", graduate: "Recém-licenciado", professional: "Profissional", career_change: "Em transição de carreira"}[studentProfile?.talent_type || ""] || "Candidato") : isCompany ? "Empresa" : "Admin"}
+                  <LText text={isTalent ? ({student: "Estudante", graduate: "Recém-licenciado", professional: "Profissional", career_change: "Em transição de carreira"}[studentProfile?.talent_type || ""] || "Candidato") : isCompany ? "Empresa" : "Admin"} />
                 </span>
 
                 {isAdmin && (
                   <span className="rounded-full border border-[#1683FF]/20 bg-[#1683FF]/5 px-4 py-2 text-sm font-semibold text-[#1683FF]">
-                    Admin
-                  </span>
+                    <LText text={"Admin"} /></span>
                 )}
 
                 <span className="rounded-full border border-[#DDE3EA] bg-white px-4 py-2 text-sm font-semibold text-neutral-700">
-                  {profile.email}
+                  <LText text={profile.email} />
                 </span>
               </div>
             </div>
@@ -178,8 +177,7 @@ export default function DashboardPage() {
               onClick={handleLogout}
               className="rounded-full border border-[#DDE3EA] bg-white px-6 py-3 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
             >
-              Terminar sessão
-            </button>
+              <LText text={"Terminar sessão"} /></button>
           </div>
         </div>
       </section>
@@ -187,19 +185,19 @@ export default function DashboardPage() {
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-12">
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#1683FF]">
-            {isTalent
+            <LText text={isTalent
               ? "Área de talento"
               : isCompany
                 ? "Área da empresa"
-                : "Área de administração"}
+                : "Área de administração"} />
           </p>
 
           <h2 className="mt-3 text-4xl font-black tracking-[-0.05em] text-[#07111F]">
-            {isTalent
+            <LText text={isTalent
               ? "O teu centro de crescimento profissional"
               : isCompany
                 ? "Centro de recrutamento"
-                : "Administração Arynqo"}
+                : "Administração Arynqo"} />
           </h2>
         </div>
 
@@ -390,7 +388,7 @@ function DashboardCard({
             : "text-sm font-semibold text-[#1683FF]"
         }
       >
-        {eyebrow}
+        <LText text={eyebrow} />
       </p>
 
       <h3
@@ -400,7 +398,7 @@ function DashboardCard({
             : "mt-4 text-3xl font-black tracking-[-0.04em] text-[#07111F] transition group-hover:text-[#1683FF]"
         }
       >
-        {title}
+        <LText text={title} />
       </h3>
 
       <p
@@ -410,7 +408,7 @@ function DashboardCard({
             : "mt-4 leading-relaxed text-neutral-600"
         }
       >
-        {text}
+        <LText text={text} />
       </p>
 
       <div
@@ -420,8 +418,7 @@ function DashboardCard({
             : "mt-8 inline-flex text-sm font-semibold text-[#1683FF]"
         }
       >
-        Abrir →
-      </div>
+        <LText text={"Abrir →"} /></div>
     </Link>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -48,7 +51,7 @@ export default function ConfirmEmailPage({initialNext}:{initialNext:string}) {
     submitting.current = true;
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}` } });
+      const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: `${window.location.origin}${browserLocalizedPath("/auth/confirm")}?next=${encodeURIComponent(next)}` } });
       setMessage(error ? "Não foi possível pedir um novo email. Aguarda um pouco e tenta novamente." : "Se existe uma conta por confirmar com este endereço, receberás um novo email. Verifica também a pasta de spam.");
     } catch { setMessage("Não foi possível ligar ao serviço. Tenta novamente dentro de momentos."); }
     finally { submitting.current = false; setBusy(false); }
@@ -57,17 +60,17 @@ export default function ConfirmEmailPage({initialNext}:{initialNext:string}) {
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-20">
       <div className="mx-auto max-w-md rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
-        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">ARYNQO</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#07111F]">{confirmed ? "Email confirmado." : "Confirma o teu email."}</h1>
-        <p className="mt-4 text-sm leading-6 text-slate-600">{confirmed ? "A tua conta está pronta. Inicia sessão para continuar o teu percurso na ARYNQO." : "Está quase tudo pronto. Seleciona o botão abaixo para confirmar o teu endereço de email e concluir o registo."}</p>
-        {message && <p role="alert" className="mt-5 text-sm leading-6 text-red-700">{message}</p>}
-        {!confirmed && <button onClick={confirmEmail} disabled={busy} className="mt-6 w-full rounded-full bg-[#1683FF] px-6 py-4 font-semibold text-white disabled:opacity-60">{busy ? "A processar…" : "Confirmar email"}</button>}
+        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]"><LText text={"ARYNQO"} /></p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#07111F]"><LText text={confirmed ? "Email confirmado." : "Confirma o teu email."} /></h1>
+        <p className="mt-4 text-sm leading-6 text-slate-600"><LText text={confirmed ? "A tua conta está pronta. Inicia sessão para continuar o teu percurso na ARYNQO." : "Está quase tudo pronto. Seleciona o botão abaixo para confirmar o teu endereço de email e concluir o registo."} /></p>
+        {message && <p role="alert" className="mt-5 text-sm leading-6 text-red-700"><LText text={message} /></p>}
+        {!confirmed && <button onClick={confirmEmail} disabled={busy} className="mt-6 w-full rounded-full bg-[#1683FF] px-6 py-4 font-semibold text-white disabled:opacity-60"><LText text={busy ? "A processar…" : "Confirmar email"} /></button>}
         {!confirmed && <form onSubmit={resendEmail} className="mt-6 border-t border-[#DDE3EA] pt-6">
-          <label htmlFor="confirmation-email" className="text-sm font-semibold text-[#07111F]">Precisas de um novo email de confirmação?</label>
+          <label htmlFor="confirmation-email" className="text-sm font-semibold text-[#07111F]"><LText text={"Precisas de um novo email de confirmação?"} /></label>
           <input id="confirmation-email" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} className="mt-3 w-full rounded-xl border border-[#DDE3EA] px-4 py-3" />
-          <button disabled={busy} className="mt-3 text-sm font-semibold text-[#1683FF] disabled:opacity-60">Pedir novo email</button>
+          <button disabled={busy} className="mt-3 text-sm font-semibold text-[#1683FF] disabled:opacity-60"><LText text={"Pedir novo email"} /></button>
         </form>}
-        <Link href={`/login${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-6 block text-center text-sm font-semibold text-[#07111F]">{confirmed ? "Iniciar sessão" : "Já confirmaste? Inicia sessão"}</Link>
+        <Link href={`/login${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-6 block text-center text-sm font-semibold text-[#07111F]"><LText text={confirmed ? "Iniciar sessão" : "Já confirmaste? Inicia sessão"} /></Link>
       </div>
     </main>
   );

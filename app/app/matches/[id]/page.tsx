@@ -1,6 +1,8 @@
 "use client";
+import { LText } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useParams } from "next/navigation";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { useAppMatches } from "../../../hooks/useAppMatches";
@@ -29,7 +31,7 @@ function ScoreItem({
   return (
     <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-white/58">{label}</p>
+        <p className="text-sm text-white/58"><LText text={label} /></p>
         <p className="text-sm font-semibold text-cyan-200">{safeValue}%</p>
       </div>
 
@@ -66,13 +68,13 @@ function TagList({
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-        {title}
+        <LText text={title} />
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {items.map((item) => (
           <span key={item} className={className}>
-            {item}
+            <LText text={item} />
           </span>
         ))}
       </div>
@@ -104,24 +106,19 @@ export default function AppMatchDetailPage() {
       <main className="min-h-screen bg-[#050816] text-white">
         <section className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-6 pb-28">
           <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            Match não encontrado
-          </h1>
+            <LText text={"Match não encontrado"} /></h1>
 
           <p className="mt-4 text-sm leading-6 text-white/60">
-            Esta recomendação ainda não existe, foi removida ou não pertence ao
-            teu perfil.
-          </p>
+            <LText text={"Esta recomendação ainda não existe, foi removida ou não pertence ao teu perfil."} /></p>
 
           <Link
             href="/app/matches"
             className="mt-8 rounded-2xl bg-cyan-300 px-5 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
           >
-            Voltar aos matches
-          </Link>
+            <LText text={"Voltar aos matches"} /></Link>
         </section>
 
         <MobileBottomNav />
@@ -139,12 +136,10 @@ export default function AppMatchDetailPage() {
             href="/app/matches"
             className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
           >
-            ← Voltar aos matches
-          </Link>
+            <LText text={"← Voltar aos matches"} /></Link>
 
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
             {match.title}
@@ -158,7 +153,7 @@ export default function AppMatchDetailPage() {
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-cyan-950/30">
           <div className="flex items-start justify-between gap-5">
             <div>
-              <p className="text-sm text-white/60">Compatibilidade</p>
+              <p className="text-sm text-white/60"><LText text={"Compatibilidade"} /></p>
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">
@@ -187,10 +182,10 @@ export default function AppMatchDetailPage() {
                       : "text-sm font-semibold text-red-200"
                 }
               >
-                {level}
+                <LText text={level} />
               </p>
 
-              <p className="mt-1 text-[11px] text-white/50">nível de match</p>
+              <p className="mt-1 text-[11px] text-white/50"><LText text={"nível de match"} /></p>
             </div>
           </div>
 
@@ -203,18 +198,17 @@ export default function AppMatchDetailPage() {
 
           {match.matchCategory && (
             <p className="mt-4 text-sm leading-6 text-white/55">
-              Categoria: {match.matchCategory}
+              <LText text={"Categoria: "} /><LText text={match.matchCategory} />
             </p>
           )}
         </section>
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-            Porque aparece
-          </p>
+            <LText text={"Porque aparece"} /></p>
 
           <p className="mt-3 text-sm leading-6 text-white/65">
-            {match.reason}
+            <LText text={match.reason} />
           </p>
         </section>
 
@@ -261,8 +255,7 @@ export default function AppMatchDetailPage() {
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-            Descrição da vaga
-          </p>
+            <LText text={"Descrição da vaga"} /></p>
 
           <p className="mt-3 text-sm leading-6 text-white/65">
             {match.description}
@@ -273,8 +266,7 @@ export default function AppMatchDetailPage() {
           href={`/app/vagas/${match.jobId}`}
           className="mt-6 block w-full rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
         >
-          Ver vaga associada
-        </Link>
+          <LText text={"Ver vaga associada"} /></Link>
 
         <MobileBottomNav />
       </section>

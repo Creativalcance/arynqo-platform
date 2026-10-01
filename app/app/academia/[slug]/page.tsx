@@ -1,6 +1,9 @@
 "use client";
+import { browserLocale } from "@/lib/i18n/config";
+import { LText, LElement } from "@/lib/i18n/client";
 
-import Link from "next/link";
+
+import Link from "@/lib/i18n/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
@@ -49,7 +52,7 @@ function formatDate(value: string | null) {
     return "";
   }
 
-  return new Intl.DateTimeFormat("pt-PT", {
+  return new Intl.DateTimeFormat(browserLocale(), {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -122,16 +125,14 @@ export default function AppAcademiaDetailPage() {
       <main className="min-h-screen bg-[#050816] text-white">
         <section className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-6 pb-28">
           <p className="text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO
-          </p>
+            <LText text={"ARYNQO"} /></p>
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            Conteúdo não encontrado
-          </h1>
+            <LText text={"Conteúdo não encontrado"} /></h1>
 
           <p className="mt-4 text-sm leading-6 text-white/60">
-            {statusMessage ||
-              "Este conteúdo da ARYNQO Academy não está disponível na APP."}
+            <LText text={statusMessage ||
+              "Este conteúdo da ARYNQO Academy não está disponível na APP."} />
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
@@ -139,15 +140,13 @@ export default function AppAcademiaDetailPage() {
               href="/app/academia"
               className="rounded-2xl bg-cyan-300 px-5 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
             >
-              Voltar
-            </Link>
+              <LText text={"Voltar"} /></Link>
 
             <Link
               href={`/academia/${params.slug}`}
               className="rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
             >
-              Ver web
-            </Link>
+              <LText text={"Ver web"} /></Link>
           </div>
         </section>
 
@@ -164,27 +163,25 @@ export default function AppAcademiaDetailPage() {
             href="/app/academia"
             className="text-sm font-medium text-cyan-300 transition hover:text-cyan-200"
           >
-            ← Voltar à Academy
-          </Link>
+            <LText text={"← Voltar à Academy"} /></Link>
 
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.28em] text-cyan-300">
-            ARYNQO Academy
-          </p>
+            <LText text={"ARYNQO Academy"} /></p>
 
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            {post.title}
+            <LText text={post.title} />
           </h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {post.category && (
               <span className="rounded-full border border-cyan-300/15 bg-cyan-300/[0.07] px-3 py-1 text-xs text-cyan-100">
-                {post.category}
+                <LText text={post.category} />
               </span>
             )}
 
             {post.created_at && (
               <span className="text-xs text-white/35">
-                {formatDate(post.created_at)}
+                <LText text={formatDate(post.created_at)} />
               </span>
             )}
           </div>
@@ -192,7 +189,7 @@ export default function AppAcademiaDetailPage() {
 
         {post.cover_image_url && (
           <section className="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04]">
-            <img
+            <LElement as="img"
               src={post.cover_image_url}
               alt={post.title}
               className="h-64 w-full object-cover"
@@ -203,14 +200,14 @@ export default function AppAcademiaDetailPage() {
         {post.excerpt && (
           <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
             <p className="text-sm leading-6 text-cyan-50/85">
-              {post.excerpt}
+              <LText text={post.excerpt} />
             </p>
           </section>
         )}
 
         <article className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
           <p className="whitespace-pre-line text-sm leading-7 text-white/70">
-            {post.content || "Conteúdo ainda sem corpo disponível."}
+            <LText text={post.content || "Conteúdo ainda sem corpo disponível."} />
           </p>
         </article>
 
@@ -219,15 +216,13 @@ export default function AppAcademiaDetailPage() {
             href={`/academia/${post.slug}`}
             className="rounded-2xl bg-cyan-300 px-4 py-3 text-center text-sm font-semibold text-[#06111f] transition hover:bg-cyan-200"
           >
-            Abrir versão web
-          </Link>
+            <LText text={"Abrir versão web"} /></Link>
 
           <Link
             href="/app/academia"
             className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/[0.1]"
           >
-            Mais conteúdos
-          </Link>
+            <LText text={"Mais conteúdos"} /></Link>
         </section>
 
         <MobileBottomNav />

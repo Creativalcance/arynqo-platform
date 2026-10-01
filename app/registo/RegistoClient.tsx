@@ -1,7 +1,10 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LocaleSelect, useI18n } from "@/lib/i18n/client";
+
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/i18n/link";
 import { supabase } from "@/lib/supabase";
 
 type AccountType = "talent" | "company";
@@ -9,6 +12,7 @@ type AccountType = "talent" | "company";
 type TalentType = "student" | "graduate" | "professional" | "career_change";
 
 export default function RegistoPage({initialNext, initialCompany = false}:{initialNext:string;initialCompany?:boolean}) {
+  const { locale } = useI18n();
   const [accountType, setAccountType] = useState<AccountType>(initialCompany ? "company" : "talent");
   const [talentType, setTalentType] = useState<TalentType>("student");
   const [name, setName] = useState("");
@@ -31,9 +35,10 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
   email,
   password,
   options: {
-    emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
+    emailRedirectTo: `${window.location.origin}${browserLocalizedPath("/auth/confirm")}?next=${encodeURIComponent(next)}`,
     data: {
       role,
+      locale,
       name,
       talent_type: accountType === "talent" ? talentType : null,
     },
@@ -51,23 +56,20 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-20">
       <div className="mx-auto max-w-xl rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
         <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          ARYNQO
-        </p>
+          <LText text={"ARYNQO"} /></p>
 
         <h1 className="text-4xl font-semibold tracking-[-0.05em] text-[#07111F]">
-          Criar conta
-        </h1>
+          <LText text={"Criar conta"} /></h1>
 
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          Cria uma conta como talento ou empresa.
-        </p>
+          <LText text={"Cria uma conta como talento ou empresa."} /></p>
 
-        {message && <p role="status" className="mt-5 text-sm text-slate-700">{message}</p>}
+        {message && <p role="status" className="mt-5 text-sm text-slate-700"><LText text={message} /></p>}
+        <LocaleSelect className="mt-6" />
         {!created && <form onSubmit={handleRegister} className="mt-8 space-y-5">
           <div>
             <label className="text-sm font-semibold text-[#07111F]">
-              Tipo de conta
-            </label>
+              <LText text={"Tipo de conta"} /></label>
 
             <div className="mt-2 grid grid-cols-2 gap-3">
               <button
@@ -79,8 +81,7 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
                     : "border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF]"
                 }`}
               >
-                Talento
-              </button>
+                <LText text={"Talento"} /></button>
 
               <button
                 type="button"
@@ -91,16 +92,14 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
                     : "border-[#DDE3EA] bg-white text-[#07111F] hover:border-[#1683FF]"
                 }`}
               >
-                Empresa
-              </button>
+                <LText text={"Empresa"} /></button>
             </div>
           </div>
 
           {accountType === "talent" && (
             <div>
               <label htmlFor="talent-type" className="text-sm font-semibold text-[#07111F]">
-                Perfil de talento
-              </label>
+                <LText text={"Perfil de talento"} /></label>
 
               <select
                 id="talent-type" value={talentType}
@@ -109,17 +108,17 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
                 }
                 className="mt-2 w-full rounded-2xl border border-[#DDE3EA] px-4 py-3 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
               >
-                <option value="student">Estudante</option>
-                <option value="graduate">Recém-licenciado</option>
-                <option value="professional">Profissional</option>
-                <option value="career_change">Em transição de carreira</option>
+                <option value="student"><LText text={"Estudante"} /></option>
+                <option value="graduate"><LText text={"Recém-licenciado"} /></option>
+                <option value="professional"><LText text={"Profissional"} /></option>
+                <option value="career_change"><LText text={"Em transição de carreira"} /></option>
               </select>
             </div>
           )}
 
           <div>
             <label htmlFor="register-name" className="text-sm font-semibold text-[#07111F]">
-              {accountType === "company" ? "Nome da empresa" : "Nome"}
+              <LText text={accountType === "company" ? "Nome da empresa" : "Nome"} />
             </label>
 
             <input
@@ -132,8 +131,7 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
 
           <div>
             <label htmlFor="register-email" className="text-sm font-semibold text-[#07111F]">
-              Email
-            </label>
+              <LText text={"Email"} /></label>
 
             <input
               id="register-email" autoComplete="email" type="email"
@@ -146,8 +144,7 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
 
           <div>
             <label htmlFor="register-password" className="text-sm font-semibold text-[#07111F]">
-              Palavra-passe
-            </label>
+              <LText text={"Palavra-passe"} /></label>
 
             <input
               id="register-password" autoComplete="new-password" aria-describedby="password-help" type="password"
@@ -159,16 +156,16 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
             />
           </div>
 
-          <p id="password-help" className="text-sm text-slate-600">Usa pelo menos 6 caracteres. Prefere uma palavra-passe longa e exclusiva.</p>
+          <p id="password-help" className="text-sm text-slate-600"><LText text={"Usa pelo menos 6 caracteres. Prefere uma palavra-passe longa e exclusiva."} /></p>
           <button
             disabled={busy} type="submit"
             className="w-full rounded-full bg-[#07111F] px-6 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
           >
-            {busy ? "A criar conta…" : "Criar conta"}
+            <LText text={busy ? "A criar conta…" : "Criar conta"} />
           </button>
-          <p className="text-sm leading-6 text-slate-600">Consulta as <Link href="/aviso-legal" className="underline">condições de utilização</Link> e a <Link href="/politica-de-privacidade" className="underline">Política de Privacidade</Link>. Criar conta não subscreve comunicações promocionais.</p>
+          <p className="text-sm leading-6 text-slate-600"><LText text={"Consulta as "} /><Link href="/aviso-legal" className="underline"><LText text={"condições de utilização"} /></Link> <LText text={" e a "} /><Link href="/politica-de-privacidade" className="underline"><LText text={"Política de Privacidade"} /></Link><LText text={". Criar conta não subscreve comunicações promocionais."} /></p>
         </form>}
-        <Link href={`/login${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-6 block text-sm underline">Já tens conta? Entrar</Link>
+        <Link href={`/login${next !== "/dashboard" ? `?next=${encodeURIComponent(next)}` : ""}`} className="mt-6 block text-sm underline"><LText text={"Já tens conta? Entrar"} /></Link>
       </div>
     </main>
   );

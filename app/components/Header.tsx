@@ -1,8 +1,11 @@
 "use client";
+import { browserLocalizedPath } from "@/lib/i18n/config";
+import { LText, LocaleSelect } from "@/lib/i18n/client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import Image from "@/lib/i18n/image";
+import Link from "@/lib/i18n/link";
+import { usePathname } from "@/lib/i18n/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -71,7 +74,7 @@ export default function Header() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.href = browserLocalizedPath("/");
   }
 
   function closeMenu() {
@@ -199,7 +202,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#DDE3EA] bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-12">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-12">
         <Link href={logoHref} className="flex items-center">
           <Image
             src="/logo-arynqo.png"
@@ -207,11 +210,12 @@ export default function Header() {
             width={320}
             height={80}
             priority
-            className="h-auto w-[220px] object-contain md:w-[300px]"
+            className="h-auto w-[100px] object-contain min-[380px]:w-[130px] sm:w-[180px] lg:w-[240px]"
           />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <LocaleSelect className="mx-2 w-[100px] shrink-0 sm:w-36" />
+        <nav className="hidden items-center gap-5 xl:flex">
           {navigationLinks.map((link) => (
             <HeaderLink key={link.href} href={link.href} label={link.label} />
           ))}
@@ -221,9 +225,7 @@ export default function Header() {
               href="/dashboard/notificacoes"
               className="relative text-sm font-semibold text-[#07111F]/70 transition hover:text-[#1683FF]"
             >
-              Notificações
-
-              {unreadCount > 0 && (
+              <LText text={"Notificações"} />{unreadCount > 0 && (
                 <span className="absolute -right-5 -top-3 rounded-full bg-[#1683FF] px-2 py-0.5 text-xs font-bold text-white">
                   {unreadCount}
                 </span>
@@ -232,22 +234,20 @@ export default function Header() {
           )}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           {!isAuthenticated && (
             <>
               <Link
                 href="/login"
                 className="rounded-full border border-[#DDE3EA] px-5 py-2 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
               >
-                Entrar
-              </Link>
+                <LText text={"Entrar"} /></Link>
 
               <Link
                 href="/registo"
                 className="rounded-full bg-[#07111F] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
               >
-                Criar conta
-              </Link>
+                <LText text={"Criar conta"} /></Link>
             </>
           )}
 
@@ -257,22 +257,21 @@ export default function Header() {
               onClick={handleLogout}
               className="rounded-full border border-[#DDE3EA] px-5 py-2 text-sm font-semibold text-[#07111F] transition hover:border-[#1683FF] hover:text-[#1683FF]"
             >
-              Sair
-            </button>
+              <LText text={"Sair"} /></button>
           )}
         </div>
 
         <button
           type="button"
           onClick={() => setIsMenuOpen((current) => !current)}
-          className="rounded-full border border-[#DDE3EA] px-4 py-2 text-sm font-semibold text-[#07111F] md:hidden"
+          className="rounded-full border border-[#DDE3EA] px-3 py-2 text-sm font-semibold text-[#07111F] xl:hidden"
         >
-          {isMenuOpen ? "Fechar" : "Menu"}
+          <LText text={isMenuOpen ? "Fechar" : "Menu"} />
         </button>
       </div>
 
       {isMenuOpen && (
-        <div className="border-t border-[#DDE3EA] bg-white px-6 py-5 md:hidden">
+        <div className="border-t border-[#DDE3EA] bg-white px-6 py-5 xl:hidden">
           <nav className="grid gap-3">
             {navigationLinks.map((link) => (
               <MobileLink
@@ -314,8 +313,7 @@ export default function Header() {
                 onClick={handleLogout}
                 className="rounded-2xl border border-[#DDE3EA] px-5 py-3 text-left text-sm font-semibold text-[#07111F] hover:bg-[#F7F9FC]"
               >
-                Sair
-              </button>
+                <LText text={"Sair"} /></button>
             )}
           </nav>
         </div>
@@ -330,7 +328,7 @@ function HeaderLink({ href, label }: { href: string; label: string }) {
       href={href}
       className="text-sm font-semibold text-[#07111F]/70 transition hover:text-[#1683FF]"
     >
-      {label}
+      <LText text={label} />
     </Link>
   );
 }
@@ -356,7 +354,7 @@ function MobileLink({
           : "rounded-2xl border border-[#DDE3EA] px-5 py-3 text-sm font-semibold text-[#07111F] hover:bg-[#F7F9FC]"
       }
     >
-      {label}
+      <LText text={label} />
     </Link>
   );
 }
