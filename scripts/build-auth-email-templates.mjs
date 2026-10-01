@@ -1,7 +1,15 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 const locales=['pt','en','fr','es','de','it'];
+const confirmationCopy={
+ en:['Confirm your email | ARYNQO','Welcome to ARYNQO.','You’re almost ready. Confirm your email address to complete registration and start using your account.','Confirm my email','If you didn’t create an ARYNQO account, ignore this message. You don’t need to do anything else.'],
+ fr:['Confirmez votre adresse email | ARYNQO','Bienvenue sur ARYNQO.','Tout est presque prêt. Confirmez votre adresse email pour terminer votre inscription et commencer à utiliser votre compte.','Confirmer mon adresse email','Si vous n’avez pas créé de compte ARYNQO, ignorez ce message. Aucune autre action n’est nécessaire.'],
+ es:['Confirma tu correo electrónico | ARYNQO','Te damos la bienvenida a ARYNQO.','Ya casi está todo listo. Confirma tu dirección de correo electrónico para completar el registro y empezar a utilizar tu cuenta.','Confirmar mi correo electrónico','Si no has creado una cuenta en ARYNQO, ignora este mensaje. No necesitas hacer nada más.'],
+ de:['Bestätige deine E-Mail-Adresse | ARYNQO','Willkommen bei ARYNQO.','Fast geschafft. Bestätige deine E-Mail-Adresse, um die Registrierung abzuschließen und dein Konto zu nutzen.','Meine E-Mail-Adresse bestätigen','Wenn du kein ARYNQO-Konto erstellt hast, ignoriere diese Nachricht. Du musst nichts weiter tun.'],
+ it:['Conferma la tua email | ARYNQO','Ti diamo il benvenuto su ARYNQO.','È quasi tutto pronto. Conferma il tuo indirizzo email per completare la registrazione e iniziare a utilizzare il tuo account.','Conferma la mia email','Se non hai creato un account ARYNQO, ignora questo messaggio. Non devi fare altro.']
+};
+const confirmationKeys=['Confirma o teu email | ARYNQO','Bem-vindo à ARYNQO.','Está quase tudo pronto. Confirma o teu endereço de email para concluir o registo e começar a utilizar a tua conta.','Confirmar o meu email','Se não criaste uma conta na ARYNQO, ignora esta mensagem. Não precisas de fazer mais nada.'];
 const escape=value=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-function branch(locale,type){const messages=JSON.parse(readFileSync(`lib/i18n/messages/${locale}.json`,'utf8'));const t=source=>escape(messages[source]||source);const prefix=locale==='pt'?'':`/${locale}`;
+function branch(locale,type){const messages=JSON.parse(readFileSync(`lib/i18n/messages/${locale}.json`,'utf8'));const t=source=>{const key=confirmationKeys.indexOf(source);return escape(key>=0&&confirmationCopy[locale]?confirmationCopy[locale][key]:messages[source]||source);};const prefix=locale==='pt'?'':`/${locale}`;
  const recovery=type==='recovery';const title=recovery?'Recuperar palavra-passe':'Confirma o teu email | ARYNQO';
  const heading=recovery?'Recuperar palavra-passe':'Bem-vindo à ARYNQO.';
  const message=recovery?'Recebemos um pedido para recuperar o acesso à tua conta. Utiliza o botão para definir uma nova palavra-passe.':'Está quase tudo pronto. Confirma o teu endereço de email para concluir o registo e começar a utilizar a tua conta.';
