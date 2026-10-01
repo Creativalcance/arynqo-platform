@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +11,7 @@ type Profile = {
 };
 
 export default function Header() {
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -17,67 +19,55 @@ export default function Header() {
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
 
   useEffect(() => {
-    checkSession();
+    let disposed = false;
+    let sequence = 0;
+    function checkAdminUnlock() {
+      setIsAdminUnlocked(window.localStorage.getItem("arynqo_admin_unlocked") === "true");
+    }
+    async function checkSession() {
+      const current = ++sequence;
+      const { data } = await supabase.auth.getSession();
+      if (disposed || current !== sequence) return;
+      const session = data.session;
+      setIsAuthenticated(Boolean(session));
+      if (!session) {
+        setProfile(null);
+        setUnreadCount(0);
+        return;
+      }
+      const [profileResult, notificationResult] = await Promise.all([
+        supabase.from("profiles").select("role").eq("id", session.user.id).single(),
+        supabase.from("notifications").select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id).or("is_read.eq.false,is_read.is.null"),
+      ]);
+      if (disposed || current !== sequence) return;
+      if (!profileResult.error) setProfile((profileResult.data as Profile) || null);
+      if (!notificationResult.error) setUnreadCount(notificationResult.count || 0);
+    }
+    function refresh() { void checkSession(); }
+    function handleStorage(event: StorageEvent) {
+      checkAdminUnlock();
+      if (event.key === "arynqo-notifications-changed") refresh();
+    }
+    refresh();
     checkAdminUnlock();
-
-    function handleAdminUnlock() {
-      checkAdminUnlock();
-    }
-
-    window.addEventListener("arynqo-admin-unlocked", handleAdminUnlock);
-    window.addEventListener("storage", handleAdminUnlock);
-    window.addEventListener("arynqo-notifications-changed", checkSession);
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      checkSession();
-      checkAdminUnlock();
+    window.addEventListener("arynqo-admin-unlocked", checkAdminUnlock);
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("arynqo-notifications-changed", refresh);
+    window.addEventListener("focus", refresh);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      // Run outside the auth callback to avoid awaiting Supabase queries under its lock.
+      setTimeout(() => { if (!disposed) { refresh(); checkAdminUnlock(); } }, 0);
     });
-
     return () => {
+      disposed = true;
       subscription.unsubscribe();
-      window.removeEventListener("arynqo-admin-unlocked", handleAdminUnlock);
-      window.removeEventListener("storage", handleAdminUnlock);
-      window.removeEventListener("arynqo-notifications-changed", checkSession);
+      window.removeEventListener("arynqo-admin-unlocked", checkAdminUnlock);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("arynqo-notifications-changed", refresh);
+      window.removeEventListener("focus", refresh);
     };
-  }, []);
-
-  function checkAdminUnlock() {
-    const unlocked =
-      window.localStorage.getItem("arynqo_admin_unlocked") === "true";
-
-    setIsAdminUnlocked(unlocked);
-  }
-
-  async function checkSession() {
-    const { data } = await supabase.auth.getSession();
-    const session = data.session;
-
-    setIsAuthenticated(Boolean(session));
-
-    if (!session) {
-      setProfile(null);
-      setUnreadCount(0);
-      return;
-    }
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    setProfile((profileData as Profile) || null);
-
-    const { data: notifications } = await supabase
-      .from("notifications")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .eq("is_read", false);
-
-    setUnreadCount(notifications?.length || 0);
-  }
+  }, [pathname]);
 
   async function handleLogout() {
     await supabase.auth.signOut();

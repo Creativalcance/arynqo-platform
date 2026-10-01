@@ -2,7 +2,9 @@
 
 import { createNotification } from "@/lib/create-notification";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { persistNotificationReads, notifyNotificationsChanged } from "@/lib/notification-read";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Notification = {
@@ -101,6 +103,10 @@ const pushStatusLabels: Record<string, string> = {
 };
 
 export default function NotificacoesPage() {
+  const router = useRouter();
+  const readRevision = useRef(0);
+  const [isMarkingRead, setIsMarkingRead] = useState(false);
+  const [readError, setReadError] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [studentProfile, setStudentProfile] = useState<StudentProfile | null>(
@@ -118,7 +124,9 @@ export default function NotificacoesPage() {
     try {
       const { data, error } = await supabase.rpc("confirm_job_renewal_notification", { notification_id: notificationId });
       if (error) throw error;
+      readRevision.current++;
       setNotifications(current => current.map(item => item.id === notificationId ? { ...item, action_label: "Vaga confirmada", is_read: true } : item));
+      notifyNotificationsChanged();
       setRenewalMessages(current => ({ ...current, [notificationId]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString("pt-PT")}.` }));
     } catch {
       setRenewalMessages(current => ({ ...current, [notificationId]: "Não foi possível confirmar. Verifica a sessão e o estado da vaga na área da empresa e tenta novamente." }));
@@ -128,189 +136,178 @@ export default function NotificacoesPage() {
   }
 
   useEffect(() => {
-    loadPageData();
-  }, []);
+    let active = true;
+    async function loadPageData() {
+      const { data: sessionData } = await supabase.auth.getSession();
 
-  async function loadPageData() {
-    const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        router.replace("/login");
+        return;
+      }
 
-    if (!sessionData.session) {
-      window.location.href = "/login";
-      return;
+      const userId = sessionData.session.user.id;
+
+      await Promise.all([loadNotifications(userId), loadContactRequests(userId)]);
+
+      if (active) setIsLoading(false);
     }
 
-    const userId = sessionData.session.user.id;
-
-    await Promise.all([loadNotifications(userId), loadContactRequests(userId)]);
-
-    setIsLoading(false);
-  }
-
-  async function loadNotifications(userId: string) {
-    const { data, error } = await supabase
-      .from("notifications")
-      .select(
-        `
-        id,
-        title,
-        message,
-        is_read,
-        created_at,
-        related_type,
-        related_id,
-        related_url,
-        action_label,
-        email_status,
-        push_status
-      `
-      )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setNotifications((data || []) as Notification[]);
-  }
-
-  async function loadContactRequests(userId: string) {
-    const { data: student } = await supabase
-      .from("student_profiles")
-      .select("id, user_id")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (!student) {
-      setStudentProfile(null);
-      setContactRequests([]);
-      return;
-    }
-
-    const currentStudent = student as StudentProfile;
-    setStudentProfile(currentStudent);
-
-    const { data, error } = await supabase
-      .from("candidate_contact_requests")
-      .select(
-        `
-        id,
-        company_id,
-        student_id,
-        job_id,
-        status,
-        message,
-        created_at,
-        company_profiles (
-          id,
-          user_id,
-          company_name,
-          description,
-          location,
-          logo_url,
-          industry,
-          company_type,
-          company_size
-        ),
-        jobs (
+    async function loadNotifications(userId: string) {
+      const revision = readRevision.current;
+      const { data, error } = await supabase
+        .from("notifications")
+        .select(
+          `
           id,
           title,
-          area,
-          location,
-          work_model,
-          work_mode,
-          opportunity_type,
-          contract_type,
-          seniority
+          message,
+          is_read,
+          created_at,
+          related_type,
+          related_id,
+          related_url,
+          action_label,
+          email_status,
+          push_status
+        `
         )
-      `
-      )
-      .eq("student_id", currentStudent.id)
-      .order("created_at", { ascending: false });
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-      setContactRequests([]);
-      return;
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      if (active && revision === readRevision.current) setNotifications((data || []) as Notification[]);
     }
 
-    const normalizedRequests = ((data || []) as ContactRequestRow[]).map(
-      (request) => {
-        const company = Array.isArray(request.company_profiles)
-          ? request.company_profiles[0] ?? null
-          : request.company_profiles;
+    async function loadContactRequests(userId: string) {
+      const { data: student } = await supabase
+        .from("student_profiles")
+        .select("id, user_id")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-        const job = Array.isArray(request.jobs)
-          ? request.jobs[0] ?? null
-          : request.jobs;
-
-        return {
-          id: request.id,
-          company_id: request.company_id,
-          student_id: request.student_id,
-          job_id: request.job_id,
-          status: request.status,
-          message: request.message,
-          created_at: request.created_at,
-          company,
-          job,
-        };
+      if (!active) return;
+      if (!student) {
+        setStudentProfile(null);
+        setContactRequests([]);
+        return;
       }
-    );
 
-    setContactRequests(normalizedRequests);
+      const currentStudent = student as StudentProfile;
+      setStudentProfile(currentStudent);
+
+      const { data, error } = await supabase
+        .from("candidate_contact_requests")
+        .select(
+          `
+          id,
+          company_id,
+          student_id,
+          job_id,
+          status,
+          message,
+          created_at,
+          company_profiles (
+            id,
+            user_id,
+            company_name,
+            description,
+            location,
+            logo_url,
+            industry,
+            company_type,
+            company_size
+          ),
+          jobs (
+            id,
+            title,
+            area,
+            location,
+            work_model,
+            work_mode,
+            opportunity_type,
+            contract_type,
+            seniority
+          )
+        `
+        )
+        .eq("student_id", currentStudent.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        setContactRequests([]);
+        return;
+      }
+
+      const normalizedRequests = ((data || []) as ContactRequestRow[]).map(
+        (request) => {
+          const company = Array.isArray(request.company_profiles)
+            ? request.company_profiles[0] ?? null
+            : request.company_profiles;
+
+          const job = Array.isArray(request.jobs)
+            ? request.jobs[0] ?? null
+            : request.jobs;
+
+          return {
+            id: request.id,
+            company_id: request.company_id,
+            student_id: request.student_id,
+            job_id: request.job_id,
+            status: request.status,
+            message: request.message,
+            created_at: request.created_at,
+            company,
+            job,
+          };
+        }
+      );
+
+      if (active) setContactRequests(normalizedRequests);
+    }
+
+    function refresh() { void loadPageData(); }
+    function handleStorage(event: StorageEvent) {
+      if (event.key === "arynqo-notifications-changed") refresh();
+    }
+    refresh();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [router]);
+
+  async function markRead(ids: string[]) {
+    if (isMarkingRead) return false;
+    setIsMarkingRead(true);
+    setReadError("");
+    try {
+      const confirmedIds = new Set(await persistNotificationReads(supabase, ids));
+      readRevision.current++;
+      setNotifications(current => current.map(item => confirmedIds.has(item.id) ? { ...item, is_read: true } : item));
+      notifyNotificationsChanged();
+      return true;
+    } catch {
+      setReadError("Não foi possível guardar a leitura. Verifica a tua sessão e tenta novamente.");
+      return false;
+    } finally {
+      setIsMarkingRead(false);
+    }
   }
 
   async function markAsRead(notificationId: string) {
-    const { error } = await supabase
-      .from("notifications")
-      .update({
-        is_read: true,
-      })
-      .eq("id", notificationId);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) =>
-        notification.id === notificationId
-          ? { ...notification, is_read: true }
-          : notification
-      )
-    );
+    return markRead([notificationId]);
   }
 
   async function markAllAsRead() {
-    const unreadIds = notifications
-      .filter((notification) => !notification.is_read)
-      .map((notification) => notification.id);
-
-    if (unreadIds.length === 0) {
-      return;
-    }
-
-    const { error } = await supabase
-      .from("notifications")
-      .update({
-        is_read: true,
-      })
-      .in("id", unreadIds);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) => ({
-        ...notification,
-        is_read: true,
-      }))
-    );
+    await markRead(notifications.filter(item => !item.is_read).map(item => item.id));
   }
 
   async function updateContactRequestStatus(request: ContactRequest, status: RequestStatus) {
@@ -323,10 +320,11 @@ export default function NotificacoesPage() {
       });
       if (error || !["accepted", "rejected"].includes(data)) throw error || new Error("Invalid response");
       const confirmedStatus = data as RequestStatus;
+      readRevision.current++;
       setContactRequests(current => current.map(item => item.id === request.id ? { ...item, status: confirmedStatus } : item));
       setNotifications(current => current.map(item => item.related_id === request.id && ["candidate_contact_request", "contact_request"].includes(item.related_type || "") ? { ...item, is_read: true } : item));
       setContactFeedback(confirmedStatus === "accepted" ? "Pedido aceite. A empresa já pode consultar o teu perfil." : "Pedido recusado. Este pedido não autoriza o acesso ao teu perfil.");
-      window.dispatchEvent(new Event("arynqo-notifications-changed"));
+      notifyNotificationsChanged();
       // The database already created the company's notification. Email delivery must not block the response UI.
       void createNotification({ userId: "", title: "", message: "", relatedType: "candidate_contact_request", relatedId: request.id }).catch(() => undefined);
     } catch {
@@ -472,13 +470,14 @@ export default function NotificacoesPage() {
             <button
               type="button"
               onClick={markAllAsRead}
-              disabled={unreadCount === 0}
+              disabled={unreadCount === 0 || isMarkingRead}
               className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Marcar todas como lidas
             </button>
           </div>
 
+          {readError && <p role="alert" className="mb-4 text-sm text-red-700">{readError}</p>}
           <div className="space-y-4">
             {visibleNotifications.map((notification) => (
               <article
@@ -536,6 +535,11 @@ export default function NotificacoesPage() {
                     ) : notification.related_url && (
                       <Link
                         href={notification.related_url}
+                        onClick={async event => {
+                          event.preventDefault();
+                          if (notification.is_read || await markAsRead(notification.id)) router.push(notification.related_url!);
+                        }}
+                        aria-disabled={isMarkingRead}
                         className="rounded-full bg-[#07111F] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1683FF]"
                       >
                         {notification.action_label || "Abrir"}
@@ -545,6 +549,7 @@ export default function NotificacoesPage() {
                     {!notification.is_read && (
                       <button
                         type="button"
+                        disabled={isMarkingRead}
                         onClick={() => markAsRead(notification.id)}
                         className="rounded-full border border-[#DDE3EA] px-4 py-2 text-xs font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                       >

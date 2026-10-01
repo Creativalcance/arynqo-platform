@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:notifications": "node --import tsx tests/notification-read.test.ts",
     "test:matching": "node --import tsx tests/matching-engine.test.ts",
     "evaluate:matching": "node --import tsx scripts/evaluate-matching.ts",
     "shadow:matching": "node --import tsx scripts/shadow-matching.ts",
