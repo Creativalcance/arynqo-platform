@@ -155,6 +155,7 @@ export default function CompanyMatchesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [requestingMatchId, setRequestingMatchId] = useState("");
 
   const isPremium = isPremiumCompany(companyPlan);
 
@@ -401,6 +402,18 @@ is_relevant,
   }
 
   async function requestContact(match: Match) {
+    if (requestingMatchId) return;
+    setRequestingMatchId(match.id);
+    try {
+      await sendContactRequest(match);
+    } catch {
+      alert("Não foi possível enviar o pedido de autorização. Tenta novamente.");
+    } finally {
+      setRequestingMatchId("");
+    }
+  }
+
+  async function sendContactRequest(match: Match) {
   if (!company || !match.student) {
     return;
   }
@@ -1033,6 +1046,7 @@ const otherMatches = useMemo(() => {
                       handleUpgradeClick={handleUpgradeClick}
                       canContactDirectly={canContactDirectly}
                       requestContact={requestContact}
+                      requestingMatchId={requestingMatchId}
                     />
                   ) : (
                     <div className="flex min-h-[520px] items-center justify-center p-10 text-center">
@@ -1072,6 +1086,7 @@ function CandidateDetail({
   handleUpgradeClick,
   canContactDirectly,
   requestContact,
+  requestingMatchId,
 }: {
   match: Match;
   hasAction: (studentId: string, jobId: string, actionType: string) => boolean;
@@ -1086,6 +1101,7 @@ function CandidateDetail({
   handleUpgradeClick: () => void;
   canContactDirectly: (match: Match) => boolean;
   requestContact: (match: Match) => Promise<void>;
+  requestingMatchId: string;
 }) {
   const student = match.student;
   const publicProfile = match.publicProfile;
@@ -1136,6 +1152,18 @@ function CandidateDetail({
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
                 {student.headline || "Sem título profissional definido."}
               </p>
+
+              {!contactAllowed && student.contact_visibility !== "closed" && (
+                <div className="mt-4">
+                  <button type="button"
+                    onClick={() => isPremium ? requestContact(match) : handleUpgradeClick()}
+                    disabled={!!requestingMatchId || match.contactRequestStatus === "pending" || match.contactRequestStatus === "rejected"}
+                    className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
+                    {requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "pending" ? "Pedido enviado" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : "Pedir autorização para ver o perfil"}
+                  </button>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">O candidato recebe uma notificação e decide se permite o acesso ao perfil completo.</p>
+                </div>
+              )}
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {match.hasApplication && (
@@ -1323,10 +1351,10 @@ function CandidateDetail({
                     onClick={() =>
                       isPremium ? requestContact(match) : handleUpgradeClick()
                     }
-                    disabled={match.contactRequestStatus === "pending"}
+                    disabled={!!requestingMatchId || match.contactRequestStatus === "pending" || match.contactRequestStatus === "rejected"}
                     className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {match.contactRequestStatus === "pending"
+                    {requestingMatchId === match.id ? "A enviar pedido…" : match.contactRequestStatus === "rejected" ? "Pedido recusado" : match.contactRequestStatus === "pending"
                       ? "Pedido enviado"
                       : "Pedir autorização"}
                   </button>

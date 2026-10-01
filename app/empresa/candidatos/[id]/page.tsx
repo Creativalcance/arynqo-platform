@@ -254,6 +254,7 @@ export default function EmpresaCandidatoDetalhePage({
   }
 
   async function requestContactAuthorization() {
+    if (isRequestingContact) return;
     if (!company || !student || !jobId) {
       alert("Não foi possível associar este pedido a uma vaga.");
       return;
@@ -300,7 +301,7 @@ export default function EmpresaCandidatoDetalhePage({
   relatedUrl: "/dashboard/notificacoes",
   actionLabel: "Responder pedido",
   channels: ["in_app", "email", "push"],
-});
+}).catch(() => undefined); // The database already persisted the notification and email queue.
 
     setContactRequest(data as ContactRequest);
     setIsRequestingContact(false);
@@ -506,20 +507,21 @@ export default function EmpresaCandidatoDetalhePage({
                 <p className="mt-2 max-w-3xl text-sm leading-6">
                   {contactStatusLabel}
                 </p>
+                {!jobId && <p className="mt-2 text-sm">Seleciona uma vaga ativa em <Link href="/empresa/talentos" className="underline">Explorar candidatos</Link> para enviar o pedido.</p>}
               </div>
 
-              {student.contact_visibility === "approval_required" &&
+              {student.contact_visibility !== "closed" &&
                 contactRequest?.status !== "pending" &&
                 contactRequest?.status !== "rejected" && (
                   <button
                     type="button"
                     onClick={requestContactAuthorization}
-                    disabled={isRequestingContact}
+                    disabled={isRequestingContact || !jobId}
                     className="rounded-full bg-[#1683FF] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isRequestingContact
                       ? "A enviar..."
-                      : "Pedir autorização"}
+                      : "Pedir autorização para ver o perfil"}
                   </button>
                 )}
             </div>
@@ -577,13 +579,13 @@ export default function EmpresaCandidatoDetalhePage({
               </p>
 
               {!canViewFullProfile &&
-                student.contact_visibility === "approval_required" &&
+                student.contact_visibility !== "closed" &&
                 contactRequest?.status !== "pending" &&
                 contactRequest?.status !== "rejected" && (
                   <button
                     type="button"
                     onClick={requestContactAuthorization}
-                    disabled={isRequestingContact}
+                    disabled={isRequestingContact || !jobId}
                     className="mt-5 w-full rounded-2xl bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isRequestingContact
