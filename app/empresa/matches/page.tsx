@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { isPremiumCompany } from "@/lib/company-plan";
+import CompanyLaunchOffer from "@/app/components/arynqo/CompanyLaunchOffer";
 
 type CompanyProfile = {
   id: string;
@@ -392,11 +393,7 @@ is_relevant,
       return true;
     }
 
-    if (match.student?.contact_visibility === "open") {
-      return true;
-    }
-
-    if (match.contactRequestStatus === "accepted") {
+    if (match.contactRequestStatus === "accepted" && match.student?.contact_visibility !== "closed") {
       return true;
     }
 
@@ -685,6 +682,8 @@ const otherMatches = useMemo(() => {
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
       <div className="mx-auto max-w-7xl">
+        <CompanyLaunchOffer />
+        <Link href="/empresa/talentos" className="mb-6 inline-block font-semibold text-[#1683FF] underline">Explorar todos os candidatos</Link>
         <section className="mb-8 overflow-hidden rounded-[40px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
           <div className="relative px-8 py-10 md:px-12 md:py-14">
             <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-[#1683FF]/25 blur-3xl" />
@@ -894,7 +893,7 @@ const otherMatches = useMemo(() => {
                         >
                           <div className="flex items-start gap-4">
                             <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#07111F] to-[#1683FF] text-sm font-semibold text-white">
-                              {student?.avatar_url && isPremium ? (
+                              {student?.avatar_url && isPremium && canContactDirectly(match) ? (
                                 <img
                                   src={student.avatar_url}
                                   alt={publicProfile?.name || "Candidato"}
@@ -914,7 +913,7 @@ const otherMatches = useMemo(() => {
                                     #{index + 1}{" "}
                                     {isLocked
                                       ? "Candidato Premium"
-                                      : isPremium
+                                      : isPremium && canContactDirectly(match)
                                         ? publicProfile?.name ||
                                           "Candidato sem nome"
                                         : student?.headline ||
@@ -924,9 +923,9 @@ const otherMatches = useMemo(() => {
                                           )}`}
                                   </p>
 
-                                  {!isPremium && !isLocked && (
+                                  {!canContactDirectly(match) && !isLocked && (
                                     <p className="mt-1 text-[11px] font-medium text-slate-400">
-                                      Identidade protegida • Premium necessário
+                                      Identidade protegida • Requer autorização
                                     </p>
                                   )}
                                 </div>
@@ -959,7 +958,7 @@ const otherMatches = useMemo(() => {
                                 {!match.hasApplication &&
                                   student?.contact_visibility === "open" && (
                                     <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-600">
-                                      Contacto aberto
+                                      Requer aprovação
                                     </span>
                                   )}
 
@@ -1318,7 +1317,7 @@ function CandidateDetail({
                   >
                     Ver contacto / perfil
                   </Link>
-                ) : student.contact_visibility === "approval_required" ? (
+                ) : student.contact_visibility !== "closed" ? (
                   <button
                     type="button"
                     onClick={() =>

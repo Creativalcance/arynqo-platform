@@ -2175,12 +2175,13 @@ function getTrainingItems() {
 
         <div>
           <p className="text-sm font-semibold text-[#07111F]">
-            Perfil aberto a empresas
+            Disponível para pedidos de empresas
           </p>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Empresas com vagas compatíveis podem ver o meu perfil e contactar-me
-            mesmo que eu ainda não me tenha candidatado.
+            As empresas podem consultar a minha síntese profissional e enviar
+            pedidos. A minha identidade só é revelada depois de aceitar um pedido
+            ou de me candidatar a uma vaga da empresa.
           </p>
         </div>
       </div>

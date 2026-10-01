@@ -63,7 +63,7 @@ export async function resolveNotificationEvent(
     const job = await lookup("jobs", contact.job_id, "id,company_id,title");
     const company = await lookup("company_profiles", contact.company_id, "id,user_id,company_name");
     if (job.company_id !== company.id) return denied();
-    if (actor.role === "company" && actor.id === company.user_id && contact.status === "pending") {
+    if (["company", "admin"].includes(actor.role) && actor.id === company.user_id && contact.status === "pending") {
       return event(student.user_id, "Pedido de contacto recebido",
         `A empresa ${company.company_name} quer contactar-te sobre a vaga "${job.title}".`,
         "candidate_contact_request", "/dashboard/notificacoes", "Responder ao pedido", "pending");

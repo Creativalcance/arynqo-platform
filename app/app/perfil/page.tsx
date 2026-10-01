@@ -107,7 +107,7 @@ function getContactVisibilityLabel(
   value: "open" | "approval_required" | "closed" | null | undefined,
 ) {
   if (value === "open") {
-    return "Perfil aberto a empresas";
+    return "Disponível para pedidos de empresas";
   }
 
   if (value === "approval_required") {

@@ -95,6 +95,8 @@ export default function EmpresaCandidatoDetalhePage({
   }, [student]);
 
   const canViewFullProfile = useMemo(() => {
+    // The server snapshot reveals identity only after consent or an application to this company.
+    if (profile) return true;
     if (!student) {
       return false;
     }
@@ -103,29 +105,23 @@ export default function EmpresaCandidatoDetalhePage({
       return true;
     }
 
-    if (student.contact_visibility === "open") {
-      return true;
-    }
-
-    if (contactRequest?.status === "accepted") {
+    if (contactRequest?.status === "accepted" && student.contact_visibility !== "closed") {
       return true;
     }
 
     return false;
-  }, [student, hasApplication, contactRequest]);
+  }, [profile, student, hasApplication, contactRequest]);
 
   const contactStatusLabel = useMemo(() => {
     if (hasApplication) {
       return "Contacto permitido: o candidato candidatou-se a esta vaga.";
     }
 
-    if (student?.contact_visibility === "open") {
-      return "Contacto permitido: o candidato tem perfil aberto a empresas.";
-    }
-
-    if (contactRequest?.status === "accepted") {
+    if (contactRequest?.status === "accepted" && student?.contact_visibility !== "closed") {
       return "Contacto permitido: o candidato aceitou o pedido.";
     }
+
+    if (profile) return "Contacto permitido: identidade autorizada para esta empresa.";
 
     if (contactRequest?.status === "pending") {
       return "Pedido de contacto enviado. Aguarda resposta do candidato.";
@@ -140,7 +136,7 @@ export default function EmpresaCandidatoDetalhePage({
     }
 
     return "Contacto protegido: é necessário pedir autorização ao candidato.";
-  }, [student, hasApplication, contactRequest]);
+  }, [profile, student, hasApplication, contactRequest]);
 
   async function loadCandidate() {
     const { data: sessionData } = await supabase.auth.getSession();

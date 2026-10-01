@@ -1,0 +1,15 @@
+# Oferta de lançamento para empresas
+
+Os recursos Premium existentes estão disponíveis gratuitamente para contas de empresa, incluindo contas novas. Não se alteram planos ou estados de subscrição e não há checkout, cobrança ou futura cobrança automática. A ativação está centralizada em `companyLaunchOfferActive`, em `lib/company-plan.ts`. Quando forem introduzidos pagamentos, a autorização dos recursos pagos também terá de ser implementada no servidor; mudar este sinalizador só altera os bloqueios da interface atual.
+
+Os matches deixam de ter o limite de cinco perfis. As empresas podem enviar pedidos, criar shortlist e aceitar candidatos nos percursos existentes, respeitando os requisitos de autorização. `/empresa/talentos` acrescenta pesquisa por função, área e localização e paginação de 24 perfis, incluindo candidatos sem match calculado. Um perfil disponível tem conta de candidato e título profissional preenchido; contactos fechados excluem-no desta pesquisa, salvo se já existir acesso autorizado para a empresa.
+
+A oferta não concede identidade. A função de autorização partilhada permite nome, fotografia, contactos, currículo e perfil completo apenas após candidatura a uma vaga da empresa ou pedido aceite. A configuração antiga `open` passa a aceitar pedidos sem dispensar a aprovação. Não foram alteradas as preferências guardadas dos candidatos. Fechar os contactos conserva a regra de revogar o acesso por pedidos anteriores; candidaturas continuam a autorizar a empresa que recebeu a candidatura. A autorização de uma empresa não é partilhada com outras.
+
+Os pedidos continuam associados a uma vaga da própria empresa. A vaga tem de estar ativa e dentro do prazo de confirmação. A empresa não pode aceitar pedidos em nome do candidato nem reabrir um pedido recusado. Pedidos e respostas criam notificações na mesma transação e usam a fila de email existente, com preferências de contacto e idempotência. O navegador pede o envio imediato, sem perder o aviso se esse pedido falhar.
+
+Mantêm-se os critérios de compatibilidade, a validade de vagas e os limites técnicos das APIs. A gratuitidade não desativa as proteções de acesso, as regras dos currículos ou as quotas de segurança.
+
+Validação: PGlite verifica descobertas sem match, paginação, pesquisa, ausência de identidade antes da aceitação, candidaturas, aceitação e recusa, isolamento entre empresas, acesso a currículo, bloqueio de vagas inativas e respeito pelas preferências de email. Os testes de segurança, TypeScript e build passaram. Foi confirmado no Supabase, como utilizador autenticado, que a pesquisa devolve pré-visualizações sem campos privados. Nenhum pedido foi enviado a candidatos reais durante estes testes.
+
+Os componentes novos passam o lint. As páginas existentes de perfil, cabeçalho e detalhe de candidato conservam avisos e erros anteriores de hooks, imagens e carregamento inicial. O percurso completo de envio e aceitação no navegador autenticado e a entrega de emails reais permanecem por validar.

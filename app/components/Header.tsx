@@ -150,6 +150,10 @@ export default function Header() {
           label: "Matches",
         },
         {
+          href: "/empresa/talentos",
+          label: "Explorar candidatos",
+        },
+        {
           href: "/empresa/candidatos",
           label: "Candidatos",
         },
