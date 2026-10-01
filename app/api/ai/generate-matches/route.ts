@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
+import { loadReviewedSkillAliases } from "@/lib/reviewed-skill-aliases";
 import { calculateMatch, type StudentProfile, type Job } from "@/lib/matching-engine";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -121,11 +122,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: jobsError.message }, { status: 500 });
     }
 
+    const reviewedAliases = await loadReviewedSkillAliases(supabase);
     const matches = [];
 
     for (const student of (students || []) as StudentProfile[]) {
       for (const job of (jobs || []) as Job[]) {
-        const result = calculateMatch(student, job);
+        const result = calculateMatch(student, job, reviewedAliases);
 
         matches.push({
           student_id: student.id,

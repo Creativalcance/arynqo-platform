@@ -1,0 +1,15 @@
+{
+  "source": "https://ec.europa.eu/esco/api/search",
+  "version": "v1.2.1",
+  "language": "pt",
+  "source_count": 13939,
+  "accepted": 13814,
+  "excluded": {
+    "invalid_label": 107,
+    "ambiguous_label": 18
+  },
+  "sha256": "4156e2b7b58abe481b4d44241696239c26ec90904ae29b36cc4ab2fc59e7e549",
+  "transformation": "Remove HTML emphasis and decode entities; preserve names, exclude overlong/unsupported labels and ambiguous normalized labels.",
+  "copyright": "© European Union; ESCO data reused with attribution under the European Commission reuse policy (CC BY 4.0).",
+  "licence_url": "https://commission.europa.eu/legal-notice_en"
+}

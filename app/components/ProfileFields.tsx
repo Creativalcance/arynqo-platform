@@ -59,9 +59,8 @@ export function TagPicker({ value, onChange, label = "Competências" }: { value:
   useEffect(() => {
     let cancelled = false;
     const timer = setTimeout(async () => {
-      const q = optionKey(query).replace(/[%,_*]/g, "");
-      const { data, error: readError } = await supabase.from("profile_tags").select("label").ilike("normalized_label", `%${q}%`).order("label").limit(20);
-      if (!cancelled) { setOptions(data?.map(o => o.label) || []); if (readError) setError("Não foi possível carregar as sugestões."); }
+      const { data, error: readError } = await supabase.rpc("search_profile_tags", {p_query: query, p_limit: 20});
+      if (!cancelled) { setOptions(data?.map((o: {label:string}) => o.label) || []); if (readError) setError("Não foi possível carregar as sugestões."); }
     }, 250);
     return () => { cancelled = true; clearTimeout(timer); };
   }, [query]);
@@ -85,10 +84,11 @@ export function TagPicker({ value, onChange, label = "Competências" }: { value:
   }
   return <div className="min-w-0">
     <div className="mt-3 flex flex-wrap gap-2">{value.map((v, i) => <button disabled={busy} type="button" key={`${v}-${i}`} aria-label={`Remover ${v}`} onClick={() => { void remove(i); }} className="max-w-full break-words rounded-xl bg-blue-50 px-3 py-2 text-left text-sm text-blue-800">{v} ×</button>)}</div>
-    <div className="flex min-w-0 gap-2"><input aria-label={label} list={id} value={query} maxLength={80} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void add(); } }} className={fieldClass} placeholder="Escrever para selecionar ou criar uma tag" /><button disabled={busy || !query.trim()} type="button" onClick={() => { void add(); }} className="mt-2 rounded-xl bg-[#07111F] px-4 text-white disabled:opacity-50">{busy ? "…" : "+"}</button></div>
+    <div className="flex min-w-0 gap-2"><input aria-label={label} list={id} value={query} maxLength={80} onChange={e => {setQuery(e.target.value);setOptions([]);}} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void add(); } }} className={fieldClass} placeholder="Escrever para selecionar ou criar uma tag" /><button disabled={busy || !query.trim()} type="button" onClick={() => { void add(); }} className="mt-2 rounded-xl bg-[#07111F] px-4 text-white disabled:opacity-50">{busy ? "…" : "+"}</button></div>
     <datalist id={id}>{options.map(v => <option key={v} value={v} />)}</datalist>
-    {query.trim() && <div aria-label={`Sugestões de ${label}`} className="mt-2 flex flex-wrap gap-2">{options.filter(v => optionKey(v).includes(optionKey(query)) && !value.some(selected => optionKey(selected) === optionKey(v))).slice(0, 8).map(v => <button key={v} type="button" disabled={busy} onClick={() => { void add(v); }} className="max-w-full break-words rounded-xl border border-blue-200 px-3 py-2 text-left text-sm text-blue-800 disabled:opacity-50">{v}</button>)}</div>}
-    <p className="mt-2 text-xs text-slate-500">Seleciona uma sugestão e adiciona-a. Novas tags ficam disponíveis para candidatos e empresas. Não introduzas dados pessoais.</p>
+    {query.trim() && <div aria-label={`Sugestões de ${label}`} className="mt-2 flex flex-wrap gap-2">{options.filter(v => !value.some(selected => optionKey(selected) === optionKey(v))).slice(0, 8).map(v => <button key={v} type="button" disabled={busy} onClick={() => { void add(v); }} className="max-w-full break-words rounded-xl border border-blue-200 px-3 py-2 text-left text-sm text-blue-800 disabled:opacity-50">{v}</button>)}</div>}
+    <p className="mt-2 text-xs text-slate-500">Seleciona uma sugestão e adiciona-a. Podes usar novas tags no teu perfil ou vaga. Após revisão, ficam disponíveis para todos. Não introduzas dados pessoais.</p>
+    <p className="mt-2 text-xs text-slate-500">Inclui termos ESCO · © União Europeia · CC BY 4.0. <a href="https://esco.ec.europa.eu/en/use-esco/download" target="_blank" rel="noopener noreferrer" className="underline">Fonte do catálogo</a>.</p>
     {error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
   </div>;
 }

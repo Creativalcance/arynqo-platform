@@ -110,6 +110,7 @@ export default function AdminEntryPage() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/admin/competencias" className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F]">Catálogo de competências</Link>
                 <Link href="/admin/contas" className="rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white">Contas e dados</Link>
                 <Link
                   href="/admin/academia"

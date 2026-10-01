@@ -100,3 +100,11 @@ test("job language level and spoken channel affect recommendation", () => {
  assert.notEqual(calculateMatch(candidate({languages:"",spoken_languages:"Inglês (B2)"}),job).matchCategory,"recommended");
  assert.notEqual(calculateMatch(candidate({languages:"",written_languages:"Inglês (C2)"}),job).matchCategory,"recommended");
 });
+
+test("only explicitly reviewed skill equivalences change matching", () => {
+ const student=candidate({skills_normalized:["Competência técnica A","TypeScript"]});
+ const job=vacancy();
+ assert.equal(calculateMatch(student,job,new Map([["competencia tecnica a","React"]])).skillsScore,100);
+ assert.notEqual(calculateMatch(student,job).skillsScore,100);
+ assert.notEqual(calculateMatch(candidate({skills_normalized:["Gestão de pessoas"]}),vacancy({required_skills:["Gestão de projetos"]})).skillsScore,100);
+});

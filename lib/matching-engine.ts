@@ -1,4 +1,4 @@
-import { languageCompatibility } from "./profile-options";
+import { languageCompatibility, optionKey } from "./profile-options";
 type MatchCategory =
   | "recommended"
   | "possible"
@@ -542,12 +542,15 @@ function getSeniorityScore(student: StudentProfile, job: Job) {
 }
 
 // Versioned deterministic evidence score. It is not a hiring probability.
-export const MATCHING_VERSION = "evidence-v3-languages";
-export function calculateMatch(student: StudentProfile, job: Job): MatchResult {
+export const MATCHING_VERSION = "evidence-v4-reviewed-skills";
+export function calculateMatch(student: StudentProfile, job: Job, reviewedAliases: ReadonlyMap<string, string> = new Map()): MatchResult {
   const declaredSkills = (student.student_skills || []).flatMap(row => Array.isArray(row.skills) ? row.skills.map(skill => skill.name) : row.skills ? [row.skills.name] : []);
-  const studentSkills = unique([...normalizeArray(declaredSkills), ...normalizeArray(student.skills_normalized), ...normalizeArray(student.tools_normalized),
-    ...normalizeArray(student.soft_skills_normalized), ...normalizeList([student.tools, student.soft_skills])]);
-  const required = normalizeArray(job.required_skills), preferred = normalizeArray(job.preferred_skills), specializations = normalizeArray(job.specializations);
+  const resolveSkill = (value: string) => reviewedAliases.get(optionKey(value)) || value;
+  const studentSkills = unique(normalizeArray([
+    ...declaredSkills, ...(student.skills_normalized || []), ...(student.tools_normalized || []),
+    ...(student.soft_skills_normalized || []), ...[student.tools, student.soft_skills].flatMap(value => value ? value.split(/[,;\n|]/).map(v => v.trim()).filter(Boolean) : []),
+  ].map(resolveSkill)));
+  const required = normalizeArray(job.required_skills?.map(resolveSkill)), preferred = normalizeArray(job.preferred_skills?.map(resolveSkill)), specializations = normalizeArray(job.specializations?.map(resolveSkill));
   const missingSkills = required.filter(r => !studentSkills.some(c => evidenceMatches(c, r)));
   const matchingSkills = unique([...required, ...preferred, ...specializations]).filter(r => studentSkills.some(c => evidenceMatches(c, r)));
   const parts = [{ requirements: required, weight: .6 }, { requirements: preferred, weight: .25 }, { requirements: specializations, weight: .15 }].filter(p => p.requirements.length);
