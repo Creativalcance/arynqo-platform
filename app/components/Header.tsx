@@ -1,6 +1,7 @@
 "use client";
 import { browserLocalizedPath } from "@/lib/i18n/config";
-import { LText, LocaleSelect } from "@/lib/i18n/client";
+import { LText } from "@/lib/i18n/client";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 
 import Image from "@/lib/i18n/image";
@@ -214,7 +215,7 @@ export default function Header() {
           />
         </Link>
 
-        <LocaleSelect className="mx-2 w-[100px] shrink-0 sm:w-36" />
+        <LanguageSwitcher />
         <nav className="hidden items-center gap-5 xl:flex">
           {navigationLinks.map((link) => (
             <HeaderLink key={link.href} href={link.href} label={link.label} />
