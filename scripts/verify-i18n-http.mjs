@@ -16,6 +16,7 @@ try {
  const login=await fetch(base+path+'/login'); assert.match(login.headers.get('x-robots-tag'),/noindex/);
  const manifest=await (await fetch(base+`/api/manifest?lang=${locale}`)).json();assert.equal(manifest.lang,locale==='pt'?'pt-PT':locale);assert.equal(manifest.start_url,path+'/app');
  }
+ const jobs=await fetch(base+'/fr/vagas');const jobsHtml=await jobs.text();assert.equal(jobs.status,200);assert.ok(jobsHtml.includes('Sur site') && jobsHtml.includes('À distance'));for(const wrong of ['Président','Télécommande','Personnes âgées','aria-label="Administrateurs"'])assert.ok(!jobsHtml.includes(wrong),`Wrong recruiting label: ${wrong}`);assert.ok(jobsHtml.includes('Voir l’offre : Directeur') || jobsHtml.includes('Voir l’offre : Diretor') || jobsHtml.includes('Voir l’offre : Frontend'));
  const legal=await fetch(base+'/fr/politica-de-privacidade');const body=await legal.text();assert.equal(legal.status,200);assert.ok(body.includes('Politique de confidentialité'));
  const invalid=await fetch(base+'/de/api/notifications/create');assert.equal(invalid.status,404);
  const redirect=await fetch(base+'/pt/vagas',{redirect:'manual'});assert.equal(redirect.status,308);
@@ -23,5 +24,5 @@ try {
  const robots=await (await fetch(base+'/robots.txt')).text();assert.ok(robots.includes('Disallow: /fr/empresa/'));assert.ok(!robots.includes('Disallow: /empresas'));
  const sitemap=await fetch(base+'/sitemap.xml');assert.equal(sitemap.status,200);const xml=await sitemap.text();assert.ok(xml.includes('https://www.arynqo.com/de/vagas'));assert.ok(xml.includes('hreflang="it"'));assert.ok(!xml.includes('/dashboard'));
  console.log(JSON.stringify({results,checks:'canonical, hreflang, SSR lang, private noindex, preference redirect, manifests, legal page, sitemap, robots, API isolation passed'},null,2));
- writeFileSync('docs/i18n-http-verification.json',JSON.stringify({results,checks:['canonical','hreflang','SSR lang','private noindex','preference redirect','manifests','legal page','sitemap','robots','API isolation']},null,2)+'\n');
+ writeFileSync('docs/i18n-http-verification.json',JSON.stringify({results,checks:['canonical','hreflang','SSR lang','private noindex','preference redirect','manifests','legal page','sitemap','robots','API isolation','reviewed recruitment labels']},null,2)+'\n');
 } catch(error){console.error(error);console.error(logs.slice(-6000));process.exitCode=1;} finally {server.kill('SIGTERM');}

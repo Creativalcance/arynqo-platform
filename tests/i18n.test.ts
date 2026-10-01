@@ -9,7 +9,7 @@ import {notificationEmailContent} from '../lib/notification-email';
 const catalogs=Object.fromEntries(locales.map(locale=>[locale,JSON.parse(readFileSync(`lib/i18n/messages/${locale}.json`,'utf8'))]));
 test('all six catalogs cover identical messages and preserve dynamic placeholders',()=>{
  for(const locale of locales){assert.deepEqual(Object.keys(catalogs[locale]).sort(),Object.keys(catalogs.pt).sort());
- for(const [key,value] of Object.entries(catalogs[locale])) { assert.equal(typeof value,'string'); assert.ok((value as string).trim(),`${locale} empty: ${key}`);assert.deepEqual((key.match(/\{\d+\}/g)||[]).sort(),((value as string).match(/\{\d+\}/g)||[]).sort(),`${locale}: ${key}`); }
+ for(const [key,value] of Object.entries(catalogs[locale])) { assert.equal(typeof value,'string'); assert.ok((value as string).trim(),`${locale} empty: ${key}`);assert.ok(!(value as string).includes('♪') || key.includes('♪'),`${locale}: translation artefact in ${key}`);assert.deepEqual((key.match(/\{\d+\}/g)||[]).sort(),((value as string).match(/\{\d+\}/g)||[]).sort(),`${locale}: ${key}`); }
  }
 });
 test('locale navigation preserves destinations and excludes services and assets',()=>{
@@ -32,4 +32,9 @@ test('localized language names identify the same professional language and expor
  for(const name of ['Alemão','German','allemand','alemán','Deutsch','tedesco']) assert.equal(parseLanguage(`${name} (C1)`).code,'de');
  const t=translator(catalogs.en);const exported=csv([{name:'Société Müller',email:'=formula'}],['name','email'],t);
  assert.ok(exported.startsWith('\uFEFF"Name";"Email"'));assert.ok(exported.includes('Société Müller'));assert.ok(exported.includes("'=formula"));
+});
+
+test('reviewed recruiting terminology does not misstate workplace or experience',()=>{
+ const expected={en:['On-site','Remote','Senior','Internship','Professional field'],fr:['Sur site','À distance','Senior','Stage','Domaine professionnel'],es:['Presencial','En remoto','Sénior','Prácticas','Área profesional'],de:['Vor Ort','Remote','Senior','Praktikum','Berufsfeld'],it:['In sede','Da remoto','Senior','Tirocinio','Ambito professionale']};
+ for(const [locale,values] of Object.entries(expected)){const t=translator(catalogs[locale]);assert.deepEqual(['Presencial','Remoto','Sénior','Estágio','Área profissional'].map(t),values);assert.equal(t('sénior'),values[2]);assert.equal(t('Sênior'),values[2]);assert.equal(t('Ver vaga: Société Müller'),catalogs[locale]['Ver vaga: {0}'].replace('{0}','Société Müller'));}
 });

@@ -3,6 +3,7 @@ const overrides = JSON.parse(fs.readFileSync("scripts/i18n-overrides.json", "utf
 const locales = ["pt", "en", "fr", "es", "de", "it"];
 const pt = JSON.parse(fs.readFileSync("lib/i18n/messages/pt.json", "utf8"));
 for (const source of Object.keys(overrides)) pt[source] = source;
+pt.remote="Remoto"; pt.hybrid="Híbrido"; pt.presential="Presencial"; pt.full_time="Tempo inteiro"; pt.part_time="Tempo parcial"; pt.internship="Estágio";
 pt.Home = "Início"; pt.Skills = "Competências"; pt.Gaps = "Lacunas";
 fs.writeFileSync("lib/i18n/messages/pt.json", JSON.stringify(pt, null, 2) + "\n");
 for (const [index, locale] of locales.slice(1).entries()) {

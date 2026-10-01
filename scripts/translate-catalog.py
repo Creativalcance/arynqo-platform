@@ -14,7 +14,7 @@ root = Path(__file__).resolve().parents[1]
 folder = root / "lib/i18n/messages"
 source = json.loads((folder / "pt.json").read_text())
 installed = packages.get_installed_packages()
-protected = re.compile(r"(\{\d+\}|https?://[^\s]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}|ARYNQO|CRIATIVALCANCE|UNIPESSOAL LDA|Supabase|OpenAI|Resend|Google Analytics|ESCO|localStorage|sessionStorage|arynqo_[a-z_]+)")
+protected = re.compile(r"(\{\d+\}|https?://[^\s]+|[\w.+-]+@[\w.-]+\.[a-z]{2,}|ARYNQO|CreativAlcance|CRIATIVALCANCE|UNIPESSOAL LDA|Supabase|OpenAI|Resend|Google Analytics|ESCO|localStorage|sessionStorage|arynqo_[a-z_]+)")
 
 def translate_many(texts, from_code, to_code):
     pkg = next(p for p in installed if p.from_code == from_code and p.to_code == to_code)

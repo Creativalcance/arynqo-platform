@@ -388,7 +388,7 @@
     "Professional",
     "Professionnel",
     "Profesional",
-    "Berufstätige",
+    "Berufstätig",
     "Professionista"
   ],
   "Em transição de carreira": [
@@ -817,5 +817,677 @@
     "La empresa {0} quiere ver tu perfil completo para la oferta \"{1}\". Puedes aceptar o rechazar en las notificaciones.",
     "Das Unternehmen {0} möchte dein vollständiges Profil zur Stelle „{1}“ sehen. Du kannst in den Benachrichtigungen zustimmen oder ablehnen.",
     "L’azienda {0} desidera vedere il tuo profilo completo per l’offerta \"{1}\". Puoi accettare o rifiutare nelle notifiche."
+  ],
+  "Plataforma inteligente de recrutamento e evolução profissional": [
+    "Smart recruitment and career development platform",
+    "Plateforme de recrutement intelligent et de développement professionnel",
+    "Plataforma de selección inteligente y desarrollo profesional",
+    "Plattform für intelligentes Recruiting und berufliche Entwicklung",
+    "Piattaforma per il recruiting intelligente e lo sviluppo professionale"
+  ],
+  "A ARYNQO liga estudantes, profissionais e empresas através de uma plataforma onde podes pesquisar vagas, apresentar competências e consultar recomendações com apoio de IA.": [
+    "ARYNQO connects students, professionals and companies. Search for jobs, showcase your skills and explore AI-assisted recommendations.",
+    "ARYNQO met en relation étudiants, professionnels et entreprises. Recherchez des offres d’emploi, présentez vos compétences et consultez des recommandations assistées par l’IA.",
+    "ARYNQO conecta a estudiantes, profesionales y empresas. Busca ofertas de empleo, presenta tus competencias y consulta recomendaciones con apoyo de IA.",
+    "ARYNQO verbindet Studierende, Berufstätige und Unternehmen. Suche nach Stellen, präsentiere deine Kompetenzen und entdecke KI-gestützte Empfehlungen.",
+    "ARYNQO mette in contatto studenti, professionisti e aziende. Cerca offerte di lavoro, presenta le tue competenze e consulta raccomandazioni supportate dall’IA."
+  ],
+  "Função, área ou localização": [
+    "Role, field or location",
+    "Poste, domaine ou lieu",
+    "Puesto, sector o ubicación",
+    "Position, Bereich oder Ort",
+    "Ruolo, settore o località"
+  ],
+  "Quero recrutar: conhecer a solução para empresas": [
+    "Hiring? Discover our solution for companies",
+    "Vous recrutez ? Découvrez notre solution pour les entreprises",
+    "¿Buscas talento? Descubre nuestra solución para empresas",
+    "Du suchst Talente? Entdecke unsere Lösung für Unternehmen",
+    "Cerchi talenti? Scopri la nostra soluzione per le aziende"
+  ],
+  "Começa a construir o teu futuro": [
+    "Start building your future",
+    "Commencez à construire votre avenir",
+    "Empieza a construir tu futuro",
+    "Gestalte deine Zukunft",
+    "Inizia a costruire il tuo futuro"
+  ],
+  "Cria um perfil profissional moderno, descobre oportunidades relevantes e dá os primeiros passos no mercado com mais clareza, confiança e direção.": [
+    "Create a modern professional profile, discover relevant opportunities and take your first career steps with clarity, confidence and direction.",
+    "Créez un profil professionnel moderne, découvrez des opportunités pertinentes et faites vos premiers pas sur le marché du travail avec clarté, confiance et détermination.",
+    "Crea un perfil profesional moderno, descubre oportunidades relevantes y da tus primeros pasos en el mercado laboral con claridad, confianza y orientación.",
+    "Erstelle ein modernes berufliches Profil, entdecke passende Chancen und starte mit Klarheit, Zuversicht und Orientierung ins Berufsleben.",
+    "Crea un profilo professionale moderno, scopri opportunità pertinenti e muovi i primi passi nel mondo del lavoro con chiarezza, fiducia e orientamento."
+  ],
+  "Evolui para a próxima oportunidade": [
+    "Take the next step in your career",
+    "Passez à la prochaine étape de votre carrière",
+    "Da el siguiente paso en tu carrera",
+    "Gehe den nächsten Schritt in deiner Karriere",
+    "Fai il prossimo passo nella tua carriera"
+  ],
+  "Valoriza a tua experiência, identifica novas possibilidades de carreira e encontra oportunidades alinhadas com as tuas competências e ambição.": [
+    "Showcase your experience, explore new career paths and find opportunities that match your skills and ambitions.",
+    "Valorisez votre expérience, explorez de nouvelles perspectives de carrière et trouvez des opportunités adaptées à vos compétences et à vos ambitions.",
+    "Pon en valor tu experiencia, explora nuevas posibilidades profesionales y encuentra oportunidades acordes con tus competencias y ambiciones.",
+    "Zeige deine Erfahrung, entdecke neue Karrierewege und finde Chancen, die zu deinen Kompetenzen und Zielen passen.",
+    "Valorizza la tua esperienza, esplora nuove possibilità di carriera e trova opportunità in linea con le tue competenze e ambizioni."
+  ],
+  "Empresas & Universidades": [
+    "Companies & Universities",
+    "Entreprises et universités",
+    "Empresas y universidades",
+    "Unternehmen und Hochschulen",
+    "Aziende e università"
+  ],
+  "Liga talento, conhecimento e mercado": [
+    "Connect talent, knowledge and opportunity",
+    "Reliez talents, connaissances et opportunités",
+    "Conecta talento, conocimiento y oportunidades",
+    "Verbinde Talente, Wissen und Chancen",
+    "Collega talenti, conoscenze e opportunità"
+  ],
+  "Aproxima organizações, instituições de ensino e talento qualificado através de uma plataforma preparada para recrutamento, IA, empregabilidade e evolução profissional.": [
+    "Bring organisations, educational institutions and qualified talent together through a platform built for recruitment, AI, employability and career development.",
+    "Rapprochez organisations, établissements d’enseignement et talents qualifiés grâce à une plateforme dédiée au recrutement, à l’IA, à l’employabilité et au développement professionnel.",
+    "Acerca a organizaciones, instituciones educativas y talento cualificado mediante una plataforma orientada a la selección, la IA, la empleabilidad y el desarrollo profesional.",
+    "Bringe Organisationen, Bildungseinrichtungen und qualifizierte Talente auf einer Plattform für Recruiting, KI, Beschäftigungsfähigkeit und berufliche Entwicklung zusammen.",
+    "Avvicina organizzazioni, istituti di formazione e talenti qualificati attraverso una piattaforma dedicata al recruiting, all’IA, all’occupabilità e allo sviluppo professionale."
+  ],
+  "Para estudantes e profissionais": [
+    "For students and professionals",
+    "Pour les étudiants et les professionnels",
+    "Para estudiantes y profesionales",
+    "Für Studierende und Berufstätige",
+    "Per studenti e professionisti"
+  ],
+  "Muito mais do que candidaturas": [
+    "Much more than job applications",
+    "Bien plus que des candidatures",
+    "Mucho más que candidaturas",
+    "Mehr als Bewerbungen",
+    "Molto più delle candidature"
+  ],
+  "A ARYNQO ajuda cada pessoa a transformar o seu percurso num perfil profissional claro, atrativo e preparado para novas oportunidades.": [
+    "ARYNQO helps you turn your experience into a clear, compelling professional profile ready for new opportunities.",
+    "ARYNQO vous aide à transformer votre parcours en un profil professionnel clair, attractif et prêt pour de nouvelles opportunités.",
+    "ARYNQO te ayuda a transformar tu trayectoria en un perfil profesional claro, atractivo y preparado para nuevas oportunidades.",
+    "ARYNQO hilft dir, deinen Werdegang in einem klaren, überzeugenden beruflichen Profil für neue Chancen darzustellen.",
+    "ARYNQO ti aiuta a trasformare il tuo percorso in un profilo professionale chiaro, interessante e pronto per nuove opportunità."
+  ],
+  "Cria o teu perfil com um clique": [
+    "Create your profile with one click",
+    "Créez votre profil en un clic",
+    "Crea tu perfil con un clic",
+    "Erstelle dein Profil mit einem Klick",
+    "Crea il tuo profilo con un clic"
+  ],
+  "Perfil profissional moderno e inteligente": [
+    "Modern, smart professional profile",
+    "Profil professionnel moderne et intelligent",
+    "Perfil profesional moderno e inteligente",
+    "Modernes, intelligentes berufliches Profil",
+    "Profilo professionale moderno e intelligente"
+  ],
+  "Matching com as melhores vagas": [
+    "Matching with the best job opportunities",
+    "Correspondance avec les meilleures offres d’emploi",
+    "Compatibilidad con las mejores ofertas de empleo",
+    "Matching mit den besten Stellenangeboten",
+    "Matching con le migliori offerte di lavoro"
+  ],
+  "Candidaturas rápidas e simples": [
+    "Quick and easy applications",
+    "Candidatures simples et rapides",
+    "Candidaturas rápidas y sencillas",
+    "Schnelle und einfache Bewerbungen",
+    "Candidature rapide e semplici"
+  ],
+  "Notificações em tempo real": [
+    "Real-time notifications",
+    "Notifications en temps réel",
+    "Notificaciones en tiempo real",
+    "Benachrichtigungen in Echtzeit",
+    "Notifiche in tempo reale"
+  ],
+  "Para empresas e universidades": [
+    "For companies and universities",
+    "Pour les entreprises et les universités",
+    "Para empresas y universidades",
+    "Für Unternehmen und Hochschulen",
+    "Per aziende e università"
+  ],
+  "Recrutamento inteligente": [
+    "Smart recruitment",
+    "Recrutement intelligent",
+    "Selección inteligente",
+    "Intelligentes Recruiting",
+    "Recruiting intelligente"
+  ],
+  "Uma plataforma criada para aproximar talento, empresas e instituições de ensino através de processos mais rápidos, dados mais úteis e IA aplicada ao recrutamento.": [
+    "A platform that connects talent, companies and educational institutions through faster processes, more useful data and AI-assisted recruitment.",
+    "Une plateforme qui rapproche talents, entreprises et établissements d’enseignement grâce à des processus plus rapides, des données plus utiles et un recrutement assisté par l’IA.",
+    "Una plataforma que conecta talento, empresas e instituciones educativas mediante procesos más rápidos, datos más útiles y selección con apoyo de IA.",
+    "Eine Plattform, die Talente, Unternehmen und Bildungseinrichtungen durch schnellere Prozesse, nützlichere Daten und KI-gestütztes Recruiting verbindet.",
+    "Una piattaforma che avvicina talenti, aziende e istituti di formazione attraverso processi più rapidi, dati più utili e recruiting supportato dall’IA."
+  ],
+  "Cria o perfil da organização com um clique": [
+    "Create your organisation’s profile with one click",
+    "Créez le profil de votre organisation en un clic",
+    "Crea el perfil de tu organización con un clic",
+    "Erstelle das Profil deiner Organisation mit einem Klick",
+    "Crea il profilo della tua organizzazione con un clic"
+  ],
+  "Publicação de vagas em 90 segundos": [
+    "Publish a job in 90 seconds",
+    "Publiez une offre en 90 secondes",
+    "Publica una oferta en 90 segundos",
+    "Veröffentliche eine Stelle in 90 Sekunden",
+    "Pubblica un’offerta in 90 secondi"
+  ],
+  "Análise inteligente de perfis": [
+    "Smart profile analysis",
+    "Analyse intelligente des profils",
+    "Análisis inteligente de perfiles",
+    "Intelligente Profilanalyse",
+    "Analisi intelligente dei profili"
+  ],
+  "Matching com candidatos qualificados": [
+    "Matching with qualified candidates",
+    "Correspondance avec des candidats qualifiés",
+    "Compatibilidad con candidatos cualificados",
+    "Matching mit qualifizierten Bewerbern",
+    "Matching con candidati qualificati"
+  ],
+  "Gestão integrada de candidatos": [
+    "Integrated candidate management",
+    "Gestion intégrée des candidats",
+    "Gestión integrada de candidatos",
+    "Integriertes Bewerbermanagement",
+    "Gestione integrata dei candidati"
+  ],
+  "The next step starts here.": [
+    "The next step starts here.",
+    "La prochaine étape commence ici.",
+    "El siguiente paso empieza aquí.",
+    "Der nächste Schritt beginnt hier.",
+    "Il prossimo passo inizia qui."
+  ],
+  "Junta-te à nova plataforma de recrutamento, talento e evolução profissional.": [
+    "Join the new platform for recruitment, talent and career development.",
+    "Rejoignez la nouvelle plateforme de recrutement, de talents et de développement professionnel.",
+    "Únete a la nueva plataforma de selección, talento y desarrollo profesional.",
+    "Entdecke die neue Plattform für Recruiting, Talente und berufliche Entwicklung.",
+    "Unisciti alla nuova piattaforma per il recruiting, i talenti e lo sviluppo professionale."
+  ],
+  "Plataforma inteligente de recrutamento e evolução profissional, desenhada para ligar talento, estudantes e empresas.": [
+    "A smart recruitment and career development platform connecting talent, students and companies.",
+    "Une plateforme de recrutement intelligent et de développement professionnel qui met en relation talents, étudiants et entreprises.",
+    "Una plataforma de selección inteligente y desarrollo profesional que conecta talento, estudiantes y empresas.",
+    "Eine Plattform für intelligentes Recruiting und berufliche Entwicklung, die Talente, Studierende und Unternehmen verbindet.",
+    "Una piattaforma per il recruiting intelligente e lo sviluppo professionale che mette in contatto talenti, studenti e aziende."
+  ],
+  "ARYNQO. Todos os direitos reservados.": [
+    "ARYNQO. All rights reserved.",
+    "ARYNQO. Tous droits réservés.",
+    "ARYNQO. Todos los derechos reservados.",
+    "ARYNQO. Alle Rechte vorbehalten.",
+    "ARYNQO. Tutti i diritti riservati."
+  ],
+  "Made by CreativAlcance": [
+    "Made by CreativAlcance",
+    "Créé par CreativAlcance",
+    "Creado por CreativAlcance",
+    "Erstellt von CreativAlcance",
+    "Creato da CreativAlcance"
+  ],
+  " (abre num novo separador)": [
+    " (opens in a new tab)",
+    " (s’ouvre dans un nouvel onglet)",
+    " (se abre en una pestaña nueva)",
+    " (öffnet in einem neuen Tab)",
+    " (si apre in una nuova scheda)"
+  ],
+  "ARYNQO | Where talent evolves": [
+    "ARYNQO | Where talent evolves",
+    "ARYNQO | Where talent evolves",
+    "ARYNQO | Where talent evolves",
+    "ARYNQO | Where talent evolves",
+    "ARYNQO | Where talent evolves"
+  ],
+  "## Conclusão": [
+    "## Conclusion",
+    "## Conclusion",
+    "## Conclusión",
+    "## Fazit",
+    "## Conclusione"
+  ],
+  "Porque aparece": [
+    "Why it appears",
+    "Pourquoi ce résultat apparaît",
+    "Por qué aparece",
+    "Warum es angezeigt wird",
+    "Perché appare"
+  ],
+  "Estudantes": [
+    "Students",
+    "Étudiants",
+    "Estudiantes",
+    "Studierende",
+    "Studenti"
+  ],
+  "Profissionais": [
+    "Professionals",
+    "Professionnels",
+    "Profesionales",
+    "Berufstätige",
+    "Professionisti"
+  ],
+  "Matching inteligente": [
+    "Smart matching",
+    "Correspondance intelligente",
+    "Compatibilidad inteligente",
+    "Intelligentes Matching",
+    "Matching intelligente"
+  ],
+  "Livro de Reclamações": [
+    "Livro de Reclamações",
+    "Livro de Reclamações",
+    "Livro de Reclamações",
+    "Livro de Reclamações",
+    "Livro de Reclamações"
+  ],
+  "Área": [
+    "Field",
+    "Domaine",
+    "Área",
+    "Bereich",
+    "Settore"
+  ],
+  "Área profissional": [
+    "Professional field",
+    "Domaine professionnel",
+    "Área profesional",
+    "Berufsfeld",
+    "Ambito professionale"
+  ],
+  "Presencial": [
+    "On-site",
+    "Sur site",
+    "Presencial",
+    "Vor Ort",
+    "In sede"
+  ],
+  "Remoto": [
+    "Remote",
+    "À distance",
+    "En remoto",
+    "Remote",
+    "Da remoto"
+  ],
+  "Híbrido": [
+    "Hybrid",
+    "Hybride",
+    "Híbrido",
+    "Hybrid",
+    "Ibrido"
+  ],
+  "Estágio": [
+    "Internship",
+    "Stage",
+    "Prácticas",
+    "Praktikum",
+    "Tirocinio"
+  ],
+  "Júnior": [
+    "Junior",
+    "Junior",
+    "Júnior",
+    "Junior",
+    "Junior"
+  ],
+  "Pleno": [
+    "Mid-level",
+    "Intermédiaire",
+    "Intermedio",
+    "Mittlere Berufserfahrung",
+    "Livello intermedio"
+  ],
+  "Sénior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "Direção": [
+    "Management",
+    "Direction",
+    "Dirección",
+    "Führungsebene",
+    "Dirigenza"
+  ],
+  "Senioridade": [
+    "Experience level",
+    "Niveau d’expérience",
+    "Nivel de experiencia",
+    "Erfahrungsniveau",
+    "Livello di esperienza"
+  ],
+  "Recém-graduado": [
+    "Graduate",
+    "Jeune diplômé",
+    "Recién graduado",
+    "Absolvent",
+    "Neolaureato"
+  ],
+  "Tempo inteiro": [
+    "Full-time",
+    "Temps plein",
+    "Jornada completa",
+    "Vollzeit",
+    "Tempo pieno"
+  ],
+  "Tempo parcial": [
+    "Part-time",
+    "Temps partiel",
+    "Jornada parcial",
+    "Teilzeit",
+    "Part-time"
+  ],
+  "Contrato sem termo": [
+    "Permanent contract",
+    "CDI",
+    "Contrato indefinido",
+    "Unbefristeter Vertrag",
+    "Contratto a tempo indeterminato"
+  ],
+  "Contrato a termo": [
+    "Fixed-term contract",
+    "CDD",
+    "Contrato temporal",
+    "Befristeter Vertrag",
+    "Contratto a tempo determinato"
+  ],
+  "Freelancer": [
+    "Freelancer",
+    "Indépendant",
+    "Autónomo",
+    "Freiberufler",
+    "Libero professionista"
+  ],
+  "Operacional": [
+    "Operational",
+    "Opérationnel",
+    "Operativo",
+    "Operativ",
+    "Operativo"
+  ],
+  "Idioma": [
+    "Language",
+    "Langue",
+    "Idioma",
+    "Sprache",
+    "Lingua"
+  ],
+  "Score": [
+    "Score",
+    "Score",
+    "Puntuación",
+    "Score",
+    "Punteggio"
+  ],
+  "Currículo": [
+    "CV",
+    "CV",
+    "Currículum",
+    "Lebenslauf",
+    "Curriculum"
+  ],
+  "Contacto": [
+    "Contact",
+    "Contact",
+    "Contacto",
+    "Kontakt",
+    "Contatto"
+  ],
+  "Disponibilidade": [
+    "Availability",
+    "Disponibilité",
+    "Disponibilidad",
+    "Verfügbarkeit",
+    "Disponibilità"
+  ],
+  "Escrito": [
+    "Written",
+    "Écrit",
+    "Escrito",
+    "Schriftlich",
+    "Scritto"
+  ],
+  "Falado": [
+    "Spoken",
+    "Parlé",
+    "Hablado",
+    "Mündlich",
+    "Parlato"
+  ],
+  "Função": [
+    "Role",
+    "Poste",
+    "Puesto",
+    "Position",
+    "Ruolo"
+  ],
+  "Ver vaga": [
+    "View job",
+    "Voir l’offre",
+    "Ver oferta",
+    "Stelle ansehen",
+    "Visualizza offerta"
+  ],
+  "Ver vaga: {0}": [
+    "View job: {0}",
+    "Voir l’offre : {0}",
+    "Ver oferta: {0}",
+    "Stelle ansehen: {0}",
+    "Visualizza offerta: {0}"
+  ],
+  "Publicado em": [
+    "Published on",
+    "Publié le",
+    "Publicado el",
+    "Veröffentlicht am",
+    "Pubblicato il"
+  ],
+  "Todas as áreas": [
+    "All fields",
+    "Tous les domaines",
+    "Todas las áreas",
+    "Alle Bereiche",
+    "Tutti gli ambiti"
+  ],
+  "Todos os modelos": [
+    "All work models",
+    "Tous les modes de travail",
+    "Todos los modelos de trabajo",
+    "Alle Arbeitsmodelle",
+    "Tutti i modelli di lavoro"
+  ],
+  "Todos os tipos": [
+    "All types",
+    "Tous les types",
+    "Todos los tipos",
+    "Alle Vertragsarten",
+    "Tutte le tipologie"
+  ],
+  "vagas encontradas": [
+    "jobs found",
+    "offres trouvées",
+    "ofertas encontradas",
+    "Stellen gefunden",
+    "offerte trovate"
+  ],
+  "vaga encontrada": [
+    "job found",
+    "offre trouvée",
+    "oferta encontrada",
+    "Stelle gefunden",
+    "offerta trovata"
+  ],
+  "Pesquisar vaga, área ou localização...": [
+    "Search by job, field or location...",
+    "Rechercher un poste, un domaine ou un lieu…",
+    "Buscar por puesto, sector o ubicación…",
+    "Nach Stelle, Bereich oder Ort suchen…",
+    "Cerca per ruolo, settore o località…"
+  ],
+  "remote": [
+    "Remote",
+    "À distance",
+    "En remoto",
+    "Remote",
+    "Da remoto"
+  ],
+  "Remote": [
+    "Remote",
+    "À distance",
+    "En remoto",
+    "Remote",
+    "Da remoto"
+  ],
+  "hybrid": [
+    "Hybrid",
+    "Hybride",
+    "Híbrido",
+    "Hybrid",
+    "Ibrido"
+  ],
+  "presential": [
+    "On-site",
+    "Sur site",
+    "Presencial",
+    "Vor Ort",
+    "In sede"
+  ],
+  "Presential": [
+    "On-site",
+    "Sur site",
+    "Presencial",
+    "Vor Ort",
+    "In sede"
+  ],
+  "Full time": [
+    "Full-time",
+    "Temps plein",
+    "Jornada completa",
+    "Vollzeit",
+    "Tempo pieno"
+  ],
+  "Full-time": [
+    "Full-time",
+    "Temps plein",
+    "Jornada completa",
+    "Vollzeit",
+    "Tempo pieno"
+  ],
+  "full_time": [
+    "Full-time",
+    "Temps plein",
+    "Jornada completa",
+    "Vollzeit",
+    "Tempo pieno"
+  ],
+  "Part-time": [
+    "Part-time",
+    "Temps partiel",
+    "Jornada parcial",
+    "Teilzeit",
+    "Part-time"
+  ],
+  "part_time": [
+    "Part-time",
+    "Temps partiel",
+    "Jornada parcial",
+    "Teilzeit",
+    "Part-time"
+  ],
+  "internship": [
+    "Internship",
+    "Stage",
+    "Prácticas",
+    "Praktikum",
+    "Tirocinio"
+  ],
+  "Senior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "Junior": [
+    "Junior",
+    "Junior",
+    "Júnior",
+    "Junior",
+    "Junior"
+  ],
+  "Mid-level": [
+    "Mid-level",
+    "Intermédiaire",
+    "Intermedio",
+    "Mittlere Berufserfahrung",
+    "Livello intermedio"
+  ],
+  "Definições": [
+    "Settings",
+    "Paramètres",
+    "Configuración",
+    "Einstellungen",
+    "Impostazioni"
+  ],
+  "sénior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "senior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "Sênior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "sênior": [
+    "Senior",
+    "Senior",
+    "Sénior",
+    "Senior",
+    "Senior"
+  ],
+  "júnior": [
+    "Junior",
+    "Junior",
+    "Júnior",
+    "Junior",
+    "Junior"
+  ],
+  "junior": [
+    "Junior",
+    "Junior",
+    "Júnior",
+    "Junior",
+    "Junior"
   ]
 }
