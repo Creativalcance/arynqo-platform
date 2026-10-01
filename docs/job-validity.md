@@ -4,6 +4,10 @@ As vagas têm validade inicial de 30 dias. Na revisão, a empresa tem sete dias 
 
 Os campos de validade são geridos por trigger e RPC de renovação, com verificação da propriedade e do perfil protegido. Editar o conteúdo não renova o prazo. Reativar uma vaga inicia novo ciclo. As vagas antigas vencidas aguardam a primeira revisão, sem desativação imediata.
 
+O botão «Confirmar vaga» nas notificações executa agora a confirmação, em vez de apenas navegar para a lista. A confirmação na lista de vagas também apresenta progresso e sucesso com a nova data. As funções `confirm_job_renewal` e `confirm_job_renewal_notification` verificam a empresa e o ciclo pendente, bloqueiam a vaga e marcam o aviso como confirmado. Repetir a confirmação do mesmo aviso não prolonga a validade; um aviso antigo não confirma um ciclo novo. Abrir um email continua apenas a navegar: não renova a vaga sem uma ação explícita na plataforma.
+
+Validação da correção: PGlite (incluindo execução como authenticated, repetição e acesso indevido), TypeScript e build com variáveis fictícias. No Supabase, a chamada autenticada e a repetição foram verificadas numa transação revertida, sem conservar mudanças em vagas reais. O lint da página de notificações continua a assinalar problemas anteriores no carregamento inicial e avisos de hooks/imagem; a página de vagas passa. A interação visual autenticada permanece por validar.
+
 O Supabase Cron executa `process_job_lifecycle` a cada hora, aos cinco minutos. A função bloqueia cada vaga e evita avisos duplicados. O servidor impede novas candidaturas após o prazo de resposta, mesmo antes da execução que desativa a vaga.
 
 Novas candidaturas e alterações para aceite/recusada criam notificações na mesma transação. A aceitação de um perfil em matches também cria um evento. Os destinatários são derivados no servidor; os canais respeitam as preferências. A notificação na plataforma é sempre conservada.

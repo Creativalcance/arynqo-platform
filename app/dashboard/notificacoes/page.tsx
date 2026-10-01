@@ -108,6 +108,23 @@ export default function NotificacoesPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdatingRequestId, setIsUpdatingRequestId] = useState("");
+  const [renewingId, setRenewingId] = useState("");
+  const [renewalMessages, setRenewalMessages] = useState<Record<string, string>>({});
+
+  async function confirmRenewal(notificationId: string) {
+    if (renewingId) return;
+    setRenewingId(notificationId);
+    try {
+      const { data, error } = await supabase.rpc("confirm_job_renewal_notification", { notification_id: notificationId });
+      if (error) throw error;
+      setNotifications(current => current.map(item => item.id === notificationId ? { ...item, action_label: "Vaga confirmada", is_read: true } : item));
+      setRenewalMessages(current => ({ ...current, [notificationId]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString("pt-PT")}.` }));
+    } catch {
+      setRenewalMessages(current => ({ ...current, [notificationId]: "Não foi possível confirmar. Verifica a sessão e o estado da vaga na área da empresa e tenta novamente." }));
+    } finally {
+      setRenewingId("");
+    }
+  }
 
   useEffect(() => {
     loadPageData();
@@ -539,7 +556,13 @@ export default function NotificacoesPage() {
                   </div>
 
                   <div className="flex shrink-0 flex-wrap gap-2">
-                    {notification.related_url && (
+                    {notification.related_type === "job_renewal" && ["Confirmar vaga", "Vaga confirmada"].includes(notification.action_label || "") ? (
+                      <button type="button" disabled={!!renewingId || notification.action_label === "Vaga confirmada"}
+                        onClick={() => confirmRenewal(notification.id)}
+                        className="rounded-full bg-[#07111F] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
+                        {renewingId === notification.id ? "A confirmar…" : notification.action_label}
+                      </button>
+                    ) : notification.related_url && (
                       <Link
                         href={notification.related_url}
                         className="rounded-full bg-[#07111F] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1683FF]"
@@ -559,6 +582,7 @@ export default function NotificacoesPage() {
                     )}
                   </div>
                 </div>
+                {renewalMessages[notification.id] && <p role="status" className="mt-4 text-sm">{renewalMessages[notification.id]}</p>}
               </article>
             ))}
 

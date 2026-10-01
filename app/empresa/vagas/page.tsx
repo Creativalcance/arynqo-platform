@@ -29,6 +29,23 @@ export default function EmpresaVagasPage() {
   const [companyId, setCompanyId] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [renewingId, setRenewingId] = useState("");
+  const [renewalMessages, setRenewalMessages] = useState<Record<string, string>>({});
+
+  async function confirmRenewal(job: Job) {
+    if (renewingId) return;
+    setRenewingId(job.id);
+    try {
+      const { data, error } = await supabase.rpc("confirm_job_renewal", { job_id: job.id, expected_expiry: job.expires_at });
+      if (error) throw error;
+      setJobs(current => current.map(item => item.id === job.id ? { ...item, expires_at: data, renewal_deadline: null } : item));
+      setRenewalMessages(current => ({ ...current, [job.id]: `Vaga confirmada. Publicada até ${new Date(data).toLocaleDateString("pt-PT")}.` }));
+    } catch {
+      setRenewalMessages(current => ({ ...current, [job.id]: "Não foi possível confirmar. Atualiza a página para verificar o estado da vaga e tenta novamente." }));
+    } finally {
+      setRenewingId("");
+    }
+  }
 
   useEffect(() => {
     loadCompanyJobs();
@@ -246,7 +263,8 @@ export default function EmpresaVagasPage() {
 
                   <div className="flex flex-wrap justify-end gap-3">
                     <Link href={`/empresa/candidatos?jobId=${job.id}`} className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold">Ver candidaturas</Link>
-                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p>Confirma até {new Date(job.renewal_deadline).toLocaleDateString('pt-PT')} se continuas a recrutar.</p><button className="mt-2 font-semibold underline" onClick={async()=>{const {error}=await supabase.rpc('renew_job_publication',{job_id:job.id});if(error)alert('Não foi possível renovar a vaga.');else await loadCompanyJobs();}}>Sim, renovar por 30 dias</button><button className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}>Não, desativar</button></div>}
+                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p>Confirma até {new Date(job.renewal_deadline).toLocaleDateString('pt-PT')} se continuas a recrutar.</p><button type="button" disabled={!!renewingId} className="mt-2 font-semibold underline disabled:opacity-50" onClick={() => confirmRenewal(job)}>{renewingId === job.id ? "A confirmar…" : "Sim, renovar por 30 dias"}</button><button type="button" disabled={!!renewingId} className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}>Não, desativar</button></div>}
+                    {renewalMessages[job.id] && <p role="status" className="w-full text-sm">{renewalMessages[job.id]}</p>}
                     <Link
                       href={`/empresa/matches?jobId=${job.id}`}
                       className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"

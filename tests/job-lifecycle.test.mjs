@@ -17,6 +17,8 @@ test('Publication renewal, deadlines and transactional application notifications
  insert into company_profiles values('33333333-3333-3333-3333-333333333333','11111111-1111-1111-1111-111111111111');
  insert into student_profiles values('44444444-4444-4444-4444-444444444444','22222222-2222-2222-2222-222222222222');`);
  await db.exec(await readFile('supabase/migrations/20261001101826_job_validity_and_transactional_notifications.sql','utf8'));
+ await db.exec("alter table notifications add column is_read boolean default false;");
+ await db.exec(await readFile('supabase/migrations/20261001103502_renewal_confirmation.sql','utf8'));
  await db.exec("alter table company_profiles add column company_name text default 'Empresa';create table company_candidate_actions(id uuid default gen_random_uuid(),student_id uuid,company_id uuid,job_id uuid,action_type text);");
  const interest=await readFile('supabase/migrations/20261001101945_schedule_job_validity_and_company_interest.sql','utf8');
  await db.exec(interest.slice(interest.indexOf('create function public.company_interest_notification')));
@@ -30,7 +32,14 @@ test('Publication renewal, deadlines and transactional application notifications
  assert.equal((await db.query('select process_job_lifecycle() as result')).rows[0].result.reminded,0);
  await db.exec(`select set_config('request.jwt.claim.sub','22222222-2222-2222-2222-222222222222',false)`);
  await assert.rejects(db.query("select renew_job_publication('55555555-5555-5555-5555-555555555555')"),/not authorized/);
- await db.exec(`select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',false);select renew_job_publication('55555555-5555-5555-5555-555555555555');`);
+ const notice=(await db.query("select id from notifications where event_key like 'job_renewal:%'")).rows[0].id;
+ await assert.rejects(db.query("select confirm_job_renewal_notification($1)",[notice]),/not authorized/);
+ await db.exec(`select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',false);set role authenticated;`);
+ const expiry=(await db.query("select confirm_job_renewal_notification($1) as expiry",[notice])).rows[0].expiry;
+ assert.deepEqual((await db.query("select confirm_job_renewal_notification($1) as expiry",[notice])).rows[0].expiry,expiry);
+ await db.exec('reset role');
+ assert.equal((await db.query("select action_label from notifications where id=$1",[notice])).rows[0].action_label,'Vaga confirmada');
+ await assert.rejects(db.query("select confirm_job_renewal('55555555-5555-5555-5555-555555555555',now()-interval '1 day')"),/no longer pending/);
  assert.equal((await db.query('select renewal_deadline from jobs')).rows[0].renewal_deadline,null);
  await db.exec(`update jobs set expires_at=now()-interval '10 days',renewal_requested_at=now()-interval '8 days',renewal_deadline=now()-interval '1 day';`);
  assert.equal((await db.query('select process_job_lifecycle() as result')).rows[0].result.closed,1);
