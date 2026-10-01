@@ -542,7 +542,7 @@ function getSeniorityScore(student: StudentProfile, job: Job) {
 }
 
 // Versioned deterministic evidence score. It is not a hiring probability.
-export const MATCHING_VERSION = "evidence-v2";
+export const MATCHING_VERSION = "evidence-v3-languages";
 export function calculateMatch(student: StudentProfile, job: Job): MatchResult {
   const declaredSkills = (student.student_skills || []).flatMap(row => Array.isArray(row.skills) ? row.skills.map(skill => skill.name) : row.skills ? [row.skills.name] : []);
   const studentSkills = unique([...normalizeArray(declaredSkills), ...normalizeArray(student.skills_normalized), ...normalizeArray(student.tools_normalized),

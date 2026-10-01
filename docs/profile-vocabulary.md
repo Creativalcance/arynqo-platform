@@ -11,3 +11,5 @@ A revisão por IA recebe apenas título profissional, apresentação, objetivos 
 Validação: `npm run test:profile`, `npm run test:matching`, `npm run test:security`, TypeScript e build. Os testes do catálogo usam uma base isolada PGlite, sem criar tags de teste em produção. Os testes não substituem a validação visual dos formulários com sessões autenticadas.
 
 Melhoria seguinte: importar uma taxonomia profissional curada, como ESCO, com licenciamento e traduções verificados, e acrescentar moderação de novas tags e equivalências revistas. Não gerar milhares de combinações artificiais nem considerar tags semelhantes automaticamente equivalentes.
+
+O método passa a identificar-se como `evidence-v3-languages`. Os resultados já guardados são atualizados quando o perfil ou a vaga são guardados/recalculados; esta alteração não executa uma recalculação global automática. O lint dos componentes e serviços novos passou; o lint completo ainda encontra problemas de hooks anteriores nas páginas de carregamento de perfis.
