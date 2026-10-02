@@ -2,6 +2,8 @@
 import { LText, LElement } from "@/lib/i18n/client";
 import Link from "@/lib/i18n/link";
 import { pageMetadata } from "@/lib/seo";
+import { Suspense } from "react";
+import AcademyHighlights from "@/app/components/arynqo/AcademyHighlights";
 export async function generateMetadata() { return await pageMetadata("Emprego e recrutamento internacional", "Descobre oportunidades de emprego e liga o teu perfil às necessidades das empresas. Conhece o recrutamento com apoio de IA da ARYNQO.", "/"); }
 export default function HomePage() {
   return (
@@ -114,10 +116,20 @@ export default function HomePage() {
       </section>
 
       <section className="border-y border-neutral-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 text-center md:grid-cols-3 lg:px-12">
-          <StatItem number="+12k" label="Candidatos" />
-          <StatItem number="+350" label="Empresas & Universidades" />
-          <StatItem number="+4.5k" label="Candidaturas" />
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:py-24 lg:px-12">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">ARYNQO Academy</p>
+          <h2 className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.04em] text-[#07111F] sm:text-4xl">
+            <LText text="O próximo passo na tua carreira começa aqui." />
+          </h2>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+            <LText text="Conselhos práticos sobre emprego, candidaturas e recrutamento, para candidatos e empresas." />
+          </p>
+          <Suspense fallback={<div className="mt-8 h-60 animate-pulse rounded-3xl bg-slate-100 motion-reduce:animate-none" aria-hidden="true" />}>
+            <AcademyHighlights />
+          </Suspense>
+          <Link href="/academia" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-[#07111F] px-8 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+            <LText text="Explorar a Academy" />
+          </Link>
         </div>
       </section>
 
@@ -167,18 +179,6 @@ function DarkFeatureItem({ text }: { text: string }) {
       <div className="h-3 w-3 rounded-full bg-[#4BB3FD]" />
 
       <p className="font-medium text-blue-50"><LText text={text} /></p>
-    </div>
-  );
-}
-
-function StatItem({ number, label }: { number: string; label: string }) {
-  return (
-    <div>
-      <h3 className="text-6xl font-black tracking-[-0.05em] text-[#07111F]">
-        <LText text={number} />
-      </h3>
-
-      <p className="mt-4 text-lg text-neutral-600"><LText text={label} /></p>
     </div>
   );
 }

@@ -129,23 +129,23 @@ export default function AcademiaPostPage({
             <LText text={"Próximo passo"} /></p>
 
           <h2 className="mt-4 text-3xl font-black tracking-[-0.05em]">
-            <LText text={"Aplica este conhecimento no teu percurso."} /></h2>
+            <LText text={post.audience === "Empresas" ? "Transforma conhecimento em melhores contratações." : "Aplica este conhecimento no teu percurso."} /></h2>
 
           <p className="mt-4 text-sm leading-6 text-white/70">
-            <LText text={"Atualiza o teu perfil, melhora a tua candidatura ou explora novas oportunidades alinhadas com os teus objetivos."} /></p>
+            <LText text={post.audience === "Empresas" ? "Publica uma vaga e encontra talento para a tua equipa." : "Atualiza o teu perfil, melhora a tua candidatura ou explora novas oportunidades alinhadas com os teus objetivos."} /></p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href="/dashboard"
+            {post.audience !== "Empresas" && <Link
+              href="/vagas"
               className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#07111F] transition hover:bg-[#1683FF] hover:text-white"
             >
-              <LText text={"Ir para dashboard"} /></Link>
+              <LText text={"Explorar oportunidades"} /></Link>}
 
-            <Link
-              href="/vagas"
+            {post.audience !== "Candidatos" && <Link
+              href="/empresa/vagas/nova"
               className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              <LText text={"Explorar vagas"} /></Link>
+              <LText text={"Publicar uma vaga"} /></Link>}
           </div>
         </div>
       </section>
