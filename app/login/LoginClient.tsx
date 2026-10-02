@@ -1,5 +1,5 @@
 "use client";
-import { browserLocalizedPath, localizedPath, normalizeLocale, localeCookie } from "@/lib/i18n/config";
+import { localizedPath, normalizeLocale, localeCookie } from "@/lib/i18n/config";
 import { LText } from "@/lib/i18n/client";
 
 
@@ -21,9 +21,11 @@ export default function LoginPage({initialNext}:{initialNext:string;initialCompa
     setBusy(true); setMessage("");
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error?.code === 'user_banned') { setMessage("Conta suspensa. Contacta o suporte da ARYNQO."); return; }
       if (error || !data.user) { setMessage("Não foi possível entrar. Confirma o email e a palavra-passe. Se ainda não confirmaste a conta, pede um novo email de confirmação."); return; }
       if (!data.user.email_confirmed_at) { await supabase.auth.signOut(); setMessage("Confirma o teu email antes de iniciares sessão."); return; }
-      const { data: profile } = await supabase.from("profiles").select("locale").eq("id", data.user.id).single();
+      const { data: profile, error: profileError } = await supabase.from("profiles").select("locale").eq("id", data.user.id).single();
+      if (profileError || !profile) { await supabase.auth.signOut(); setMessage("Conta indisponível. Contacta o suporte da ARYNQO."); return; }
       const preferred = normalizeLocale(profile?.locale);
       document.cookie = `${localeCookie}=${preferred}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`;
       window.location.href = localizedPath(next, preferred);

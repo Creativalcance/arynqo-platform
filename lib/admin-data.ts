@@ -56,6 +56,12 @@ export async function readDataset(db: SupabaseClient, dataset: AdminDataset, f: 
         const { data, error } = await db.rpc(dataset === 'contas' ? 'admin_accounts' : 'admin_files', dataset === 'contas' ? { p_search: f.search, p_role: f.role, p_confirmed: f.confirmed, p_from: f.from, p_to: f.to, p_offset: offset, p_limit: limit, p_id: f.user } : { p_offset: offset, p_limit: limit, p_user: f.user });
         if (error || !data)
             throw new ApiError(503, 'Não foi possível carregar os registos.');
+        if (dataset === 'contas' && data.rows.length) {
+            const { data: controls, error: controlError } = await db.from('account_controls').select('user_id,status').in('user_id', data.rows.map((row: AdminRow) => row.id));
+            if (controlError) throw new ApiError(503, 'Não foi possível verificar o estado das contas.');
+            const states = new Map((controls || []).map(c => [c.user_id, c.status]));
+            data.rows = data.rows.map((row: AdminRow) => ({ ...row, account_status: states.get(row.id) || (row.banned_until && Date.parse(String(row.banned_until)) > Date.now() ? 'suspended' : 'active') }));
+        }
         return data;
     }
     const spec = adminCatalog[dataset];
@@ -67,7 +73,7 @@ export async function readDataset(db: SupabaseClient, dataset: AdminDataset, f: 
             query = query.eq('id', f.user);
         else if (['candidatos', 'empresas', 'notificacoes', 'preferencias', 'dispositivos'].includes(dataset))
             query = query.eq('user_id', f.user);
-        else if (dataset === 'historico')
+        else if ((dataset === 'historico' || dataset === 'operacoes_contas'))
             query = query.or(`actor_id.eq.${f.user},target_id.eq.${f.user}`);
         else {
             const [students,companies] = await Promise.all([relatedIds(db, 'student_profiles', 'user_id', f.user),relatedIds(db, 'company_profiles', 'user_id', f.user)]);

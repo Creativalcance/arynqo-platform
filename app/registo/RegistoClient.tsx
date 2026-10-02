@@ -5,6 +5,7 @@ import { LText, LocaleSelect, useI18n } from "@/lib/i18n/client";
 
 import { useState } from "react";
 import Link from "@/lib/i18n/link";
+import { duplicateRegistration } from "@/lib/registration-result";
 import { supabase } from "@/lib/supabase";
 
 type AccountType = "talent" | "company";
@@ -22,17 +23,21 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
   const [next] = useState(initialNext);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [existing, setExisting] = useState(false);
   const [created, setCreated] = useState(false);
   async function handleRegister(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if(busy) return;
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(""); setExisting(false);
     try {
 
+    const check = await fetch('/api/auth/registration-status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email.trim() }) });
+    if (!check.ok) { setMessage(check.status === 429 ? "Demasiadas tentativas. Aguarda alguns minutos e tenta novamente." : "Não foi possível verificar o registo. Tenta novamente."); return; }
+    if ((await check.json()).exists) { setExisting(true); setMessage("Este email já está registado. Inicia sessão ou recupera a palavra-passe."); return; }
     const role = accountType === "company" ? "company" : "student";
 
-    const { error } = await supabase.auth.signUp({
-  email,
+    const { data, error } = await supabase.auth.signUp({
+  email: email.trim(),
   password,
   options: {
     emailRedirectTo: `${window.location.origin}${browserLocalizedPath("/auth/confirm")}?next=${encodeURIComponent(next)}`,
@@ -45,6 +50,7 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
   },
 });
 
+    if (duplicateRegistration(data, error)) { setExisting(true); setMessage("Este email já está registado. Inicia sessão ou recupera a palavra-passe."); return; }
     if (error) { setMessage("Não foi possível criar a conta. Confirma os dados ou tenta recuperar o acesso se já tens conta."); return; }
     setCreated(true);
     setMessage("Verifica o teu email para confirmar a conta. Consulta também a pasta de spam.");
@@ -65,6 +71,7 @@ export default function RegistoPage({initialNext, initialCompany = false}:{initi
           <LText text={"Cria uma conta como talento ou empresa."} /></p>
 
         {message && <p role="status" className="mt-5 text-sm text-slate-700"><LText text={message} /></p>}
+        {existing && <div className="mt-3 flex flex-wrap gap-4"><Link href="/recuperar-acesso" className="font-semibold text-blue-700 underline"><LText text="Recuperar palavra-passe" /></Link><Link href="/login" className="text-blue-700 underline"><LText text="Entrar" /></Link></div>}
         <LocaleSelect className="mt-6" />
         {!created && <form onSubmit={handleRegister} className="mt-8 space-y-5">
           <div>
