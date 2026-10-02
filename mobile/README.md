@@ -55,10 +55,12 @@ Na raiz, `node tests/recruitment-actions.test.mjs` verifica as regras de candida
 ## Próxima etapa: teste num dispositivo
 
 1. Preparar um projeto Supabase de testes com as tabelas/políticas da plataforma e contas fictícias de candidato e empresa.
-2. O Project ID fornecido para a ARYNQO (`927a2169-1c28-4865-b575-f81dcb12ae04`) já está registado em `app.json`. Autenticar com `npx eas-cli@latest login` e concluir a associação com `npx eas-cli@latest init --id 927a2169-1c28-4865-b575-f81dcb12ae04`. Confirmar a conta e o slug devolvidos pelo Expo; o nome apresentado no painel não confirma o slug. Verificar com `npx eas-cli@latest project:info`. Confirmar também os identificadores propostos `com.creativalcance.arynqo` antes de reservar aplicações nas lojas.
+2. A configuração em `app.json` identifica o projeto Expo `@creativalcanceapp/arynqo`, com o Project ID `927a2169-1c28-4865-b575-f81dcb12ae04`. Autenticar com `npx eas-cli@latest login` e verificar o acesso com `npx eas-cli@latest project:info`. O projeto está em https://expo.dev/accounts/creativalcanceapp/projects/arynqo. Confirmar também os identificadores propostos `com.creativalcance.arynqo` antes de reservar aplicações nas lojas.
 3. Configurar no ambiente EAS `preview` as variáveis públicas do projeto de testes.
 4. Gerar o APK interno: `npx eas-cli@latest build --platform android --profile preview`.
 5. Testar autenticação, persistência de sessão, saída, filtros e candidatura num Android físico. Para distribuição interna num iPhone, preparar a assinatura Apple e registar o dispositivo; o perfil `simulator` destina-se ao simulador iOS.
+
+O repositório `Creativalcance/arynqo-platform` já foi ligado ao Expo pelo responsável do projeto, com a pasta base `mobile`. O código desta etapa está na branch `feat/mobile-foundation`. Depois da primeira compilação Android bem-sucedida pelo EAS CLI e da configuração das credenciais de assinatura, as compilações pelo painel GitHub do Expo devem usar essa branch, a plataforma Android e o perfil `preview`. Este perfil indica explicitamente a imagem de compilação, como exigido pela integração GitHub.
 
 Antes da publicação pública, completar os percursos nativos em falta, a eliminação de conta, a revisão de privacidade das lojas e os testes em dispositivos Android/iOS.
 

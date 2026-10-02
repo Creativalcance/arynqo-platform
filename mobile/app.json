@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "ARYNQO",
-    "slug": "arynqo-mobile",
+    "slug": "arynqo",
+    "owner": "creativalcanceapp",
     "version": "0.1.0",
     "scheme": "arynqo",
     "extra": {
