@@ -55,7 +55,7 @@ Na raiz, `node tests/recruitment-actions.test.mjs` verifica as regras de candida
 ## Próxima etapa: teste num dispositivo
 
 1. Preparar um projeto Supabase de testes com as tabelas/políticas da plataforma e contas fictícias de candidato e empresa.
-2. Associar esta pasta à conta Expo da CreativAlcance, com `npx eas-cli@latest login` e `npx eas-cli@latest init`. Confirmar os identificadores propostos `com.creativalcance.arynqo` antes de reservar aplicações nas lojas.
+2. O Project ID fornecido para a ARYNQO (`927a2169-1c28-4865-b575-f81dcb12ae04`) já está registado em `app.json`. Autenticar com `npx eas-cli@latest login` e concluir a associação com `npx eas-cli@latest init --id 927a2169-1c28-4865-b575-f81dcb12ae04`. Confirmar a conta e o slug devolvidos pelo Expo; o nome apresentado no painel não confirma o slug. Verificar com `npx eas-cli@latest project:info`. Confirmar também os identificadores propostos `com.creativalcance.arynqo` antes de reservar aplicações nas lojas.
 3. Configurar no ambiente EAS `preview` as variáveis públicas do projeto de testes.
 4. Gerar o APK interno: `npx eas-cli@latest build --platform android --profile preview`.
 5. Testar autenticação, persistência de sessão, saída, filtros e candidatura num Android físico. Para distribuição interna num iPhone, preparar a assinatura Apple e registar o dispositivo; o perfil `simulator` destina-se ao simulador iOS.

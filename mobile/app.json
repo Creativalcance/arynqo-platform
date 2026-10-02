@@ -4,6 +4,11 @@
     "slug": "arynqo-mobile",
     "version": "0.1.0",
     "scheme": "arynqo",
+    "extra": {
+      "eas": {
+        "projectId": "927a2169-1c28-4865-b575-f81dcb12ae04"
+      }
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
