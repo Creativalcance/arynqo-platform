@@ -1,5 +1,13 @@
 {
+  "cli": {
+    "appVersionSource": "local"
+  },
   "build": {
+    "internal-test": {
+      "extends": "preview",
+      "env": { "APP_VARIANT": "internal-test" },
+      "android": { "withoutCredentials": true }
+    },
     "preview": {
       "distribution": "internal",
       "environment": "preview",

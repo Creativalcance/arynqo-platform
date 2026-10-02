@@ -54,6 +54,14 @@ Na raiz, `node tests/recruitment-actions.test.mjs` verifica as regras de candida
 
 ## Próxima etapa: teste num dispositivo
 
+### APK inicial de testes
+
+O perfil Android `internal-test` gera `ARYNQO Testes`, com o identificador separado `com.creativalcance.arynqo.preview`. Usa o mecanismo `withoutCredentials` do EAS e a assinatura de desenvolvimento fornecida pelo template nativo Expo. Não usa nem substitui a chave de publicação da aplicação. Serve exclusivamente para instalação e testes internos; não deve ser submetido ao Google Play. O perfil `production` continua a exigir as credenciais de publicação habituais.
+
+Para gerar este APK pelo painel Expo, selecionar **Build from GitHub**, branch `feat/mobile-foundation`, pasta `mobile`, plataforma **Android**, perfil **internal-test** e ambiente **Preview**. Manter a submissão às lojas desativada. As variáveis `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `EXPO_PUBLIC_WEBSITE_URL` têm de estar configuradas nesse ambiente. O nome do ambiente EAS não cria uma base de dados separada: se forem usadas as variáveis da plataforma, o login e as candidaturas serão reais.
+
+### Versões com assinatura de publicação
+
 1. Preparar um projeto Supabase de testes com as tabelas/políticas da plataforma e contas fictícias de candidato e empresa.
 2. A configuração em `app.json` identifica o projeto Expo `@creativalcanceapp/arynqo`, com o Project ID `927a2169-1c28-4865-b575-f81dcb12ae04`. Autenticar com `npx eas-cli@latest login` e verificar o acesso com `npx eas-cli@latest project:info`. O projeto está em https://expo.dev/accounts/creativalcanceapp/projects/arynqo. Confirmar também os identificadores propostos `com.creativalcance.arynqo` antes de reservar aplicações nas lojas.
 3. Configurar no ambiente EAS `preview` as variáveis públicas do projeto de testes.
