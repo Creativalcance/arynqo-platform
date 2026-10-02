@@ -4,6 +4,8 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 import Link from "@/lib/i18n/link";
 import { useMemo, useState } from "react";
+import { profileOptions } from "@/lib/profile-options";
+import { jobLocations, matchesJobLocation } from "@/lib/job-location-filter";
 
 export type Job = {
   id: string;
@@ -11,6 +13,7 @@ export type Job = {
   description: string | null;
   area: string | null;
   location: string | null;
+  country_code: string | null;
   work_mode: string | null;
   work_model: string | null;
   contract_type: string | null;
@@ -32,6 +35,10 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
   const [area, setArea] = useState("");
   const [contractType, setContractType] = useState("");
   const [workModel, setWorkModel] = useState("");
+  const [country, setCountry] = useState("");
+  const [location, setLocation] = useState("");
+  const countries = useMemo(() => profileOptions(displayLocale).countries, [displayLocale]);
+  const locations = useMemo(() => jobLocations(jobs, country, displayLocale), [jobs, country, displayLocale]);
   const [isLoading] = useState(false);
 
 
@@ -61,16 +68,19 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
         (!search || text.includes(search.toLowerCase())) &&
         (!area || job.area === area) &&
         (!contractType || job.contract_type === contractType) &&
+        matchesJobLocation(job, country, location) &&
         (!workModel || model === workModel)
       );
     });
-  }, [jobs, search, area, contractType, workModel]);
+  }, [jobs, search, area, contractType, workModel, country, location]);
 
   function clearFilters() {
     setSearch("");
     setArea("");
     setContractType("");
     setWorkModel("");
+    setCountry("");
+    setLocation("");
   }
 
   return (
@@ -87,7 +97,7 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
             <LText text={"Explora vagas alinhadas com as tuas competências, experiência e objetivos profissionais."} /></p>
 
           <div className="mt-10 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm">
-            <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+            <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
               <LElement as="input"
                 aria-label="Pesquisar vagas"
                 value={search}
@@ -95,6 +105,25 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
                 placeholder="Pesquisar vaga, área ou localização..."
                 className="rounded-2xl border border-[#DDE3EA] px-4 py-4 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
               />
+
+              <label className="block min-w-0 text-sm font-semibold text-slate-600">
+                <LText text="País" />
+                <LElement as="select" aria-label="País" value={country}
+                  onChange={event => { setCountry(event.target.value); setLocation(""); }}
+                  className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm font-normal text-[#07111F] focus:border-[#1683FF] focus:outline-2 focus:outline-blue-600">
+                  <option value=""><LText text="Todos" /></option>
+                  {countries.map(item => <option key={item.code} value={item.code}>{item.display}</option>)}
+                </LElement>
+              </label>
+              <label className="block min-w-0 text-sm font-semibold text-slate-600">
+                <LText text="Localização" />
+                <LElement as="select" aria-label="Localização" value={location}
+                  onChange={event => setLocation(event.target.value)}
+                  className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm font-normal text-[#07111F] focus:border-[#1683FF] focus:outline-2 focus:outline-blue-600">
+                  <option value=""><LText text="Todas" /></option>
+                  {locations.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </LElement>
+              </label>
 
               <LElement as="select"
                 aria-label="Área profissional"
