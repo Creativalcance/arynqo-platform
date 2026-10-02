@@ -53,14 +53,15 @@ export function validateArticle(
     !/^\- /m.test(draft.content)
   )
     throw new Error("missing_structure");
-  // External URLs, HTML, invented numerical claims and quotation marks require editorial review.
   // References are added exclusively from sources actually fetched by the server.
-  if (
-    /<[^>]+>|https?:\/\/|\[[^\]]+\]\(|\d\s*%|\b\d{4}\b|[“”«»]/u.test(
-      draft.content,
-    )
-  )
-    throw new Error("unsupported_claim_or_markup");
+  // Unsafe markup/links block generation; factual claims and quotes instead require
+  // editorial review so the original remains available for inspection and correction.
+  if (/<[^>]+>/u.test(draft.content)) throw new Error("unsupported_html");
+  if (/https?:\/\/|\[[^\]]+\]\(/u.test(draft.content))
+    throw new Error("unsupported_link");
+  const claimsNeedReview = /\d\s*%|\b\d{4}\b|[“”«»]/u.test(
+    draft.title + " " + draft.content,
+  );
   const tokens = draft.content.toLocaleLowerCase().match(/\p{L}+/gu) || [];
   const markers: Record<Locale, string[]> = {
     pt: ["não", "uma", "teu", "para", "competências", "emprego", "trabalho"],
@@ -84,7 +85,7 @@ export function validateArticle(
     /\b(legisla[çc]|lei laboral|direito laboral|legal advice|employment law|labour law|labor law|droit du travail|arbeitsrecht|derecho laboral|diritto del lavoro|discrimina|medical|médic|medicin|garanti|guarantee|garantiz)/iu.test(
       draft.title + " " + draft.content,
     );
-  draft.review_required = v.review_required !== false || risky;
+  draft.review_required = v.review_required !== false || risky || claimsNeedReview;
   return draft;
 }
 export function articleSlug(title: string) {

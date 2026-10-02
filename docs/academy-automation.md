@@ -12,7 +12,7 @@ A automação começa **pausada**. O calendário inicial contém 24 temas que n�
 2. Reservar seis pedidos no limite mensal, também em tentativas que falhem. Não reembolsar reservas após timeout, porque não é possível saber se o fornecedor processou o pedido.
 3. Ler até duas fontes oficiais, com limites de tamanho, tempo e hosts. Redirecionamentos não são seguidos.
 4. Gerar o original português e traduzir para os restantes idiomas, com concorrência máxima de dois pedidos e sem retries implícitos do SDK. O fornecedor recebe um JSON Schema estrito; o servidor calcula o tempo de leitura a partir do texto, sem depender de um campo gerado pela IA.
-5. Validar campos, estrutura, extensão, indícios de idioma errado, repetição e conteúdo que exige revisão. Guardar cada versão numa transação; contabilizar tokens também em respostas rejeitadas.
+5. Validar campos, estrutura, extensão, indícios de idioma errado, repetição e conteúdo que exige revisão. HTML e links externos inesperados bloqueiam a geração. Citações, datas e percentagens ficam em rascunho para revisão editorial, sem publicação automática. Guardar cada versão numa transação; contabilizar tokens também em respostas rejeitadas.
 6. Publicar numa transação apenas com seis versões completas, automação e publicação automática ativas, e sem flags de revisão. Artigos sensíveis ou de pré-visualização ficam para revisão humana.
 
 As verificações estruturais, as heurísticas de idioma e a instrução ao modelo **não certificam a exatidão dos factos nem a qualidade de tradução**. Não há pesquisa automática de notícias/tendências, certificação jurídica, imagem gerada ou atribuição a um autor humano fictício. Fontes e datas de consulta ficam visíveis. Não se enviam dados de candidatos ou empresas à IA neste fluxo.

@@ -25,7 +25,6 @@ test("complete structured draft validates but malformed/unsafe/incomplete output
     { ...draft, locale: "en" },
     { ...draft, content: "short" },
     { ...draft, content: draft.content + " <script>alert(1)</script>" },
-    { ...draft, content: draft.content + " 98% garantido" },
     { ...draft, content: draft.content + " https://fake.example" },
   ])
     assert.throws(() => validateArticle(bad, "pt"));
@@ -39,6 +38,13 @@ test("complete structured draft validates but malformed/unsafe/incomplete output
       .review_required,
     true,
   );
+  for (const content of [" 98%", " Em 2026", " «Exemplo de experiência»"]) {
+    assert.equal(
+      validateArticle({ ...draft, content: draft.content + content }, "pt").review_required,
+      true,
+      "claims and quotations must be inspectable drafts, never auto-published",
+    );
+  }
 });
 test("sources restricted to exact approved HTTPS hosts and markup removed", () => {
   assert.equal(
