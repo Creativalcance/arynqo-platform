@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:academy": "node --import tsx tests/academy-quality.test.ts && node --import tsx tests/academy-api.test.ts && node tests/academy-database.test.mjs",
+    "test:academy": "node --import tsx tests/academy-quality.test.ts && node --import tsx tests/academy-generation.test.ts && node --import tsx tests/academy-api.test.ts && node tests/academy-database.test.mjs",
     "test:notifications": "node --import tsx tests/notification-read.test.ts",
     "test:matching": "node --import tsx tests/matching-engine.test.ts",
     "evaluate:matching": "node --import tsx scripts/evaluate-matching.ts",

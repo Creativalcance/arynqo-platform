@@ -11,7 +11,7 @@ A automação começa **pausada**. O calendário inicial contém 24 temas que n�
 1. Reivindicar uma execução numa transação, com lease de dez minutos e exclusão de concorrência.
 2. Reservar seis pedidos no limite mensal, também em tentativas que falhem. Não reembolsar reservas após timeout, porque não é possível saber se o fornecedor processou o pedido.
 3. Ler até duas fontes oficiais, com limites de tamanho, tempo e hosts. Redirecionamentos não são seguidos.
-4. Gerar o original português e traduzir para os restantes idiomas, com concorrência máxima de dois pedidos e sem retries implícitos do SDK.
+4. Gerar o original português e traduzir para os restantes idiomas, com concorrência máxima de dois pedidos e sem retries implícitos do SDK. O fornecedor recebe um JSON Schema estrito; o servidor calcula o tempo de leitura a partir do texto, sem depender de um campo gerado pela IA.
 5. Validar campos, estrutura, extensão, indícios de idioma errado, repetição e conteúdo que exige revisão. Guardar cada versão numa transação; contabilizar tokens também em respostas rejeitadas.
 6. Publicar numa transação apenas com seis versões completas, automação e publicação automática ativas, e sem flags de revisão. Artigos sensíveis ou de pré-visualização ficam para revisão humana.
 
@@ -58,4 +58,6 @@ npm run build
 
 Os testes de base de dados usam PGlite isolado: permissões, rascunhos privados, claims exclusivos, publicação incompleta bloqueada, limite mensal, reutilização após falha parcial, revisão e publicação atómica. Os testes de qualidade usam fixtures, sem consumir IA. Um build com credenciais placeholder não valida a ligação ao fornecedor.
 
-A validação real da IA e da execução agendada permanece pendente até haver uma sessão admin e configuração de produção disponíveis. Não confundir um teste de geração manual com uma execução confirmada do cron.
+Para validar a IA em produção, confirmar primeiro a configuração e gerar um artigo com publicação automática desligada. Pode usar-se a pré-visualização no admin ou o botão Run do cron da Academy no Vercel, com o calendário ativo. Rever as seis versões e os registos antes de ativar a publicação automática. Distinguir uma invocação manual pelo Vercel de uma execução disparada à hora agendada.
+
+Os testes de geração interceptam todas as chamadas externas: verificam a gravação das seis versões sem um tempo de leitura fornecido pelo modelo e a rejeição de conteúdo inválido antes de qualquer publicação. O teste real de 2 de outubro de 2026 revelou `missing_reading_time` na resposta livre do fornecedor; o schema estrito e o cálculo no servidor corrigem essa dependência.
