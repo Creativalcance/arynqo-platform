@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
 import { academyCopy, type AcademyCopyKey } from "@/lib/academy/admin-copy";
 import { type ArticleDraft } from "@/lib/academy/quality";
+import TopicCalendar, { type CalendarTopic } from "./TopicCalendar";
 type Version = ArticleDraft & { quality_passed: boolean; updated_at: string };
 type Run = {
   id: string;
@@ -32,12 +33,9 @@ type Data = {
     monthly_request_limit: number;
   };
   runs: Run[];
-  topics: {
-    id: string;
-    title: string;
+  topics: (CalendarTopic & {
     source_urls: string[];
-    academy_generation_runs: { id: string }[];
-  }[];
+  })[];
   usage: { reserved_requests: number } | null;
   ready: { cron: boolean; provider: boolean };
 };
@@ -246,13 +244,7 @@ export default function AutomationPanel({
         <summary className="cursor-pointer font-semibold">
           {c("calendar")}
         </summary>
-        <ol className="my-4 max-h-64 list-decimal space-y-2 overflow-y-auto pl-6 text-sm">
-          {data.topics
-            .filter((t) => !t.academy_generation_runs.length)
-            .map((t) => (
-              <li key={t.id}>{t.title}</li>
-            ))}
-        </ol>
+        <TopicCalendar topics={data.topics} />
         <div className="grid gap-3 md:grid-cols-2">
           <label>
             {c("titleField")}
