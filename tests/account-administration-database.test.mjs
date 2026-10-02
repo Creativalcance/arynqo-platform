@@ -30,6 +30,13 @@ test('account administration: RLS, RPC guard, authority, retries, reactivation a
  insert into public.jobs values('${company}','${company}',true);
  insert into storage.objects values('${candidate}');`);
  await db.exec(await readFile(new URL('../supabase/migrations/20261002233000_account_administration.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/20261003025000_fix_public_account_guard.sql',import.meta.url),'utf8'));
+ await db.exec('set role anon;');
+ await db.query('select public.check_account_request()');
+ await assert.rejects(db.query('select public.account_session_active()'),/permission denied/);
+ await db.exec('reset role;set role service_role;');
+ await db.query('select public.check_account_request()');
+ await db.exec('reset role;');
  await db.exec(`set role authenticated;set request.test_user='${candidate}';`);
  assert.equal((await db.query('select * from public.profiles')).rows.length,1);
  await assert.rejects(db.query(`select public.begin_account_operation('${candidate}','${company}','suspend','Testing','company@example.invalid')`),/permission denied/);
