@@ -91,8 +91,10 @@ async function localize(
           return prefix + t(line.slice(prefix.length).trimEnd());
         })
         .join("\n"),
-      seo_title: t(row.seo_title || row.title),
-      seo_description: t(row.seo_description || row.excerpt),
+      // Legacy SEO fields have no translations and still contain an obsolete brand.
+      // Preserve the translated titles/excerpts until real per-locale metadata exists.
+      seo_title: t(row.title),
+      seo_description: t(row.excerpt),
       available_locales: available,
       content_locale: locale,
     };
