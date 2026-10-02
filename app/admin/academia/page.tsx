@@ -1,9 +1,11 @@
 "use client";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
-import { LText, LElement } from "@/lib/i18n/client";
+import { academyCopy } from "@/lib/academy/admin-copy";
+import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 
+import AutomationPanel from "./components/AutomationPanel";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import Link from "@/lib/i18n/link";
@@ -13,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 type AcademyPostStatus = "draft" | "published" | "archived";
 
 type AcademyPost = {
+  multilingual: boolean;
   id: string;
   title: string;
   slug: string;
@@ -49,6 +52,7 @@ const audiences: Array<"Candidatos" | "Empresas" | "Todos"> = [
 ];
 
 export default function AdminAcademiaPage() {
+  const {locale}=useI18n();
   const [posts, setPosts] = useState<AcademyPost[]>([]);
   const [selectedPostId, setSelectedPostId] = useState("");
   const [topic, setTopic] = useState("");
@@ -124,6 +128,7 @@ export default function AdminAcademiaPage() {
         featured,
         status,
         source_type,
+        multilingual,
         trend_topic,
         seo_title,
         seo_description,
@@ -346,6 +351,7 @@ export default function AdminAcademiaPage() {
   return (
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
       <div className="mx-auto max-w-7xl">
+        <AutomationPanel onChanged={loadPosts} />
         <section className="mb-8 overflow-hidden rounded-[40px] border border-white/70 bg-[#07111F] shadow-[0_30px_100px_rgba(7,17,31,0.18)]">
           <div className="relative px-8 py-10 md:px-12 md:py-14">
             <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-[#1683FF]/25 blur-3xl" />
@@ -507,7 +513,9 @@ export default function AdminAcademiaPage() {
           </aside>
 
           <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
-            {selectedPost ? (
+            {selectedPost?.multilingual ? (
+              <section className="rounded-3xl border bg-white p-6"><p className="text-sm leading-6">{academyCopy(locale,"originalNotice")}</p><a href="#academy-automation" className="mt-4 inline-block text-blue-700 underline">{academyCopy(locale,"edit")}</a><div className="mt-4 flex gap-3"><button className="rounded-full border px-5 py-3" disabled={isSaving} onClick={()=>quickUpdateStatus("archived")}><LText text="Arquivar" /></button>{selectedPost.status==="archived"&&<button className="rounded-full border px-5 py-3" disabled={isSaving} onClick={()=>quickUpdateStatus("published")}>{academyCopy(locale,"publish")}</button>}</div></section>
+            ) : selectedPost ? (
               <>
                 <div className="mb-8 flex flex-wrap items-start justify-between gap-5">
                   <div>

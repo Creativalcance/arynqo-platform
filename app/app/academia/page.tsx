@@ -6,7 +6,7 @@ import { LText, LElement } from "@/lib/i18n/client";
 import Link from "@/lib/i18n/link";
 import { useEffect, useMemo, useState } from "react";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
-import { supabase } from "@/lib/supabase";
+
 
 type AcademyPost = {
   id: string;
@@ -21,6 +21,8 @@ type AcademyPost = {
 };
 
 type RawAcademyPost = Partial<AcademyPost> & {
+  status?: string;
+  published_at?: string | null;
   published?: boolean | null;
   summary?: string | null;
   ai_summary?: string | null;
@@ -37,12 +39,12 @@ function normalizePost(post: RawAcademyPost): AcademyPost {
     category: post.category || null,
     cover_image_url: post.cover_image_url || post.image_url || null,
     is_published:
-      typeof post.is_published === "boolean"
+      post.status ? post.status === "published" : typeof post.is_published === "boolean"
         ? post.is_published
         : typeof post.published === "boolean"
           ? post.published
           : true,
-    created_at: post.created_at || null,
+    created_at: post.published_at || post.created_at || null,
   };
 }
 
@@ -73,11 +75,10 @@ export default function AppAcademiaPage() {
     setIsLoading(true);
     setStatusMessage("");
 
-    const { data, error } = await supabase
-      .from("academy_posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(30);
+    const response = await fetch(`/api/academy/posts?locale=${browserLocale()}`).catch(() => null);
+    const payload = response ? await response.json().catch(() => ({})) : {};
+    const data = payload.posts;
+    const error = !response?.ok;
 
     if (error) {
       console.error(error);

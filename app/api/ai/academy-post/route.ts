@@ -223,6 +223,7 @@ Regras:
         reading_time: post.reading_time,
         featured: false,
         status: "draft",
+        content_locale: actor.locale || "pt",
         source_type: body.generateFromTrend ? "trend_ai" : "ai",
         trend_topic: post.trend_topic,
         seo_title: post.seo_title,

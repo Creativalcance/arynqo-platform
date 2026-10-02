@@ -1,5 +1,6 @@
 "use client";
-import { LText } from "@/lib/i18n/client";
+import { academyCopy } from "@/lib/academy/admin-copy";
+import { LText, useI18n } from "@/lib/i18n/client";
 
 
 import Link from "@/lib/i18n/link";
@@ -22,7 +23,8 @@ export type AcademyPost = {
 
 const baseCategories = ["Todos"];
 
-export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}) {
+export default function AcademiaPage({initialPosts,page=1,hasNext=false}:{initialPosts:AcademyPost[];page?:number;hasNext?:boolean}) {
+  const {locale}=useI18n();
   const [posts] = useState<AcademyPost[]>(initialPosts);
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [role, setRole] = useState<UserRole>(null);
@@ -191,6 +193,7 @@ export default function AcademiaPage({initialPosts}:{initialPosts:AcademyPost[]}
               <LText text={"Novos conteúdos serão publicados regularmente na Arynqo Academy."} /></p>
           </div>
         )}
+        {(page>1||hasNext)&&<nav aria-label="Academy" className="mt-8 flex flex-wrap gap-4">{page>1&&<Link href={`/academia?page=${page-1}`} className="rounded-full border px-6 py-3">{academyCopy(locale,"previous")}</Link>}{hasNext&&<Link href={`/academia?page=${page+1}`} className="rounded-full border px-6 py-3">{academyCopy(locale,"nextPage")}</Link>}</nav>}
       </section>
 
       <section className="mx-auto max-w-7xl px-6 pb-24 lg:px-12">

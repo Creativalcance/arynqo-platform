@@ -1,4 +1,5 @@
 "use client";
+import AcademyContent from "@/app/components/arynqo/AcademyContent";
 import { LText, useI18n } from "@/lib/i18n/client";
 
 
@@ -15,6 +16,8 @@ export type AcademyPost = {
   audience: "Candidatos" | "Empresas" | "Todos";
   reading_time: string;
   published_at: string | null;
+  author_name?: string;
+  editorial_sources?: {url:string;checked_at:string}[];
 };
 
 export default function AcademiaPostPage({
@@ -114,7 +117,9 @@ export default function AcademiaPostPage({
 
       <article className="mx-auto max-w-4xl px-6 py-16 lg:px-12">
         <div className="rounded-[36px] border border-[#DDE3EA] bg-white p-7 shadow-[0_24px_80px_rgba(7,17,31,0.05)] md:p-10">
-          <ArticleContent content={post.content} />
+          <AcademyContent content={post.content} />
+          <p className="mt-8 text-sm text-slate-500">{post.author_name || "ARYNQO Editorial"}</p>
+          {!!post.editorial_sources?.length && <ul className="mt-4 list-disc space-y-2 pl-6 text-sm">{post.editorial_sources.map(source => <li key={source.url}><a className="break-all text-blue-700 underline" href={source.url} target="_blank" rel="noopener noreferrer">{source.url}</a></li>)}</ul>}
         </div>
       </article>
 
@@ -145,63 +150,5 @@ export default function AcademiaPostPage({
         </div>
       </section>
     </main>
-  );
-}
-
-function ArticleContent({ content }: { content: string }) {
-  const lines = content.split("\n");
-
-  return (
-    <div className="space-y-5">
-      {lines.map((line, index) => {
-        const trimmedLine = line.trim();
-
-        if (!trimmedLine) {
-          return null;
-        }
-
-        if (trimmedLine.startsWith("## ")) {
-          return (
-            <h2
-              key={`${trimmedLine}-${index}`}
-              className="pt-6 text-3xl font-black tracking-[-0.05em] text-[#07111F]"
-            >
-              <LText text={trimmedLine.replace("## ", "")} />
-            </h2>
-          );
-        }
-
-        if (trimmedLine.startsWith("### ")) {
-          return (
-            <h3
-              key={`${trimmedLine}-${index}`}
-              className="pt-4 text-2xl font-bold tracking-[-0.04em] text-[#07111F]"
-            >
-              <LText text={trimmedLine.replace("### ", "")} />
-            </h3>
-          );
-        }
-
-        if (trimmedLine.startsWith("- ")) {
-          return (
-            <div
-              key={`${trimmedLine}-${index}`}
-              className="rounded-2xl bg-[#F7F9FC] px-5 py-3 text-sm leading-6 text-slate-700"
-            >
-              <LText text={trimmedLine.replace("- ", "• ")} />
-            </div>
-          );
-        }
-
-        return (
-          <p
-            key={`${trimmedLine}-${index}`}
-            className="text-base leading-8 text-slate-700"
-          >
-            <LText text={trimmedLine} />
-          </p>
-        );
-      })}
-    </div>
   );
 }

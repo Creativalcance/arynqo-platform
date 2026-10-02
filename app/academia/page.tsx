@@ -1,4 +1,24 @@
-import Client,{type AcademyPost} from "./AcademiaClient";
-import {publicClient} from "@/lib/public-content";
-export const dynamic="force-dynamic";
-export default async function Page(){const {data,error}=await publicClient().from("academy_posts").select("id,title,slug,excerpt,category,audience,reading_time,featured,published_at").eq("status","published").order("published_at",{ascending:false});if(error)throw new Error("Não foi possível consultar os artigos.");return <Client initialPosts={(data||[]) as AcademyPost[]} />;}
+import Client from "./AcademiaClient";
+import { readAcademyPosts } from "@/lib/academy/public";
+import { getLocale } from "@/lib/i18n/server";
+export const dynamic = "force-dynamic";
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const locale = await getLocale(),
+    params = await searchParams,
+    number = Number(params.page || 1);
+  const page =
+    Number.isInteger(number) && number > 0 && number <= 200 ? number : 1;
+  const posts = await readAcademyPosts(locale, (page - 1) * 60, 60);
+  return (
+    <Client
+      key={`${locale}-${page}`}
+      initialPosts={posts}
+      page={page}
+      hasNext={posts.length === 60}
+    />
+  );
+}

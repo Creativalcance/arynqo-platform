@@ -14,8 +14,7 @@ export const getPublicJob = cache(async (id: string) => {
   if (error) throw new Error("Não foi possível consultar a vaga.");
   return data;
 });
-export const getPublicPost = cache(async (slug: string) => {
-  const { data, error } = await publicClient().from("academy_posts").select("id,title,slug,excerpt,content,category,audience,reading_time,published_at").eq("slug",slug).eq("status","published").maybeSingle();
-  if (error) throw new Error("Não foi possível consultar o artigo.");
-  return data;
+export const getPublicPost = cache(async (slug: string, locale: import("./i18n/config").Locale = "pt") => {
+  const { readAcademyPost } = await import("./academy/public");
+  return readAcademyPost(slug, locale);
 });
