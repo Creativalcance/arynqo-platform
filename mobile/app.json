@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "ARYNQO",
+    "slug": "arynqo",
+    "owner": "creativalcanceapp",
+    "version": "0.1.0",
+    "scheme": "arynqo",
+    "extra": {
+      "eas": {
+        "projectId": "927a2169-1c28-4865-b575-f81dcb12ae04"
+      }
+    },
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.creativalcance.arynqo"
+    },
+    "android": {
+      "package": "com.creativalcance.arynqo",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#050B18"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}
