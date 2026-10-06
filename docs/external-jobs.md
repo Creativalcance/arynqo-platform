@@ -58,3 +58,12 @@ Cada coincidência inclui um trecho do anúncio original, preservando acentos e 
 Changing country or origin clears dependent location, area and contract selections and returns to page 1. Countries remain selectable even where no valid adverts have been imported; a zero result must not be presented as proof that no employment opportunities exist there.
 
 If the newest Adzuna page contains no valid adverts and includes future-dated records, the second reserved request fetches page 1 ordered by date ascending within the same 30-day window. Validation remains unchanged. This fallback never exceeds two requests per country and cannot guarantee valid results from the provider. Daily budgets and retry scheduling still apply.
+# Candidate comparison: evidence-v3 review
+
+The authenticated candidate comparison now includes declared skills/tools/soft skills with approved multilingual equivalents, explicit role-title overlap, preferred locations and contract type. Each structured comparison returns the candidate value, source value and an explicit-match / review / missing-data state. A different title or location is not a rejection. Full-time is not treated as permanent employment. Residence and nationality are not relocation preferences.
+
+Explicit non-requirement formulations in PT/EN/FR/ES/DE/IT are separated from positive skill mentions, with original excerpts preserved. These are bounded lexical rules, not a complete semantic parser; unusual wording still requires reading the original advert. No candidate data is sent to Adzuna or an AI provider.
+
+Salary, work model, seniority, languages, education and experience remain unknown where the imported source has no structured requirement. The public Adzuna API documents snippets, local-currency salaries and a salary-prediction flag; the current imported schema does not retain enough salary units/currency or full requirements to produce a defensible overall percentage. `score` remains null. Missing information never becomes a zero compatibility score or a fabricated requirement. Obtain full licensed requirements and validate extracted fields before introducing weighted external scores or automated recommendations.
+
+Validation: `npm run test:external-matching`, `npm run test:external-jobs`, `node --import tsx tests/i18n.test.ts`, type checks, targeted lint and production build. Fixtures cover non-requirements in six languages, exact phrase boundaries, reviewed equivalents, preferences, contract distinctions, access restrictions and expiry. No real candidate decisions are made by these tests.

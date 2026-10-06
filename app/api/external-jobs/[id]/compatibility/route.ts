@@ -1,13 +1,13 @@
 import { apiErrorResponse, requireActor, requireUuid, ApiError, enforceApiLimit } from '@/lib/api-auth';
-import { externalCompatibility } from '@/lib/external-jobs/compatibility';
+import { assessExternalJob } from '@/lib/external-jobs/assessment';
 import { optionKey } from '@/lib/profile-options';
 export async function GET(request:Request,{params}:{params:Promise<{id:string}>}){
  try{
   const actor=await requireActor(request,['student']);const {id}=await params;requireUuid(id,'ID da vaga');
   await enforceApiLimit(actor,'matching',30,60);
   const [offer,profile]=await Promise.all([
-   actor.client.from('external_job_details').select('description,external_jobs!inner(title,expires_at)').eq('job_id',id).maybeSingle(),
-   actor.client.from('student_profiles').select('skills_normalized,tools_normalized,soft_skills_normalized,tools,soft_skills,student_skills(skills(name))').eq('user_id',actor.id).maybeSingle()
+   actor.client.from('external_job_details').select('description,external_jobs!inner(title,location,contract_type,expires_at)').eq('job_id',id).maybeSingle(),
+   actor.client.from('student_profiles').select('role_title,main_role,preferred_regions,regions,preferred_opportunity_type,languages,spoken_languages,written_languages,work_model,expected_salary,seniority,academic_education,professional_experience,skills_normalized,tools_normalized,soft_skills_normalized,tools,soft_skills,student_skills(skills(name))').eq('user_id',actor.id).maybeSingle()
   ]);
   if(offer.error||profile.error)throw new ApiError(503,'Não foi possível consultar a compatibilidade.');
   const job=Array.isArray(offer.data?.external_jobs)?offer.data.external_jobs[0]:offer.data?.external_jobs;
@@ -20,6 +20,6 @@ export async function GET(request:Request,{params}:{params:Promise<{id:string}>}
   if(termsError||!Array.isArray(terms))throw new ApiError(503,'Não foi possível consultar a compatibilidade.');
   const aliases=new Map<string,string>();
   for(const row of terms){if(typeof row.term==='string'&&typeof row.canonical==='string')aliases.set(optionKey(row.term),row.canonical);}
-  return Response.json(externalCompatibility(labels,job.title,offer.data!.description,aliases),{headers:{'Cache-Control':'private, no-store',Vary:'Authorization','X-Robots-Tag':'noindex, nofollow'}});
+  return Response.json(assessExternalJob(labels,p||{}, {...job,description:offer.data!.description},aliases),{headers:{'Cache-Control':'private, no-store',Vary:'Authorization','X-Robots-Tag':'noindex, nofollow'}});
  }catch(error){const response=apiErrorResponse(error)||Response.json({error:'Não foi possível consultar a compatibilidade.'},{status:503});response.headers.set('Cache-Control','private, no-store');return response;}
 }
