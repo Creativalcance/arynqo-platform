@@ -6,6 +6,8 @@ import { LText, LElement, LocaleSelect } from "@/lib/i18n/client";
 
 import { CountrySelect, LanguagePicker, TagPicker } from "@/app/components/ProfileFields";
 import { splitTags } from "@/lib/profile-options";
+import LinkedInImport from "@/app/components/LinkedInImport";
+import type { LinkedInDraft } from "@/lib/linkedin-import";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import { cvStorageLocation } from "@/lib/cv-storage";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
@@ -272,6 +274,10 @@ const tabs: { id: ProfileTab; label: string; description: string }[] = [
   },
 ];
 
+function createItemId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export default function PerfilEstudantePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("resumo");
   const [profileId, setProfileId] = useState("");
@@ -332,6 +338,8 @@ const [salaryMax, setSalaryMax] = useState<number | null>(null);
 const [aiMatchKeywords, setAiMatchKeywords] = useState<string[]>([]);
   const [aiProfileScore, setAiProfileScore] = useState(0);
   const [aiEmployabilityScore, setAiEmployabilityScore] = useState(0);
+  const [pendingLinkedInSkills, setPendingLinkedInSkills] = useState<string[]>([]);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isGeneratingAIProfile, setIsGeneratingAIProfile] = useState(false);
   const [isUploadingCV, setIsUploadingCV] = useState(false);
@@ -343,9 +351,27 @@ const [aiMatchKeywords, setAiMatchKeywords] = useState<string[]>([]);
   const textareaClass =
     "mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm text-[#07111F] outline-none transition placeholder:text-slate-400 focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10";
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+
+  function applyLinkedInDraft(data: LinkedInDraft) {
+    if (data.headline) setHeadline(data.headline);
+    if (data.bio) setBio(data.bio);
+    if (data.professional_experience_items) {
+      setProfessionalExperienceItems(data.professional_experience_items);
+      setProfessionalExperience(professionalExperienceItemsToText(data.professional_experience_items));
+    }
+    if (data.academic_education_items) {
+      setAcademicEducationItems(data.academic_education_items);
+      setAcademicEducation(academicEducationItemsToText(data.academic_education_items));
+    }
+    if (data.professional_training_items) {
+      setProfessionalTrainingItems(data.professional_training_items);
+      setProfessionalTraining(professionalTrainingItemsToText(data.professional_training_items));
+    }
+    if (data.languages) setLanguages(data.languages);
+    if (data.tools) setTools(data.tools);
+    if (data.soft_skills) setSoftSkills(data.soft_skills);
+    if (data.skills) setPendingLinkedInSkills(current => uniqueArray([...current, ...data.skills!]).filter(value => !skills.some(skill => skill.name.toLowerCase() === value.toLowerCase())));
+  }
 
   function getNumber(value: unknown) {
     return typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -563,9 +589,6 @@ function uniqueArray(values: string[]) {
   );
 }
 
-function createItemId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
 
 function normalizeProfessionalExperienceItems(
   items: ProfessionalExperienceItem[] | null | undefined
@@ -816,6 +839,7 @@ function buildManualMatchingData() {
 
   const manualSkills = uniqueArray([
     ...skills.map((skill) => skill.name),
+    ...pendingLinkedInSkills,
     ...splitTextToArray(tools),
     ...splitTextToArray(softSkills),
     ...splitTextToArray(headline),
@@ -918,7 +942,7 @@ professional_experience_items: professionalExperienceItems,
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = browserLocalizedPath("/login");
+      window.location.assign(browserLocalizedPath("/login"));
       return;
     }
 
@@ -989,7 +1013,7 @@ professional_experience_items,
 
     if (error || !studentProfile) {
       localizedAlert("Apenas estudantes podem editar este perfil.");
-      window.location.href = browserLocalizedPath("/dashboard");
+      window.location.assign(browserLocalizedPath("/dashboard"));
       return;
     }
 
@@ -1079,17 +1103,26 @@ setProfessionalExperienceItems(
     setSkills(normalizedSkills);
   }
 
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => { if (active) void loadProfile(); });
+    return () => { active = false; };
+  }, []);
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
-
+  if (savingProfile) return;
+  setSavingProfile(true);
+  try {
   const { data: sessionData } = await supabase.auth.getSession();
 
   if (!sessionData.session) {
-    window.location.href = browserLocalizedPath("/login");
+    window.location.assign(browserLocalizedPath("/login"));
     return;
   }
 
   const userId = sessionData.session.user.id;
+  for (const skill of pendingLinkedInSkills) await upsertSkill(skill);
+  if (pendingLinkedInSkills.length) await loadStudentSkills(profileId);
   const manualMatchingData = buildManualMatchingData();
 
   const { error: profileError } = await supabase
@@ -1174,7 +1207,10 @@ professional_experience_items: professionalExperienceItems,
 
   await regenerateMatches(profileId);
 
+  setPendingLinkedInSkills([]);
   localizedAlert("Perfil atualizado e matches recalculados com sucesso.");
+  } catch { localizedAlert("Não foi possível guardar o perfil. Tenta novamente."); }
+  finally { setSavingProfile(false); }
 }
 
   async function handleRemoveSkill(skillId: string) {
@@ -1279,7 +1315,7 @@ professional_experience_items: professionalExperienceItems,
       const user = sessionData.session?.user;
 
       if (!user) {
-        window.location.href = browserLocalizedPath("/login");
+        window.location.assign(browserLocalizedPath("/login"));
         return;
       }
 
@@ -1382,7 +1418,7 @@ professional_experience_items: professionalExperienceItems,
   const user = sessionData.session?.user;
 
   if (!user) {
-    window.location.href = browserLocalizedPath("/login");
+    window.location.assign(browserLocalizedPath("/login"));
     return;
   }
 
@@ -1449,7 +1485,7 @@ async function regenerateMatches(studentId: string) {
       const user = sessionData.session?.user;
 
       if (!user) {
-        window.location.href = browserLocalizedPath("/login");
+        window.location.assign(browserLocalizedPath("/login"));
         return;
       }
 
@@ -1723,6 +1759,13 @@ function getTrainingItems() {
                 />
               </label>
 
+              <LinkedInImport disabled={isUploadingCV || isGeneratingAIProfile || savingProfile} onApply={applyLinkedInDraft} occupied={{
+                headline: !!headline, bio: !!bio, professional_experience_items: !!professionalExperience || !!professionalExperienceItems.length,
+                academic_education_items: !!academicEducation || !!academicEducationItems.length,
+                professional_training_items: !!professionalTraining || !!professionalTrainingItems.length,
+                skills: !!skills.length || !!pendingLinkedInSkills.length, languages: !!languages, tools: !!tools, soft_skills: !!softSkills,
+              }} />
+
               <button
                 type="button"
                 onClick={handleGenerateAIProfile}
@@ -1738,6 +1781,7 @@ function getTrainingItems() {
 
             <button
               type="submit"
+              disabled={savingProfile}
               className="w-full rounded-full bg-[#1683FF] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(22,131,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#07111F]"
             >
               <LText text={"Guardar perfil"} /></button>
@@ -1954,9 +1998,10 @@ function getTrainingItems() {
                   <p className="mt-2 text-sm leading-6 text-slate-500">
                     <LText text={"Competências usadas no matching com vagas e empresas."} /></p>
 
-                  <TagPicker value={skills.map(skill => skill.name)} onChange={async values => {
+                  <TagPicker value={uniqueArray([...skills.map(skill => skill.name), ...pendingLinkedInSkills])} onChange={async values => {
+                    setPendingLinkedInSkills(current => current.filter(value => values.includes(value)));
                     for (const skill of skills) if (!values.includes(skill.name)) await handleRemoveSkill(skill.id);
-                    for (const value of values) if (!skills.some(skill => skill.name === value)) await upsertSkill(value);
+                    for (const value of values) if (!skills.some(skill => skill.name === value) && !pendingLinkedInSkills.includes(value)) await upsertSkill(value);
                     const { error } = await supabase.from("student_profiles").update({skills_normalized: values}).eq("id", profileId);
                     await loadStudentSkills(profileId);
                     if (error) throw new Error("As competências foram alteradas, mas não foi possível atualizar a compatibilidade. Guarda o perfil para tentar novamente.");

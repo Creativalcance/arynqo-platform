@@ -14,7 +14,8 @@
     "shadow:matching": "node --import tsx scripts/shadow-matching.ts",
     "test:security": "node --import tsx tests/security-api.test.ts && node tests/security-database.test.mjs && node tests/candidate-privacy.test.mjs && node --import tsx tests/cv-storage.test.ts && node tests/recruitment-actions.test.mjs",
     "test:profile": "node --import tsx tests/profile-fields.test.ts && node tests/profile-tags.test.mjs && node tests/profile-tag-moderation.test.mjs",
-    "test:accounts": "node --import tsx tests/account-administration.test.ts && node tests/account-administration-database.test.mjs"
+    "test:accounts": "node --import tsx tests/account-administration.test.ts && node tests/account-administration-database.test.mjs",
+    "test:linkedin": "node --import tsx tests/linkedin-import.test.ts && node --import tsx tests/linkedin-import-api.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
