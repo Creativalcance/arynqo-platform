@@ -4,6 +4,7 @@
       "path": "/api/cron/generate-academy-post",
       "schedule": "0 9 * * *"
     },
-    { "path": "/api/cron/platform-events", "schedule": "0 8 * * *" }
+    { "path": "/api/cron/platform-events", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/academy-emails", "schedule": "*/5 * * * *" }
   ]
 }

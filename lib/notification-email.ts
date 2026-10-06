@@ -2,6 +2,7 @@ import { normalizeLocale, localizedPath, languageTags, type Locale } from "./i18
 import { emailTranslator } from "./i18n/email-messages";
 export type NotificationEmail = {
   locale?: Locale;
+  actionLocale?: Locale;
   to: string; name: string | null; title: string; message: string;
   actionLabel?: string | null; relatedUrl?: string | null; eventKey: string;
 };
@@ -15,7 +16,7 @@ export function notificationEmailContent(input: NotificationEmail, baseUrl: stri
   if (base.protocol !== "https:") throw new Error("O endereço da plataforma precisa de HTTPS.");
   const action = input.relatedUrl ? new URL(input.relatedUrl, base) : null;
   if (action && (action.origin !== base.origin || action.username || action.password)) throw new Error("Destino do email inválido.");
-  if (action) action.pathname = localizedPath(action.pathname, locale);
+  if (action) action.pathname = localizedPath(action.pathname, input.actionLocale || locale);
   const preferences = new URL(localizedPath("/definicoes/notificacoes", locale), base).href;
   const logo = new URL("/logo-arynqo.png", base).href;
   const text = `${t("Olá")}${input.name ? `, ${input.name}` : ""}.\n\n${input.title}\n\n${input.message}${action ? `\n\n${input.actionLabel || t("Abrir na ARYNQO")}: ${action.href}` : ""}\n\n${t("Gerir notificações")}: ${preferences}\nARYNQO · Where talent evolves`;

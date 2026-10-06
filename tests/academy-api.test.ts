@@ -96,4 +96,7 @@ test("administrator can pause the schedule through the supported quota operation
  });
  const request=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:false,monthly_request_limit:120})});
  assert.equal((await POST(request)).status,200);assert.deepEqual(operations,['academy_admin']);assert.equal(saved,true);
+ saved=false;
+ const automatic=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:true,monthly_request_limit:120})});
+ assert.equal((await POST(automatic)).status,400);assert.equal(saved,false);
 });

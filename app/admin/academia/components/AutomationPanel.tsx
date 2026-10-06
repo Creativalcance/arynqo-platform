@@ -37,7 +37,8 @@ type Data = {
     source_urls: string[];
   })[];
   usage: { reserved_requests: number } | null;
-  ready: { cron: boolean; provider: boolean };
+  ready: { cron: boolean; provider: boolean; email: boolean };
+  emails: { pending: number | null; sent: number | null; attention: number | null };
 };
 export default function AutomationPanel({
   onChanged,
@@ -52,9 +53,7 @@ export default function AutomationPanel({
   const [data, setData] = useState<Data | null>(null),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
-  const [enabled, setEnabled] = useState(false),
-    [auto, setAuto] = useState(false),
-    [cap, setCap] = useState(120);
+  const [enabled, setEnabled] = useState(false), [cap, setCap] = useState(120);
   const [topic, setTopic] = useState(""),
     [category, setCategory] = useState("Carreira"),
     [audience, setAudience] = useState("Todos"),
@@ -76,7 +75,6 @@ export default function AutomationPanel({
     if (!response.ok) throw new Error(c("error"));
     setData(json);
     setEnabled(json.settings.enabled);
-    setAuto(json.settings.auto_publish);
     setCap(json.settings.monthly_request_limit);
   }, [c]);
   useEffect(() => {
@@ -90,7 +88,6 @@ export default function AutomationPanel({
         if (active) {
           setData(json);
           setEnabled(json.settings.enabled);
-          setAuto(json.settings.auto_publish);
           setCap(json.settings.monthly_request_limit);
         }
       })
@@ -164,6 +161,11 @@ export default function AutomationPanel({
       {!data.ready.provider && (
         <p className="mt-3 text-red-700">{c("provider")}</p>
       )}
+      {!data.ready.email && <p className="mt-3 text-amber-800">{c("emailMissing")}</p>}
+      <p className="mt-3 text-sm text-slate-600">{c("approvalRequired")}</p>
+      <p className="mt-3 text-sm" role="status">
+        {c("emailPending")}: {data.emails?.pending ?? "—"} · {c("emailSent")}: {data.emails?.sent ?? "—"} · {c("emailAttention")}: {data.emails?.attention ?? "—"}
+      </p>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="flex items-center gap-3">
           <input
@@ -172,14 +174,6 @@ export default function AutomationPanel({
             onChange={(event) => setEnabled(event.target.checked)}
           />
           {c("enabled")}
-        </label>
-        <label className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            checked={auto}
-            onChange={(event) => setAuto(event.target.checked)}
-          />
-          {c("auto")}
         </label>
         <label>
           {c("cap")}
@@ -215,7 +209,7 @@ export default function AutomationPanel({
             action({
               action: "settings",
               enabled,
-              auto_publish: auto,
+              auto_publish: false,
               monthly_request_limit: cap,
             })
           }
@@ -372,6 +366,7 @@ export default function AutomationPanel({
             )}
             {run.status === "review" && (
               <div className="mt-3 space-y-3">
+                <p className="text-sm text-slate-600">{c("publicationEmails")}</p>
                 <label className="flex gap-3 text-sm">
                   <input
                     type="checkbox"
