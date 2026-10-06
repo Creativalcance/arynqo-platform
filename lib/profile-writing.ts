@@ -16,3 +16,7 @@ export function safeWritingDraft(original: Record<string, unknown>, generated: R
   }
   return draft;
 }
+
+export function hasWritingContent(body: Record<string, unknown>): boolean {
+  return Object.values(writingInput(body)).some(value => value.trim().length > 0);
+}

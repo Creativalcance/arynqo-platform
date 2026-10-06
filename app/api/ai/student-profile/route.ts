@@ -1,6 +1,6 @@
 import { localeNames } from "@/lib/i18n/config";
 import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth";
-import { safeWritingDraft, writingInput } from "@/lib/profile-writing";
+import { safeWritingDraft, writingInput, hasWritingContent } from "@/lib/profile-writing";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
     const input = writingInput(body);
     if (Object.values(input).some(value => value.length > 10000)) return NextResponse.json({ error: "O texto excede o limite de revisão." }, { status: 400 });
-    if (!Object.values(input).some(value => value.trim())) return NextResponse.json(input);
+    if (!hasWritingContent(input)) return NextResponse.json({ error: "Preenche primeiro os textos do perfil que pretendes rever." }, { status: 400 });
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45000, maxRetries: 1 });
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini", max_completion_tokens: 4500,

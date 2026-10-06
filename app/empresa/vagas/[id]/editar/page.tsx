@@ -200,9 +200,6 @@ export default function EmpresaEditarVagaPage({
   const [educationRequirements, setEducationRequirements] = useState("");
   const [experienceRequirements, setExperienceRequirements] = useState("");
 
-  const [screeningQuestionOne, setScreeningQuestionOne] = useState("");
-  const [screeningQuestionTwo, setScreeningQuestionTwo] = useState("");
-  const [screeningQuestionThree, setScreeningQuestionThree] = useState("");
 
   const [evaluationCriteria, setEvaluationCriteria] = useState<string[]>([]);
   const [evaluationCriteriaInput, setEvaluationCriteriaInput] = useState("");
@@ -213,17 +210,7 @@ export default function EmpresaEditarVagaPage({
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
 
-  useEffect(() => {
-    loadJob();
-  }, []);
 
-  const screeningQuestions = useMemo(() => {
-    return [
-      screeningQuestionOne,
-      screeningQuestionTwo,
-      screeningQuestionThree,
-    ].filter((question) => question.trim().length > 0);
-  }, [screeningQuestionOne, screeningQuestionTwo, screeningQuestionThree]);
 
   const matchingScore = useMemo(() => {
     const fields = [
@@ -241,7 +228,6 @@ export default function EmpresaEditarVagaPage({
       salaryRange,
       educationRequirements,
       experienceRequirements,
-      screeningQuestions.length ? "ok" : "",
       evaluationCriteria.length ? "ok" : "",
       candidatePitch,
       aiSummary,
@@ -265,7 +251,6 @@ export default function EmpresaEditarVagaPage({
     salaryRange,
     educationRequirements,
     experienceRequirements,
-    screeningQuestions,
     evaluationCriteria,
     candidatePitch,
     aiSummary,
@@ -355,9 +340,6 @@ export default function EmpresaEditarVagaPage({
     setEducationRequirements(job.education_requirements || "");
     setExperienceRequirements(job.experience_requirements || "");
 
-    setScreeningQuestionOne(job.screening_questions?.[0] || "");
-    setScreeningQuestionTwo(job.screening_questions?.[1] || "");
-    setScreeningQuestionThree(job.screening_questions?.[2] || "");
 
     setEvaluationCriteria(job.evaluation_criteria || []);
     setCandidatePitch(job.candidate_pitch || "");
@@ -367,6 +349,12 @@ export default function EmpresaEditarVagaPage({
 
     setIsLoading(false);
   }
+
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => { if (active) void loadJob(); });
+    return () => { active = false; };
+  }, []);
 
   function normalizeValue(value: string) {
     return value.trim().replace(/\s+/g, " ");
@@ -423,6 +411,7 @@ export default function EmpresaEditarVagaPage({
 
 
   async function generateJobWithAI() {
+    if (isGeneratingAI || isSaving || !title.trim() || !description.trim()) return;
     setIsGeneratingAI(true);
 
     try {
@@ -456,13 +445,13 @@ export default function EmpresaEditarVagaPage({
       try {
         data = rawText ? JSON.parse(rawText) : {};
       } catch {
-        localizedAlert("A IA devolveu uma resposta inválida.");
+        localizedAlert("Não foi possível obter sugestões válidas.");
         setIsGeneratingAI(false);
         return;
       }
 
       if (!response.ok) {
-        localizedAlert(data.error || "Não foi possível melhorar a vaga com IA.");
+        localizedAlert(data.error || "Não foi possível obter sugestões para a vaga.");
         setIsGeneratingAI(false);
         return;
       }
@@ -519,11 +508,6 @@ export default function EmpresaEditarVagaPage({
         setExperienceRequirements(data.experience_requirements);
       }
 
-      if (data.screening_questions) {
-        setScreeningQuestionOne(data.screening_questions[0] || "");
-        setScreeningQuestionTwo(data.screening_questions[1] || "");
-        setScreeningQuestionThree(data.screening_questions[2] || "");
-      }
 
       if (data.evaluation_criteria) {
         setEvaluationCriteria(data.evaluation_criteria);
@@ -533,9 +517,9 @@ export default function EmpresaEditarVagaPage({
         setCandidatePitch(data.candidate_pitch);
       }
 
-      localizedAlert("Vaga estruturada com IA. Revê antes de guardar.");
+      localizedAlert("Sugestões aplicadas. Reveja os campos antes de guardar.");
     } catch {
-      localizedAlert("Erro ao gerar análise IA da vaga.");
+      localizedAlert("Não foi possível obter sugestões para a vaga.");
     }
 
     setIsGeneratingAI(false);
@@ -564,7 +548,6 @@ export default function EmpresaEditarVagaPage({
           salary_range: salaryRange,
           education_requirements: educationRequirements,
           experience_requirements: experienceRequirements,
-          screening_questions: screeningQuestions,
           evaluation_criteria: evaluationCriteria,
           candidate_pitch: candidatePitch,
           ai_summary: aiSummary,
@@ -593,6 +576,7 @@ export default function EmpresaEditarVagaPage({
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving || isGeneratingAI) return;
 
     setIsSaving(true);
 
@@ -615,7 +599,6 @@ export default function EmpresaEditarVagaPage({
         salary_range: salaryRange,
         education_requirements: educationRequirements,
         experience_requirements: experienceRequirements,
-        screening_questions: screeningQuestions,
         evaluation_criteria: evaluationCriteria,
         candidate_pitch: candidatePitch,
         ai_summary: aiSummary,
@@ -634,8 +617,7 @@ export default function EmpresaEditarVagaPage({
     await structureJobWithAI();
     await recalculateJobMatches();
 
-    localizedAlert("Vaga atualizada com sucesso.");
-    setIsSaving(false);
+    window.location.href = browserLocalizedPath("/empresa/vagas");
   }
 
   const inputClass =
@@ -677,13 +659,13 @@ export default function EmpresaEditarVagaPage({
 
             <div className="relative max-w-4xl">
               <p className="mb-4 inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#4BB3FD] backdrop-blur">
-                <LText text={"Copiloto IA de Recrutamento"} /></p>
+                <LText text={"Recrutamento"} /></p>
 
               <h1 className="text-4xl font-semibold tracking-[-0.05em] text-white md:text-6xl">
                 <LText text={"Editar vaga."} /></h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-white/65">
-                <LText text={"Atualize a oportunidade com dados claros, editáveis e preparados para matching inteligente entre vaga e candidato."} /></p>
+                <LText text={"Descreva a função e os requisitos para encontrar candidatos compatíveis."} /></p>
             </div>
           </div>
         </section>
@@ -946,51 +928,13 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                <LText text={"Avaliação e triagem"} /></p>
+                <LText text={"Avaliação"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                <LText text={"3 perguntas simples e critérios"} /></h2>
+                <LText text={"Critérios de avaliação"} /></h2>
 
-              <p className="mt-3 text-sm leading-6 text-slate-500">
-                <LText text={"Use perguntas rápidas, objetivas e fáceis de responder."} /></p>
 
               <div className="mt-6 grid gap-5">
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Pergunta 1"} /></label>
-                  <LElement as="input"
-                    value={screeningQuestionOne}
-                    onChange={(event) =>
-                      setScreeningQuestionOne(event.target.value)
-                    }
-                    placeholder="Ex: Tem disponibilidade para este modelo de trabalho?"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Pergunta 2"} /></label>
-                  <LElement as="input"
-                    value={screeningQuestionTwo}
-                    onChange={(event) =>
-                      setScreeningQuestionTwo(event.target.value)
-                    }
-                    placeholder="Ex: Tem experiência na área indicada?"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Pergunta 3"} /></label>
-                  <LElement as="input"
-                    value={screeningQuestionThree}
-                    onChange={(event) =>
-                      setScreeningQuestionThree(event.target.value)
-                    }
-                    placeholder="Ex: Qual a sua disponibilidade para iniciar funções?"
-                    className={inputClass}
-                  />
-                </div>
-
                 <div>
                   <label className="text-sm font-semibold">
                     <LText text={"Critérios de avaliação"} /></label>
@@ -1052,13 +996,13 @@ export default function EmpresaEditarVagaPage({
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-                <LText text={"Inteligência artificial"} /></p>
+                <LText text={"Síntese da vaga"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                <LText text={"Resumo IA"} /></h2>
+                <LText text={"Resumo"} /></h2>
 
               <div className="mt-6">
-                <label className="text-sm font-semibold"><LText text={"Resumo IA"} /></label>
+                <label className="text-sm font-semibold"><LText text={"Resumo"} /></label>
                 <LElement as="textarea"
                   value={aiSummary}
                   onChange={(event) => setAiSummary(event.target.value)}
@@ -1124,22 +1068,22 @@ export default function EmpresaEditarVagaPage({
                 <LText text={"Copiloto IA"} /></h2>
 
               <p className="mt-4 text-sm leading-6 text-slate-500">
-                <LText text={"Pode usar a IA para acelerar a atualização, mantendo todos os campos editáveis."} /></p>
+                <LText text={"Preencha o título e a descrição. O Copiloto IA organiza a descrição e propõe um resumo, competências e critérios de avaliação. Os campos serão atualizados no formulário. Reveja as sugestões antes de guardar."} /></p>
 
               <button
                 type="button"
                 onClick={generateJobWithAI}
-                disabled={isGeneratingAI}
+                disabled={isGeneratingAI || isSaving || !title.trim() || !description.trim()}
                 className="mt-5 w-full rounded-2xl bg-[#07111F] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <LText text={isGeneratingAI ? "A estruturar..." : "Estruturar com IA"} />
+                <LText text={isGeneratingAI ? "A estruturar..." : "Organizar e preencher a vaga"} />
               </button>
             </section>
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || isGeneratingAI}
                 className="w-full rounded-2xl bg-[#1683FF] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LText text={isSaving ? "A guardar..." : "Guardar alterações"} />

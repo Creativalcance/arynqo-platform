@@ -10,6 +10,7 @@ import LinkedInImport from "@/app/components/LinkedInImport";
 import type { LinkedInDraft } from "@/lib/linkedin-import";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import { cvStorageLocation } from "@/lib/cv-storage";
+import { hasWritingContent } from "@/lib/profile-writing";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { useEffect, useMemo, useState } from "react";
@@ -1110,7 +1111,7 @@ setProfessionalExperienceItems(
   }, []);
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
-  if (savingProfile) return;
+  if (savingProfile || isUploadingCV || isGeneratingAIProfile) return;
   setSavingProfile(true);
   try {
   const { data: sessionData } = await supabase.auth.getSession();
@@ -1300,7 +1301,7 @@ professional_experience_items: professionalExperienceItems,
   async function handleCVUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
-    if (!file || isUploadingCV) {
+    if (!file || isUploadingCV || isGeneratingAIProfile || savingProfile) {
       return;
     }
 
@@ -1398,7 +1399,7 @@ professional_experience_items: professionalExperienceItems,
       }
 
       await regenerateMatches(profileId);
-      localizedAlert("CV importado e perfil preenchido com sucesso.");
+      localizedAlert("CV importado. Revê os dados preenchidos e completa a informação em falta.");
     } catch (error) {
       console.error(error);
       localizedAlert("Erro ao processar CV.");
@@ -1476,7 +1477,10 @@ async function regenerateMatches(studentId: string) {
     console.error("Erro ao gerar matches:", error);
   }
 }
+  const canImproveWriting = hasWritingContent({ headline, bio, career_goals: careerGoals, ai_summary: aiSummary });
+
   async function handleGenerateAIProfile() {
+    if (!canImproveWriting || isUploadingCV || isGeneratingAIProfile || savingProfile) return;
     if (!localizedConfirm("Apenas será melhorada a escrita; não será alterada a informação. A IA não deve acrescentar factos nem preencher campos vazios. Poderás rever a proposta antes de a aplicar.")) return;
     setIsGeneratingAIProfile(true);
 
@@ -1742,20 +1746,20 @@ function getTrainingItems() {
 
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)]">
               <h2 className="text-lg font-semibold tracking-[-0.03em]">
-                <LText text={"Assistente IA"} /></h2>
+                <LText text={"Preencher o perfil com o CV"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                <LText text={"Importa o CV para preencher todos os campos ou melhora o perfil completo com IA."} /></p>
+                <LText text={"Carrega o teu CV em PDF ou DOCX (até 10 MB). A plataforma guarda o ficheiro e preenche automaticamente os campos com a informação que conseguir identificar. Os dados importados podem substituir informação existente. Revê o resultado e completa o que faltar; o CV pode não conter todos os dados do perfil."} /></p>
 
               <label className="mt-5 flex cursor-pointer items-center justify-center rounded-2xl bg-[#1683FF] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#07111F]">
-                <LText text={isUploadingCV ? "A importar CV..." : "Importar CV com IA"} />
+                <LText text={isUploadingCV ? "A importar CV..." : "Carregar CV e preencher o perfil"} />
 
                 <input
                   type="file"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.docx"
                   onChange={handleCVUpload}
                   className="hidden"
-                  disabled={isUploadingCV}
+                  disabled={isUploadingCV || isGeneratingAIProfile || savingProfile}
                 />
               </label>
 
@@ -1769,19 +1773,20 @@ function getTrainingItems() {
               <button
                 type="button"
                 onClick={handleGenerateAIProfile}
-                disabled={isGeneratingAIProfile}
+                disabled={!canImproveWriting || isUploadingCV || isGeneratingAIProfile || savingProfile}
                 className="mt-3 w-full rounded-2xl bg-[#07111F] px-5 py-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LText text={isGeneratingAIProfile
                   ? "A melhorar perfil..."
                   : "Melhorar a escrita com IA"} />
               </button>
-              <p className="mt-3 text-xs leading-5 text-slate-500"><LText text={"Apenas será melhorada a escrita; não será alterada a informação. Revê a proposta antes de guardar."} /></p>
+              {!canImproveWriting && <p className="mt-3 text-xs leading-5 text-slate-600"><LText text="Preenche primeiro os textos do perfil que pretendes rever." /></p>}
+              <p className="mt-3 text-xs leading-5 text-slate-500"><LText text={"Depois de preencheres o perfil, podes rever a escrita do título profissional, da apresentação, dos objetivos de carreira e do resumo profissional. Só os textos preenchidos serão revistos. Confirma a proposta antes de a aplicar e guarda o perfil."} /></p>
             </section>
 
             <button
               type="submit"
-              disabled={savingProfile}
+              disabled={savingProfile || isUploadingCV || isGeneratingAIProfile}
               className="w-full rounded-full bg-[#1683FF] px-8 py-4 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(22,131,255,0.35)] transition hover:-translate-y-0.5 hover:bg-[#07111F]"
             >
               <LText text={"Guardar perfil"} /></button>
@@ -2369,7 +2374,7 @@ function getTrainingItems() {
                     <div>
                       <p className="text-sm font-semibold"><LText text={"Currículo"} /></p>
                       <p className="mt-2 text-sm text-slate-500"><LText text={cvUrl ? "Currículo guardado em armazenamento privado." : "Ainda não carregaste um currículo."} /></p>
-                      {cvUrl && <div className="mt-3 flex gap-3"><CandidateCVButton studentId={profileId} className="text-sm font-semibold text-blue-700" /><button type="button" disabled={isUploadingCV} onClick={removeCV} className="text-sm font-semibold text-red-700"><LText text={"Eliminar currículo"} /></button></div>}
+                      {cvUrl && <div className="mt-3 flex gap-3"><CandidateCVButton studentId={profileId} className="text-sm font-semibold text-blue-700" /><button type="button" disabled={isUploadingCV || isGeneratingAIProfile || savingProfile} onClick={removeCV} className="text-sm font-semibold text-red-700"><LText text={"Eliminar currículo"} /></button></div>}
 
                     </div>
 

@@ -7,6 +7,8 @@ type RequestBody = {
   description?: string;
   area?: string;
   location?: string;
+  work_model?: string;
+  opportunity_type?: string;
   workMode?: string;
   contractType?: string;
 };
@@ -48,10 +50,10 @@ Localização:
 ${body.location || ""}
 
 Modelo de trabalho:
-${body.workMode || ""}
+${body.work_model || body.workMode || ""}
 
 Tipo de contrato:
-${body.contractType || ""}
+${body.opportunity_type || body.contractType || ""}
 
 OBJETIVO:
 Transformar esta vaga num briefing profissional de recrutamento, claro, estruturado e útil para matching inteligente.
@@ -59,11 +61,10 @@ Transformar esta vaga num briefing profissional de recrutamento, claro, estrutur
 REGRAS:
 - Responder apenas JSON válido.
 - Não usar markdown.
-- Não inventar informação impossível.
+- Não inventar factos, condições, requisitos ou qualificações. Organizar apenas a informação fornecida. Manter vazios os campos sem informação.
 - Escrever no idioma ${localeNames[actor.locale || "pt"]}. Manter as chaves JSON e os códigos de classificação inalterados.
 - Ser profissional, claro e premium.
 - As skills devem ser curtas e normalizadas.
-- As perguntas de triagem devem ajudar a avaliar candidatos.
 - Os critérios de avaliação devem ser objetivos.
 
 FORMATO EXATO:
@@ -73,7 +74,6 @@ FORMATO EXATO:
   "required_skills": [],
   "preferred_skills": [],
   "seniority": "",
-  "screening_questions": [],
   "evaluation_criteria": [],
   "candidate_pitch": "",
   "ai_recruiter_notes": ""
