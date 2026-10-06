@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runAcademyAutomation } from "@/lib/academy/service";
+import { scheduleAcademyEmails } from "@/lib/academy/email-after";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 export async function GET(request: NextRequest) {
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
     );
   try {
     const result = await runAcademyAutomation();
+    scheduleAcademyEmails();
     return NextResponse.json(result, { status: result.success ? 200 : 502 });
   } catch {
     return NextResponse.json(

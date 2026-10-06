@@ -11,6 +11,7 @@ import {
 } from "@/lib/academy/service";
 import { safeSourceURL, validateArticle } from "@/lib/academy/quality";
 import { isLocale } from "@/lib/i18n/config";
+import { scheduleAcademyEmails } from "@/lib/academy/email-after";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 function check<T>(result: { data: T; error: unknown }): T {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     await requireActor(request, ["admin"]);
     const db = academyAdminClient();
-    const [settings, runs, topics, usage] = await Promise.all([
+    const [settings, runs, topics, usage, emailPending, emailSent, emailAttention] = await Promise.all([
       db.from("academy_automation_settings").select("*").single(),
       db
         .from("academy_generation_runs")
@@ -46,15 +47,24 @@ export async function GET(request: NextRequest) {
         .select("*")
         .eq("month", new Date().toISOString().slice(0, 7) + "-01")
         .maybeSingle(),
+      db.from("academy_email_deliveries").select("id", { count: "exact", head: true }).in("status", ["pending", "processing", "retry"]),
+      db.from("academy_email_deliveries").select("id", { count: "exact", head: true }).eq("status", "sent"),
+      db.from("academy_email_deliveries").select("id", { count: "exact", head: true }).in("status", ["failed", "uncertain"]),
     ]);
     return NextResponse.json({
       settings: check(settings),
       runs: check(runs),
       topics: check(topics),
       usage: check(usage),
+      emails: {
+        pending: emailPending.error ? null : emailPending.count,
+        sent: emailSent.error ? null : emailSent.count,
+        attention: emailAttention.error ? null : emailAttention.count,
+      },
       ready: {
         cron: !!process.env.CRON_SECRET,
         provider: !!process.env.OPENAI_API_KEY,
+        email: !!process.env.RESEND_API_KEY,
       },
     });
   } catch (error) {
@@ -80,6 +90,7 @@ export async function POST(request: NextRequest) {
         body.monthly_request_limit > 600
       )
         throw new ApiError(400, "Configuração inválida.");
+      if (body.auto_publish) throw new ApiError(400, "Todos os artigos exigem aprovação de um administrador.");
       if (
         body.enabled &&
         (!process.env.CRON_SECRET || !process.env.OPENAI_API_KEY)
@@ -107,6 +118,7 @@ export async function POST(request: NextRequest) {
         body.action === "retry" ? body.run_id : undefined,
         body.action === "preview",
       );
+      scheduleAcademyEmails();
       return NextResponse.json(result, { status: result.success ? 200 : 502 });
     } else if (body.action === "topic") {
       if (
@@ -161,7 +173,10 @@ export async function POST(request: NextRequest) {
     } else if (body.action === "publish") {
       if (!uuid(body.post_id)) throw new ApiError(400, "Artigo inválido.");
       // The administrator confirms human review. Publication and run status change atomically.
-      check(await db.rpc("academy_publish_reviewed", { post: body.post_id }));
+      check(await db.rpc("academy_publish_reviewed", { post: body.post_id, reviewer: actor.id }));
+      scheduleAcademyEmails();
+    } else if (body.action === "deliver_emails") {
+      scheduleAcademyEmails();
     } else throw new ApiError(400, "Operação inválida.");
     return NextResponse.json({ success: true });
   } catch (error) {

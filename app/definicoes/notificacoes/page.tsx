@@ -1,7 +1,8 @@
 "use client";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
-import { LText } from "@/lib/i18n/client";
+import { LText, useI18n } from "@/lib/i18n/client";
+import { academyCopy } from "@/lib/academy/admin-copy";
 
 
 import Link from "@/lib/i18n/link";
@@ -15,6 +16,7 @@ type NotificationPreferences = {
   contact_requests_enabled: boolean;
   application_updates_enabled: boolean;
   match_updates_enabled: boolean;
+  academy_updates_enabled: boolean;
 };
 
 const defaultPreferences: Omit<NotificationPreferences, "user_id"> = {
@@ -23,9 +25,11 @@ const defaultPreferences: Omit<NotificationPreferences, "user_id"> = {
   contact_requests_enabled: true,
   application_updates_enabled: true,
   match_updates_enabled: true,
+  academy_updates_enabled: true,
 };
 
 export default function DefinicoesNotificacoesPage() {
+  const { locale } = useI18n();
   const [userId, setUserId] = useState("");
   const [preferences, setPreferences] = useState<
     Omit<NotificationPreferences, "user_id">
@@ -35,10 +39,7 @@ export default function DefinicoesNotificacoesPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    loadPreferences();
-  }, []);
-
-  async function loadPreferences() {
+    async function loadPreferences() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
@@ -59,7 +60,8 @@ export default function DefinicoesNotificacoesPage() {
         push_enabled,
         contact_requests_enabled,
         application_updates_enabled,
-        match_updates_enabled
+        match_updates_enabled,
+        academy_updates_enabled
       `
       )
       .eq("user_id", currentUserId)
@@ -85,7 +87,8 @@ export default function DefinicoesNotificacoesPage() {
           push_enabled,
           contact_requests_enabled,
           application_updates_enabled,
-          match_updates_enabled
+          match_updates_enabled,
+          academy_updates_enabled
         `
         )
         .single();
@@ -104,6 +107,7 @@ export default function DefinicoesNotificacoesPage() {
         application_updates_enabled:
           createdPreferences.application_updates_enabled,
         match_updates_enabled: createdPreferences.match_updates_enabled,
+        academy_updates_enabled: createdPreferences.academy_updates_enabled,
       });
 
       setIsLoading(false);
@@ -119,10 +123,13 @@ export default function DefinicoesNotificacoesPage() {
       application_updates_enabled:
         currentPreferences.application_updates_enabled,
       match_updates_enabled: currentPreferences.match_updates_enabled,
+      academy_updates_enabled: currentPreferences.academy_updates_enabled,
     });
 
     setIsLoading(false);
-  }
+    }
+    void loadPreferences();
+  }, []);
 
   async function handleSave() {
     if (!userId) {
@@ -259,6 +266,13 @@ export default function DefinicoesNotificacoesPage() {
               onChange={(value) =>
                 updatePreference("contact_requests_enabled", value)
               }
+            />
+
+            <PreferenceToggle
+              title={academyCopy(locale, "updatesTitle")}
+              description={academyCopy(locale, "updatesDescription")}
+              checked={preferences.academy_updates_enabled}
+              onChange={(value) => updatePreference("academy_updates_enabled", value)}
             />
 
             <PreferenceToggle

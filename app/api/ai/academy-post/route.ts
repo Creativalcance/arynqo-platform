@@ -3,8 +3,10 @@ import { requireActor, enforceApiLimit, apiErrorResponse } from "@/lib/api-auth"
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
+import { scheduleAcademyEmails } from "@/lib/academy/email-after";
 
 export const runtime = "nodejs";
+export const maxDuration = 300;
 
 type AcademyPostAIResponse = {
   title: string;
@@ -259,6 +261,7 @@ Regras:
       );
     }
 
+    scheduleAcademyEmails();
     return NextResponse.json({
       success: true,
       post: data,

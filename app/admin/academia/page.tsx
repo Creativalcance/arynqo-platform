@@ -1,5 +1,5 @@
 "use client";
-import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { localizedAlert, localizedConfirm } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { academyCopy } from "@/lib/academy/admin-copy";
 import { LText, LElement, useI18n } from "@/lib/i18n/client";
@@ -91,7 +91,8 @@ export default function AdminAcademiaPage() {
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session) {
-      window.location.href = browserLocalizedPath("/login");
+      const returnPath = window.location.pathname + window.location.search;
+      window.location.href = browserLocalizedPath("/login") + "?next=" + encodeURIComponent(returnPath);
       return;
     }
 
@@ -148,7 +149,8 @@ export default function AdminAcademiaPage() {
     setPosts(currentPosts);
 
     if (!selectedPostId && currentPosts.length > 0) {
-      selectPost(currentPosts[0]);
+      const requestedId = new URLSearchParams(window.location.search).get("post");
+      selectPost(currentPosts.find((post) => post.id === requestedId) || currentPosts[0]);
     }
   }
 
@@ -222,6 +224,7 @@ export default function AdminAcademiaPage() {
     if (!selectedPostId) {
       return;
     }
+    if (status === "published" && selectedPost?.status !== "published" && !localizedConfirm(academyCopy(locale, "publicationConfirm"))) return;
 
     setIsSaving(true);
 
@@ -258,6 +261,7 @@ export default function AdminAcademiaPage() {
     }
 
     await loadPosts();
+    await requestEmailDelivery();
     localizedAlert("Artigo guardado com sucesso.");
   }
 
@@ -265,6 +269,7 @@ export default function AdminAcademiaPage() {
     if (!selectedPostId) {
       return;
     }
+    if (nextStatus === "published" && selectedPost?.status !== "published" && !localizedConfirm(academyCopy(locale, "publicationConfirm"))) return;
 
     setStatus(nextStatus);
 
@@ -288,6 +293,17 @@ export default function AdminAcademiaPage() {
     }
 
     await loadPosts();
+    await requestEmailDelivery();
+  }
+
+  async function requestEmailDelivery() {
+    // The database has already saved the durable event. The cron resumes if this wake-up fails.
+    try {
+      await authenticatedFetch("/api/admin/academy-automation", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deliver_emails" }),
+      });
+    } catch { /* Publication is saved; delivery remains queued. */ }
   }
 
   function getStatusLabel(value: AcademyPostStatus) {
