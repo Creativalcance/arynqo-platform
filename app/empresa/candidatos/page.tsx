@@ -9,8 +9,8 @@ import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import Link from "@/lib/i18n/link";
-import { useEffect, useMemo, useState } from "react";
-import { createNotification } from "@/lib/create-notification";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { decideApplication } from "@/lib/application-decision";
 import { supabase } from "@/lib/supabase";
 
 type Skill = {
@@ -103,11 +103,6 @@ const statusStyles: Record<ApplicationStatus, string> = {
   rejected: "border-red-200 bg-red-50 text-red-700",
 };
 
-const notificationMessages: Record<Exclude<ApplicationStatus, "pending">, string> = {
-  accepted: "A tua candidatura foi aceite.",
-  rejected: "A tua candidatura foi rejeitada.",
-};
-
 export default function EmpresaCandidatosPage() {
   const [applications, setApplications] = useState<ApplicationWithMatch[]>([]);
   const [candidateSkills, setCandidateSkills] = useState<Record<string, Skill[]>>(
@@ -118,6 +113,8 @@ export default function EmpresaCandidatosPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const decisionLocks = useRef(new Set<string>());
+  const [decidingIds, setDecidingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadApplications();
@@ -413,45 +410,20 @@ export default function EmpresaCandidatosPage() {
     application: CandidateApplication,
     status: "accepted" | "rejected"
   ) {
-    const { error } = await supabase
-      .from("applications")
-      .update({ status })
-      .eq("id", application.id)
-      .eq("status", application.status)
-      .select("id, status")
-      .single();
-
-    if (error) {
+    if (application.status !== "pending" || decisionLocks.current.has(application.id)) return;
+    decisionLocks.current.add(application.id);
+    setDecidingIds(new Set(decisionLocks.current));
+    try {
+      const savedStatus = await decideApplication(supabase, application.id, status);
+      setApplications((current) => current.map((item) =>
+        item.id === application.id ? { ...item, status: savedStatus } : item
+      ));
+    } catch {
       localizedAlert("Não foi possível atualizar a candidatura. Atualiza a lista e tenta novamente.");
-      return;
+    } finally {
+      decisionLocks.current.delete(application.id);
+      setDecidingIds(new Set(decisionLocks.current));
     }
-
-    if (application.student_profiles?.user_id) {
-      try {
-        await createNotification({
-          userId: application.student_profiles.user_id,
-          title: `Candidatura ${statusLabels[status].toLowerCase()}`,
-          message: `${notificationMessages[status]} Vaga: ${
-            application.jobs?.title || "vaga"
-          }.`,
-          relatedType: "application",
-          relatedId: application.id,
-          relatedUrl: "/dashboard/notificacoes",
-          actionLabel: "Ver notificações",
-          channels: ["in_app", "email", "push"],
-        });
-      } catch (notificationError) {
-        console.error("Erro ao criar notificação:", notificationError);
-      }
-    }
-
-    setApplications((current) =>
-      current.map((currentApplication) =>
-        currentApplication.id === application.id
-          ? { ...currentApplication, status }
-          : currentApplication
-      )
-    );
   }
 
   if (isLoading) {
@@ -752,19 +724,23 @@ export default function EmpresaCandidatosPage() {
                     )}
 
                     <div className="mt-8 flex flex-wrap gap-3">
-                      <button
+                      {application.status === "pending" ? <><button
                         onClick={() => updateStatus(application, "accepted")}
-                        disabled={application.status === "accepted"}
+                        disabled={decidingIds.has(application.id)}
                         className="rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <LText text={"Aceitar"} /></button>
 
                       <button
                         onClick={() => updateStatus(application, "rejected")}
-                        disabled={application.status === "rejected"}
+                        disabled={decidingIds.has(application.id)}
                         className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-red-400 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <LText text={"Rejeitar"} /></button>
+                        <LText text={"Rejeitar"} /></button></> : (
+                        <p role="status" className={`rounded-full border px-5 py-3 text-sm font-semibold ${statusStyles[application.status]}`}>
+                          <LText text={statusLabels[application.status]} />
+                        </p>
+                      )}
 
                       {application.student_profiles?.cv_url && (
                         <CandidateCVButton studentId={application.student_profiles.id} className="rounded-full border border-[#DDE3EA] bg-white px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]" />

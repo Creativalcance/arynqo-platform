@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test:academy": "node --import tsx tests/academy-calendar.test.ts && node --import tsx tests/academy-quality.test.ts && node --import tsx tests/academy-generation.test.ts && node --import tsx tests/academy-api.test.ts && node tests/academy-database.test.mjs && node --import tsx tests/academy-email.test.ts && node tests/academy-email-database.test.mjs",
     "test:notifications": "node --import tsx tests/notification-read.test.ts",
+    "test:applications": "node --import tsx tests/application-decision.test.ts && node tests/application-decision-database.test.mjs && node tests/recruitment-actions.test.mjs",
     "test:matching": "node --import tsx tests/matching-engine.test.ts",
     "evaluate:matching": "node --import tsx scripts/evaluate-matching.ts",
     "shadow:matching": "node --import tsx scripts/shadow-matching.ts",

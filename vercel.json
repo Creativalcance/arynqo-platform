@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/platform-events",
-      "schedule": "0 8 * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/academy-emails",
