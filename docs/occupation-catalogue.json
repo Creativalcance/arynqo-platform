@@ -1,0 +1,9 @@
+{
+  "source": "https://ec.europa.eu/esco/api/search",
+  "version": "v1.2.1",
+  "count": 3039,
+  "sha256": "ecc7082c7dd8b95493be0d1289f43c2ce899fd0960e5d7942c817bcacfe067f2",
+  "copyright": "\u00a9 European Union \u00b7 CC BY 4.0",
+  "licence": "https://commission.europa.eu/legal-notice_en",
+  "note": "Official labels and stable concept IDs; no inferred occupational equivalences."
+}

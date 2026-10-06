@@ -1,6 +1,8 @@
 "use client";
+import { SENIORITIES, WORK_MODELS } from "@/lib/matching-preferences";
+import { MatchingFields, useMatchingPreferences } from "@/app/components/MatchingFields";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
-import { browserLocalizedPath, normalizeLocale, type Locale } from "@/lib/i18n/config";
+import { browserLocalizedPath, type Locale } from "@/lib/i18n/config";
 import { LText, LElement, useI18n, LocaleSelect } from "@/lib/i18n/client";
 
 import { JobLanguagePicker, TagPicker, CountryCodeSelect } from "@/app/components/ProfileFields";
@@ -36,16 +38,7 @@ type JobAIResponse = {
   error?: string;
 };
 
-const WORK_MODELS = [
-  "Presencial",
-  "Híbrido",
-  "Remoto",
-  "No terreno",
-  "Por turnos",
-  "Horário flexível",
-  "Mobilidade internacional",
-  "Trabalho temporário",
-];
+
 
 const OPPORTUNITY_TYPES = [
   "Estágio Curricular",
@@ -63,54 +56,9 @@ const OPPORTUNITY_TYPES = [
   "Voluntariado",
 ];
 
-const SENIORITY_LEVELS = [
-  "Estágio",
-  "Júnior",
-  "Mid-level",
-  "Sénior",
-  "Especialista",
-  "Coordenação",
-  "Gestão",
-  "Direção",
-];
 
-const PROFESSIONAL_AREAS = [
-  "Administração e Gestão",
-  "Agricultura, Floresta e Ambiente",
-  "Arquitetura e Design de Interiores",
-  "Artes, Cultura e Indústrias Criativas",
-  "Atendimento ao Cliente",
-  "Automóvel e Mobilidade",
-  "Banca, Seguros e Serviços Financeiros",
-  "Comercial e Vendas",
-  "Compras e Procurement",
-  "Comunicação, Marketing e Publicidade",
-  "Construção Civil e Obras Públicas",
-  "Consultoria",
-  "Contabilidade, Auditoria e Fiscalidade",
-  "Design, UX e Produto Digital",
-  "Educação, Formação e Ensino",
-  "Engenharia Civil",
-  "Engenharia Eletrotécnica",
-  "Engenharia Industrial",
-  "Engenharia Informática",
-  "Engenharia Mecânica",
-  "Engenharia Química",
-  "Farmacêutica e Biotecnologia",
-  "Hotelaria, Turismo e Restauração",
-  "Imobiliário",
-  "Indústria e Produção",
-  "Jurídico",
-  "Logística, Transportes e Distribuição",
-  "Manutenção e Assistência Técnica",
-  "Operações",
-  "Qualidade, Segurança e Ambiente",
-  "Recursos Humanos",
-  "Retalho e Grande Distribuição",
-  "Saúde",
-  "Tecnologia, Software e Dados",
-  "Telecomunicações",
-];
+
+
 
 
 
@@ -121,6 +69,7 @@ export default function NovaVagaPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
+  const matching = useMatchingPreferences("job", null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
@@ -135,9 +84,9 @@ export default function NovaVagaPage() {
   const [location, setLocation] = useState("");
   const [countryCode, setCountryCode] = useState("");
   const [contentLocale, setContentLocale] = useState<Locale>(locale);
-  const [workModel, setWorkModel] = useState("Híbrido");
+  const [workModel, setWorkModel] = useState("");
   const [opportunityType, setOpportunityType] = useState("Full-time");
-  const [seniority, setSeniority] = useState("Júnior");
+  const [seniority, setSeniority] = useState("");
 
   const [languages, setLanguages] = useState<string[]>([]);
 
@@ -399,39 +348,6 @@ export default function NovaVagaPage() {
     setIsGeneratingAI(false);
   }
 
-  async function structureJobWithAI(jobId: string) {
-    try {
-      await authenticatedFetch("/api/ai/structure-job", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jobId,
-          title,
-          description,
-          area,
-          specializations,
-          required_skills: requiredSkills,
-          preferred_skills: preferredSkills,
-          location,
-          work_model: workModel,
-          opportunity_type: opportunityType,
-          seniority,
-          languages,
-          salary_range: salaryRange,
-          education_requirements: educationRequirements,
-          experience_requirements: experienceRequirements,
-          evaluation_criteria: evaluationCriteria,
-          candidate_pitch: candidatePitch,
-          ai_summary: aiSummary,
-        }),
-      });
-    } catch (error) {
-      console.error("Erro ao estruturar vaga:", error);
-    }
-  }
-
   async function recalculateJobMatches(jobId: string) {
     try {
       await authenticatedFetch("/api/ai/recalculate-job-matches", {
@@ -456,12 +372,15 @@ export default function NovaVagaPage() {
       return;
     }
 
+    const publish = (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") !== "draft";
+    if (!matching.ready || (publish && !matching.value.confirmed)) { localizedAlert("Preenche e confirma os cinco campos do perfil procurado."); return; }
     setIsSaving(true);
 
     const { data: createdJob, error } = await supabase
       .from("jobs")
       .insert({
         company_id: company.id,
+        matching_preferences: matching.value,
         title,
         description,
         area,
@@ -481,7 +400,7 @@ export default function NovaVagaPage() {
         evaluation_criteria: evaluationCriteria,
         candidate_pitch: candidatePitch,
         ai_summary: aiSummary,
-        is_active: true,
+        is_active: publish,
         is_featured: false,
       })
       .select("id")
@@ -493,7 +412,7 @@ export default function NovaVagaPage() {
       return;
     }
 
-    await structureJobWithAI(createdJob.id);
+
     await recalculateJobMatches(createdJob.id);
 
     window.location.href = browserLocalizedPath("/empresa/vagas");
@@ -553,6 +472,7 @@ export default function NovaVagaPage() {
           onSubmit={handleSubmit}
           className="grid gap-8 lg:grid-cols-[1fr_420px]"
         >
+          <div className="lg:col-span-2"><MatchingFields kind="job" value={matching.value} onChange={v => { matching.setValue(v); setArea(v.area); setRequiredSkills(v.skills); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={!matching.ready || isSaving} />{matching.error && <p role="alert"><LText text={matching.error} /></p>}</div>
           <div className="space-y-8">
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
@@ -602,22 +522,7 @@ export default function NovaVagaPage() {
                 <LText text={"Selecione competências técnicas, comportamentais e ferramentas no catálogo partilhado com os candidatos. Pode adicionar novas tags quando necessário."} /></p>
 
               <div className="mt-6 grid gap-5">
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Área profissional"} /></label>
-                  <select
-                    value={area}
-                    onChange={(event) => setArea(event.target.value)}
-                    required
-                    className={selectClass}
-                  >
-                    <option value=""><LText text={"Selecionar área profissional"} /></option>
-                    {PROFESSIONAL_AREAS.map((professionalArea) => (
-                      <option key={professionalArea} value={professionalArea}>
-                        <LText text={professionalArea} />
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
                 <div>
                   <label className="text-sm font-semibold"><LText text={"Especializações"} /></label>
@@ -663,14 +568,6 @@ export default function NovaVagaPage() {
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-semibold">
-                      <LText text={"Competências obrigatórias"} /></label>
-
-                    <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
-                      <TagPicker value={requiredSkills} onChange={setRequiredSkills} />
-                    </div>
-                  </div>
 
                   <div>
                     <label className="text-sm font-semibold">
@@ -708,20 +605,7 @@ export default function NovaVagaPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Modelo de trabalho"} /></label>
-                  <select
-                    value={workModel}
-                    onChange={(event) => setWorkModel(event.target.value)}
-                    className={selectClass}
-                  >
-                    {WORK_MODELS.map((model) => (
-                      <option key={model} value={model}>
-                        <LText text={model} />
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
                 <div>
                   <label className="text-sm font-semibold">
@@ -739,20 +623,7 @@ export default function NovaVagaPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-sm font-semibold"><LText text={"Senioridade"} /></label>
-                  <select
-                    value={seniority}
-                    onChange={(event) => setSeniority(event.target.value)}
-                    className={selectClass}
-                  >
-                    {SENIORITY_LEVELS.map((level) => (
-                      <option key={level} value={level}>
-                        <LText text={level} />
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
                 <div>
                   <label className="text-sm font-semibold"><LText text={"Faixa salarial"} /></label>
@@ -947,6 +818,7 @@ export default function NovaVagaPage() {
               <p className="mt-4 text-sm leading-6 text-slate-500">
                 <LText text={"Ao publicar, a vaga fica disponível e a compatibilidade com candidatos é atualizada. Será encaminhado para a lista de vagas."} /></p>
 
+              <button type="submit" value="draft" formNoValidate disabled={isSaving || isGeneratingAI} className="mb-3 w-full rounded-full border border-slate-300 p-3 text-sm font-semibold"><LText text="Guardar rascunho" /></button>
               <button
                 type="submit"
                 disabled={isSaving || isGeneratingAI}

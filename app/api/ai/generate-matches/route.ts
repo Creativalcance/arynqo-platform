@@ -1,3 +1,4 @@
+import { calculateFiveFieldMatch } from "@/lib/matching-five";
 import { requireActor, enforceApiLimit, authorizeMatchScope, apiErrorResponse } from "@/lib/api-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -38,6 +39,8 @@ export async function POST(request: NextRequest) {
     let studentsQuery = supabase.from("student_profiles").select(`
       id,
       user_id,
+      matching_preferences,
+      matching_revision,
       headline,
       desired_area,
       location,
@@ -75,6 +78,8 @@ export async function POST(request: NextRequest) {
       .from("jobs")
       .select(`
         id,
+        matching_preferences,
+        matching_revision,
         title,
         description,
         area,
@@ -132,6 +137,7 @@ export async function POST(request: NextRequest) {
         matches.push({
           student_id: student.id,
           job_id: job.id,
+          five_field_shadow: { ...calculateFiveFieldMatch(student.matching_preferences || null, job.matching_preferences || null, reviewedAliases), candidateRevision: student.matching_revision, jobRevision: job.matching_revision },
           match_score: result.matchScore,
           skills_score: result.skillsScore,
           role_score: result.roleScore,

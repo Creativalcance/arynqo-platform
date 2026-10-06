@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import {calculateFiveFieldMatch} from '../lib/matching-five';
+import {validPreferences,type MatchingPreferences} from '../lib/matching-preferences';
+import occupations from '../lib/data/occupations.json';
+const base:MatchingPreferences={profession:occupations[0].id,area:'Tecnologia, Software e Dados',levels:['senior'],models:['remote'],skills:['React','TypeScript','SQL','CSS','HTML'],confirmed:true};
+test('same pair produces the same score and an inspectable five-part sum',()=>{const c={...base,skills:['React','SQL','CSS']};const r=calculateFiveFieldMatch(c,base);assert.equal(r.score,86);assert.deepEqual(r.contributions,{profession:35,skills:21,seniority:15,model:10,area:5});assert.deepEqual(r,calculateFiveFieldMatch(c,base));assert.equal(r.recommendation,'human_review');});
+test('missing and unconfirmed preferences never produce a percentage',()=>{for(const p of [null,{...base,confirmed:false},{...base,skills:[]}])assert.equal(calculateFiveFieldMatch(p,base).score,null);});
+test('skills use explicit aliases and never substring guesses',()=>{const job={...base,skills:['Java','C++']};assert.equal(calculateFiveFieldMatch({...base,skills:['JavaScript','C#']},job).contributions?.skills,0);assert.equal(calculateFiveFieldMatch({...base,skills:['JS']},{...base,skills:['JavaScript']},new Map([['js','JavaScript']])).contributions?.skills,35);});
+test('accepted seniority and model sets are directional, extra skills do not penalize',()=>{const j={...base,levels:['mid','senior'],models:['onsite','remote']};assert.equal(calculateFiveFieldMatch({...base,skills:[...base.skills,'Python']},j).score,100);assert.equal(calculateFiveFieldMatch({...base,levels:['director']},j).contributions?.seniority,0);});
+test('validators reject spoofed catalog IDs, duplicate or unknown codes and injected metadata',()=>{const exists=(id:string)=>occupations.some(o=>o.id===id);assert.ok(validPreferences(base,'candidate',exists));for(const p of [{...base,profession:'fake'},{...base,models:['telepathy']},{...base,levels:['senior','senior']},{...base,revision:99},{...base,skills:[' ']}])assert.equal(validPreferences(p,'candidate',exists),false);});
+test('all occupation identities have six non-empty translated labels',()=>{assert.equal(occupations.length,3039);assert.equal(new Set(occupations.map(o=>o.id)).size,3039);for(const o of occupations)for(const l of ['pt','en','fr','es','de','it'] as const)assert.ok(o.labels[l].trim());});
+
+test('old pair revisions are never considered current',async()=>{const {currentFiveFieldResult}=await import('../lib/matching-five');assert.ok(currentFiveFieldResult({candidateRevision:2,jobRevision:4},2,4));assert.equal(currentFiveFieldResult({candidateRevision:1,jobRevision:4},2,4),false);assert.equal(currentFiveFieldResult(null,2,4),false);});

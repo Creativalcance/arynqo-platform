@@ -1,3 +1,4 @@
+import type { MatchingPreferences } from "./matching-preferences";
 import { languageCompatibility, optionKey } from "./profile-options";
 type MatchCategory =
   | "recommended"
@@ -6,6 +7,8 @@ type MatchCategory =
   | "not_relevant";
 
 export type StudentProfile = {
+  matching_preferences?: MatchingPreferences | null;
+  matching_revision?: number;
   id: string;
   user_id: string;
   headline: string | null;
@@ -38,6 +41,8 @@ export type StudentProfile = {
 };
 
 export type Job = {
+  matching_preferences?: MatchingPreferences | null;
+  matching_revision?: number;
   id: string;
   title: string;
   description: string;

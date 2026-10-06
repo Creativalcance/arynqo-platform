@@ -1,4 +1,6 @@
 "use client";
+import { SENIORITIES, WORK_MODELS } from "@/lib/matching-preferences";
+import { MatchingFields, useMatchingPreferences } from "@/app/components/MatchingFields";
 import { localizedAlert, localizedConfirm } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement, LocaleSelect } from "@/lib/i18n/client";
@@ -152,43 +154,7 @@ error?: string;
 
 type ProfileTab = "resumo" | "percurso" | "competencias" | "preferencias" | "ia";
 
-const professionalAreas = [
-  "Administração",
-  "Arquitetura",
-  "Automação e Robótica",
-  "Banca e Seguros",
-  "Comercial e Vendas",
-  "Comunicação",
-  "Construção Civil",
-  "Consultoria",
-  "Contabilidade",
-  "Data e Analytics",
-  "Design",
-  "Direito",
-  "E-commerce",
-  "Educação e Formação",
-  "Engenharia",
-  "Eventos",
-  "Farmacêutica",
-  "Finanças",
-  "Gestão",
-  "Gestão de Produto",
-  "Gestão de Projeto",
-  "Hotelaria e Turismo",
-  "Indústria",
-  "Informática e Tecnologia",
-  "Inteligência Artificial",
-  "Logística e Transportes",
-  "Marketing",
-  "Medicina e Saúde",
-  "Operações",
-  "Produção",
-  "Qualidade",
-  "Recursos Humanos",
-  "Software Development",
-  "Supply Chain",
-  "UX/UI Design",
-];
+
 
 const availabilityOptions = [
   "Imediata",
@@ -209,18 +175,9 @@ const opportunityTypes = [
   "Trainee Program",
 ];
 
-const seniorityOptions = ["Estudante", "Júnior", "Pleno", "Sénior", "Direção"];
 
-const workModelOptions = [
-  { value: "Presencial", label: "Presencial" },
-  { value: "Híbrido", label: "Híbrido" },
-  { value: "Remoto", label: "Remoto" },
-  { value: "No terreno", label: "No terreno" },
-  { value: "Por turnos", label: "Por turnos" },
-  { value: "Horário flexível", label: "Horário flexível" },
-  { value: "Mobilidade internacional", label: "Mobilidade internacional" },
-  { value: "Trabalho temporário", label: "Trabalho temporário" },
-];
+
+
 
 const locationOptions = [
   "Aveiro",
@@ -282,6 +239,7 @@ function createItemId() {
 export default function PerfilEstudantePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("resumo");
   const [profileId, setProfileId] = useState("");
+  const matching = useMatchingPreferences("candidate", profileId || null);
   const [name, setName] = useState("");
   const [headline, setHeadline] = useState("");
   const [phone, setPhone] = useState("");
@@ -314,8 +272,8 @@ export default function PerfilEstudantePage() {
   const [expectedSalary, setExpectedSalary] = useState("");
   const [preferredRegions, setPreferredRegions] = useState("");
   const [aiSummary, setAiSummary] = useState("");
-  const [roleTitle, setRoleTitle] = useState("");
-const [roleFamily, setRoleFamily] = useState("");
+  const [, setRoleTitle] = useState("");
+const [, setRoleFamily] = useState("");
 const [professionalExperienceItems, setProfessionalExperienceItems] =
   useState<ProfessionalExperienceItem[]>([]);
 
@@ -843,9 +801,6 @@ function buildManualMatchingData() {
     ...pendingLinkedInSkills,
     ...splitTextToArray(tools),
     ...splitTextToArray(softSkills),
-    ...splitTextToArray(headline),
-    ...splitTextToArray(mainRole),
-    ...splitTextToArray(desiredArea),
   ]);
 
   const manualTools = uniqueArray(splitTextToArray(tools));
@@ -874,8 +829,8 @@ function buildManualMatchingData() {
   ]);
 
   return {
-    role_title: roleTitle || mainRole || headline,
-    role_family: roleFamily || desiredArea,
+    role_title: mainRole.trim() || headline.trim(),
+    role_family: desiredArea,
     skills_normalized: manualSkills,
     tools_normalized: manualTools,
     soft_skills_normalized: manualSoftSkills,
@@ -1187,6 +1142,7 @@ professional_experience_items: professionalExperienceItems,
       ai_profile_score: aiProfileScore,
       ai_employability_score: aiEmployabilityScore,
       ...manualMatchingData,
+      ...(matching.ready ? {matching_preferences: matching.value} : {}),
     })
     .eq("id", profileId)
     .eq("user_id", userId);
@@ -1679,6 +1635,7 @@ function getTrainingItems() {
           </div>
         </div>
 
+        <div className="mb-8">{matching.ready ? <MatchingFields kind="candidate" value={matching.value} onChange={v => { matching.setValue(v); setDesiredArea(v.area); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={savingProfile || isUploadingCV || isGeneratingAIProfile} /> : <p role="status"><LText text={matching.error || "A carregar..."} /></p>}</div>
         <form onSubmit={handleSave} className="grid gap-8 lg:grid-cols-[320px_1fr]">
           <aside className="space-y-6">
             <div className="relative flex flex-col items-center text-center">
@@ -2155,22 +2112,7 @@ function getTrainingItems() {
                     <LText text={"Define aquilo que procuras para melhorar o matching."} /></p>
 
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
-                    <div>
-                      <label className="text-sm font-semibold">
-                        <LText text={"Área pretendida"} /></label>
-                      <select
-                        value={desiredArea}
-                        onChange={(event) => setDesiredArea(event.target.value)}
-                        className={inputClass}
-                      >
-                        <option value=""><LText text={"Selecionar área"} /></option>
-                        {professionalAreas.map((area) => (
-                          <option key={area} value={area}>
-                            <LText text={area} />
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    
 
                     <div>
                       <label className="text-sm font-semibold">
@@ -2191,22 +2133,7 @@ function getTrainingItems() {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="text-sm font-semibold">
-                        <LText text={"Modelo de trabalho"} /></label>
-                      <select
-                        value={workModel}
-                        onChange={(event) => setWorkModel(event.target.value)}
-                        className={inputClass}
-                      >
-                        <option value=""><LText text={"Selecionar modelo"} /></option>
-                        {workModelOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            <LText text={option.label} />
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    
 
                     <div>
                       <label className="text-sm font-semibold">
@@ -2316,40 +2243,7 @@ function getTrainingItems() {
                   </div>
                 </section>
 
-                <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
-                  <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    <LText text={"Dados de matching"} /></h3>
 
-                  <div className="mt-6 grid gap-5 md:grid-cols-2">
-                    <div>
-                      <label className="text-sm font-semibold">
-                        <LText text={"Profissão principal"} /></label>
-                      <LElement as="input"
-                        value={mainRole}
-                        onChange={(event) => setMainRole(event.target.value)}
-                        placeholder="Ex: Marketing Specialist"
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-semibold">
-                        <LText text={"Senioridade"} /></label>
-                      <select
-                        value={seniority}
-                        onChange={(event) => setSeniority(event.target.value)}
-                        className={inputClass}
-                      >
-                        <option value=""><LText text={"Selecionar senioridade"} /></option>
-                        {seniorityOptions.map((option) => (
-                          <option key={option} value={option}>
-                            <LText text={option} />
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </section>
 
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">

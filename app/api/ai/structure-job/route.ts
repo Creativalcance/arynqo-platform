@@ -319,6 +319,10 @@ Regras:
 
     const supabase = getAdminClient();
 
+    const { data: savedJob, error: savedError } = await supabase.from("jobs").select("matching_preferences").eq("id", body.jobId).single();
+    if (savedError) throw savedError;
+    if (savedJob?.matching_preferences?.confirmed) return NextResponse.json({success:true, preserved_confirmed_fields:true});
+
     const { error: updateError } = await supabase
       .from("jobs")
       .update({
