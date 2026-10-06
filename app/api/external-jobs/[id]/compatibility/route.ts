@@ -1,6 +1,6 @@
 import { apiErrorResponse, requireActor, requireUuid, ApiError, enforceApiLimit } from '@/lib/api-auth';
 import { externalCompatibility } from '@/lib/external-jobs/compatibility';
-import { loadReviewedSkillAliases } from '@/lib/reviewed-skill-aliases';
+import { optionKey } from '@/lib/profile-options';
 export async function GET(request:Request,{params}:{params:Promise<{id:string}>}){
  try{
   const actor=await requireActor(request,['student']);const {id}=await params;requireUuid(id,'ID da vaga');
@@ -15,7 +15,11 @@ export async function GET(request:Request,{params}:{params:Promise<{id:string}>}
   const p=profile.data;
   const declared=(p?.student_skills||[]) as unknown as {skills:{name:string}|{name:string}[]|null}[];
   const skills=[...(p?.skills_normalized||[]),...(p?.tools_normalized||[]),...(p?.soft_skills_normalized||[]),...declared.flatMap(row=>Array.isArray(row.skills)?row.skills.map(s=>s.name):row.skills?[row.skills.name]:[]),...[p?.tools,p?.soft_skills].flatMap(s=>s?s.split(/[,;\n|]/):[])].filter((s):s is string=>typeof s==='string');
-  const aliases=await loadReviewedSkillAliases(actor.client);
-  return Response.json(externalCompatibility(skills,job.title,offer.data!.description,aliases),{headers:{'Cache-Control':'private, no-store',Vary:'Authorization','X-Robots-Tag':'noindex, nofollow'}});
+  const labels=[...new Set(skills)].slice(0,200);
+  const {data:terms,error:termsError}=await actor.client.rpc('external_skill_equivalences',{p_labels:labels});
+  if(termsError||!Array.isArray(terms))throw new ApiError(503,'Não foi possível consultar a compatibilidade.');
+  const aliases=new Map<string,string>();
+  for(const row of terms){if(typeof row.term==='string'&&typeof row.canonical==='string')aliases.set(optionKey(row.term),row.canonical);}
+  return Response.json(externalCompatibility(labels,job.title,offer.data!.description,aliases),{headers:{'Cache-Control':'private, no-store',Vary:'Authorization','X-Robots-Tag':'noindex, nofollow'}});
  }catch(error){const response=apiErrorResponse(error)||Response.json({error:'Não foi possível consultar a compatibilidade.'},{status:503});response.headers.set('Cache-Control','private, no-store');return response;}
 }

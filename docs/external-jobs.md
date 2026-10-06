@@ -41,3 +41,15 @@ O resultado é recalculado ao abrir o detalhe; não grava um match interno nem m
 Os testes globais usam 650 ofertas sintéticas apenas em PGlite e verificam a recuperação de todos os resultados, os 19 países, orçamento, bloqueio de concorrência, pausa e acesso anónimo sem descrição/destino. Nenhum anúncio sintético é publicado.
 
 Uma resposta com anúncios mas sem qualquer registo válido é uma falha de validação, não uma pesquisa vazia bem-sucedida. O painel distingue datas antigas/futuras/inválidas, campos em falta e URLs recusadas, sem guardar respostas brutas ou credenciais.
+
+## Prioridade e apresentação
+
+A pesquisa ordena primeiro as vagas internas e depois as externas, antes de aplicar LIMIT/OFFSET. Dentro de cada grupo usa data decrescente e ID como desempate. A regra mantém-se com pesquisa, filtros e páginas seguintes; o filtro exclusivo de vagas externas continua disponível. Testado com 25 vagas internas antigas e 650 externas recentes, incluindo a transição na segunda página.
+
+A página distingue os grupos, concentra as condições de acesso no cabeçalho das ofertas externas e mantém a atribuição Adzuna em cada anúncio. Pesquisa e país ficam visíveis; os restantes filtros podem ser expandidos. Os cartões mostram empresa, título, localização, condições disponíveis, data e ação.
+
+## Evidência multilingue
+
+A comparação externa usa agora `external_skill_equivalences`, que consulta apenas os conceitos aprovados correspondentes às competências do candidato (máximo de 200 entradas), as traduções existentes e os aliases revistos. Não descarrega o catálogo completo. Termos que correspondem a vários conceitos aprovados são excluídos, em vez de escolher uma interpretação. Conceitos rejeitados ou pendentes não estabelecem equivalências.
+
+Cada coincidência inclui um trecho do anúncio original, preservando acentos e pontuação. A interface permite expandir a competência para consultar esse trecho. Isto continua a ser evidência de uma menção, sem classificação automática como requisito obrigatório e sem percentagem de compatibilidade.

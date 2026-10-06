@@ -47,3 +47,10 @@ test('an entirely rejected provider batch is not reported as an empty successful
  }
  assert.equal((await fetchCountry('gb',{id:'test',key:'test'},async()=>Response.json({results:[]}),now)).rows.length,0);
 });
+test('translated evidence quotes the original advert, preserving accents and punctuation',()=>{
+ const title='Chef de projet';const description='Nous recherchons une personne avec\n   gestion de projets. SQL est apprécié.';
+ const aliases=new Map([['gestion de projets','Gestão de projetos'],['gestao de projetos','Gestão de projetos']]);
+ const result=externalCompatibility(['Gestão de projetos'],title,description,aliases);
+ assert.equal(result.mentions.length,1);assert.ok(result.mentions[0].excerpt.includes('gestion de projets'));assert.ok(result.mentions[0].excerpt.includes('SQL est apprécié.'));assert.equal(result.score,null);
+ const accented=externalCompatibility(['gestao de projetos'],'Gestão de projetos','');assert.equal(accented.mentions[0].excerpt,'Gestão de projetos');
+});

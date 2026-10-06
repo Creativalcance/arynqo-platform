@@ -11,7 +11,7 @@ function mock(context:TestContext,role:string,expired=false){const calls:string[
  const url=String(input);calls.push(url);
  if(url.endsWith('/auth/v1/user'))return Response.json({id,is_anonymous:false});
  if(url.includes('/student_profiles?')){assert.ok(url.includes('user_id=eq.'+id));return Response.json({skills_normalized:['SQL'],student_skills:[]});}
- if(url.includes('/profile_tag_aliases?'))return Response.json([]);
+ if(url.includes('/rpc/external_skill_equivalences'))return Response.json([]);
  if(url.includes('/profiles?'))return Response.json({role,locale:'pt'});
  if(url.includes('/rpc/consume_api_limit'))return Response.json(null);
  if(url.includes('/rpc/configure_external_jobs'))return Response.json(null);

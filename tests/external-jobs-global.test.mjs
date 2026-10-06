@@ -11,6 +11,8 @@ test('global batches respect budgets, resume countries, reject stale writes and 
   grant select on public.jobs,public.company_profiles to anon,authenticated,service_role;`);
   for(const file of ['20261006161657_external_job_feed.sql','20261006170117_external_jobs_global.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
   const diagnostics=(await readdir(new URL('../supabase/migrations/',import.meta.url))).find(f=>f.endsWith('_external_job_rejection_diagnostics.sql'));assert.ok(diagnostics);await db.exec(await readFile(new URL('../supabase/migrations/'+diagnostics,import.meta.url),'utf8'));
+  const priority=(await readdir(new URL('../supabase/migrations/',import.meta.url))).find(f=>f.endsWith('_arynqo_jobs_first.sql'));assert.ok(priority);await db.exec(await readFile(new URL('../supabase/migrations/'+priority,import.meta.url),'utf8'));
+  const model=(await readdir(new URL('../supabase/migrations/',import.meta.url))).find(f=>f.endsWith('_job_work_model_filter.sql'));assert.ok(model);await db.exec(await readFile(new URL('../supabase/migrations/'+model,import.meta.url),'utf8'));
   await db.exec('set role service_role');
   await db.query('update external_job_sources set enabled=true,terms_confirmed=true,countries=$1',[countries]);
   const seen=[];
@@ -46,6 +48,16 @@ test('global batches respect budgets, resume countries, reject stale writes and 
   await assert.rejects(db.query('select * from external_job_country_sync'),/permission denied/);
   await db.exec("reset role;insert into company_profiles values ('10000000-0000-0000-0000-000000000001','Company 650');insert into jobs(id,company_id,title,description,country_code,location,is_active,created_at) values ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','Developer 650','Internal description','FR','Paris',true,now());set role anon");
   const duplicate=await search({q:'Developer 650'});assert.equal(duplicate.total,1);assert.equal(duplicate.jobs[0].origin,null);
-  await db.exec('reset role;update external_job_sources set enabled=false;set role anon');assert.equal((await search()).total,1);
+  // More internal jobs than fit on one page, all older than the external jobs.
+  await db.exec("reset role;update jobs set created_at=now()-interval '10 days';insert into jobs(id,company_id,title,description,country_code,location,is_active,created_at) select gen_random_uuid(),'10000000-0000-0000-0000-000000000001','Priority developer '||n,'Internal','FR','Paris',true,now()-interval '10 days' from generate_series(1,24) n;set role anon");
+  for(const filter of [{},{country:'FR'},{q:'developer'},{location:'Paris'}]){
+   const page1=await search(filter,1),page2=await search(filter,2);
+   assert.equal(page1.jobs.length,20);assert.ok(page1.jobs.every(j=>j.origin===null));
+   assert.ok(page2.jobs.slice(0,5).every(j=>j.origin===null));assert.ok(page2.jobs.slice(5).every(j=>j.origin==='external'));
+  }
+  assert.ok((await search({origin:'external'})).jobs.every(j=>j.origin==='external'));
+  assert.equal((await search({origin:'internal'})).total,25);
+  await db.exec("reset role;update jobs set work_model='Presencial';set role anon");assert.equal((await search({model:'presential'})).total,25);assert.equal((await search({model:'remote'})).total,0);
+  await db.exec('reset role;update external_job_sources set enabled=false;set role anon');assert.equal((await search()).total,25);
  }finally{await db.close();}
 });

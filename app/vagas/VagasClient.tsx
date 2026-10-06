@@ -37,6 +37,8 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
   const [result,setResult] = useState(initialResult);
   const [page,setPage]=useState(1);
   const [error,setError]=useState(false);
+  const [refresh,setRefresh]=useState(0);
+  const [filtersOpen,setFiltersOpen]=useState(false);
   const firstRequest=useRef(true);
   const [search, setSearch] = useState(initialSearch);
   const [origin, setOrigin] = useState("");
@@ -63,7 +65,7 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
       finally{if(!controller.signal.aborted)setIsLoading(false);}
     },250);
     return()=>{clearTimeout(timer);controller.abort();};
-  },[search,origin,country,location,area,contractType,workModel,page]);
+  },[search,origin,country,location,area,contractType,workModel,page,refresh]);
 
   function clearFilters() {
     setPage(1);
@@ -76,192 +78,63 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
     setLocation("");
   }
 
-  return (
-    <main className="min-h-screen bg-[#F7F9FC] text-[#07111F]">
-      <section className="border-b border-[#DDE3EA] bg-white px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <p className="inline-flex rounded-full border border-[#1683FF]/20 bg-[#1683FF]/10 px-5 py-2 text-sm font-semibold text-[#1683FF]">
-            <LText text={"Oportunidades profissionais"} /></p>
-
-          <h1 className="mt-8 max-w-3xl text-5xl font-black tracking-[-0.06em] md:text-6xl">
-            <LText text={"Descobre a próxima oportunidade."} /></h1>
-
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            <LText text={"Explora vagas alinhadas com as tuas competências, experiência e objetivos profissionais."} /></p>
-
-          <div className="mt-10 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm">
-            <div onChange={() => setPage(1)} className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
-              <label className="text-sm font-semibold text-slate-600"><LText text="Origem da vaga" /><select value={origin} onChange={event=>setOrigin(event.target.value)} className="mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm"><option value=""><LText text="Todas" /></option><option value="internal">ARYNQO</option><option value="external"><LText text="Vagas externas" /></option></select></label>
-              <LElement as="input"
-                aria-label="Pesquisar vagas"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Pesquisar vaga, área ou localização..."
-                className="rounded-2xl border border-[#DDE3EA] px-4 py-4 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
-              />
-
-              <label className="block min-w-0 text-sm font-semibold text-slate-600">
-                <LText text="País" />
-                <LElement as="select" aria-label="País" value={country}
-                  onChange={event => { setCountry(event.target.value); setLocation(""); }}
-                  className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm font-normal text-[#07111F] focus:border-[#1683FF] focus:outline-2 focus:outline-blue-600">
-                  <option value=""><LText text="Todos" /></option>
-                  {countries.map(item => <option key={item.code} value={item.code}>{item.display}</option>)}
-                </LElement>
-              </label>
-              <label className="block min-w-0 text-sm font-semibold text-slate-600">
-                <LText text="Localização" />
-                <LElement as="select" aria-label="Localização" value={location}
-                  onChange={event => setLocation(event.target.value)}
-                  className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm font-normal text-[#07111F] focus:border-[#1683FF] focus:outline-2 focus:outline-blue-600">
-                  <option value=""><LText text="Todas" /></option>
-                  {locations.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </LElement>
-              </label>
-
-              <LElement as="select"
-                aria-label="Área profissional"
-                value={area}
-                onChange={(event) => setArea(event.target.value)}
-                className="rounded-2xl border border-[#DDE3EA] px-4 py-4 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
-              >
-                <option value=""><LText text={"Todas as áreas"} /></option>
-                {areas.map((item) => (
-                  <option key={item} value={item}>
-                    <LText text={item} />
-                  </option>
-                ))}
-              </LElement>
-
-              <LElement as="select"
-                aria-label="Tipo de contrato"
-                value={contractType}
-                onChange={(event) => setContractType(event.target.value)}
-                className="rounded-2xl border border-[#DDE3EA] px-4 py-4 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
-              >
-                <option value=""><LText text={"Todos os tipos"} /></option>
-                {contractTypes.map((item) => (
-                  <option key={item} value={item}>
-                    <LText text={item} />
-                  </option>
-                ))}
-              </LElement>
-
-              <LElement as="select"
-                aria-label="Modelo de trabalho"
-                value={workModel}
-                onChange={(event) => setWorkModel(event.target.value)}
-                className="rounded-2xl border border-[#DDE3EA] px-4 py-4 text-sm outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10"
-              >
-                <option value=""><LText text={"Todos os modelos"} /></option>
-                <option value="presential"><LText text={"Presencial"} /></option>
-                <option value="hybrid"><LText text={"Híbrido"} /></option>
-                <option value="remote"><LText text={"Remoto"} /></option>
-              </LElement>
-            </div>
-
-            <div className="mt-5 flex justify-end">
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
-              >
-                <LText text={"Limpar filtros"} /></button>
+  const internalJobs=filteredJobs.filter(job=>job.origin!=='external');
+  const externalJobs=filteredJobs.filter(job=>job.origin==='external');
+  const activeFilters=[country,location,area,contractType,workModel].filter(Boolean).length;
+  const selectClass="mt-2 w-full min-w-0 rounded-xl border border-[#DDE3EA] bg-white px-3 py-3 text-sm font-normal text-[#07111F] outline-none focus:border-[#1683FF] focus:ring-2 focus:ring-blue-100";
+  return <main className="min-h-screen bg-[#F7F9FC] text-[#07111F]">
+    <section className="border-b border-[#DDE3EA] bg-white px-4 pb-8 pt-10 sm:px-6 sm:pt-14">
+      <div className="mx-auto max-w-6xl">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#1683FF]"><LText text="Oportunidades profissionais" /></p>
+        <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight tracking-[-0.045em] sm:text-5xl"><LText text="Descobre a próxima oportunidade." /></h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600"><LText text="Vagas de empresas na ARYNQO, seguidas de oportunidades de fontes externas." /></p>
+        <div className="mt-7 rounded-2xl border border-[#DDE3EA] bg-[#F7F9FC] p-4 sm:p-5" onChange={()=>setPage(1)}>
+          <div className="grid min-w-0 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(160px,240px)_auto]">
+            <label className="min-w-0 text-sm font-semibold"><LText text="Pesquisar vagas" /><LElement as="input" type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Pesquisar vaga, área ou localização..." className={selectClass} /></label>
+            <label className="min-w-0 text-sm font-semibold"><LText text="País" /><LElement as="select" aria-label="País" value={country} onChange={e=>{setCountry(e.target.value);setLocation('');}} className={selectClass}><option value=""><LText text="Todos" /></option>{countries.map(item=><option key={item.code} value={item.code}>{item.display}</option>)}</LElement></label>
+            <button type="button" aria-expanded={filtersOpen} aria-controls="vacancy-filters" onClick={()=>setFiltersOpen(!filtersOpen)} className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold hover:border-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600"><LText text="Filtros" />{activeFilters>0&&<span className="rounded-full bg-blue-100 px-2 text-blue-800">{activeFilters}</span>}<span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
+          </div>
+          <div id="vacancy-filters" hidden={!filtersOpen} className="mt-5 border-t border-slate-200 pt-5">
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <label className="min-w-0 text-sm font-semibold"><LText text="Localização" /><LElement as="select" aria-label="Localização" value={location} onChange={e=>setLocation(e.target.value)} className={selectClass}><option value=""><LText text="Todas" /></option>{locations.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}</LElement></label>
+              <label className="min-w-0 text-sm font-semibold"><LText text="Área profissional" /><LElement as="select" aria-label="Área profissional" value={area} onChange={e=>setArea(e.target.value)} className={selectClass}><option value=""><LText text="Todas as áreas" /></option>{areas.map(item=><option key={item} value={item}><LText text={item} /></option>)}</LElement></label>
+              <label className="min-w-0 text-sm font-semibold"><LText text="Tipo de contrato" /><LElement as="select" aria-label="Tipo de contrato" value={contractType} onChange={e=>setContractType(e.target.value)} className={selectClass}><option value=""><LText text="Todos os tipos" /></option>{contractTypes.map(item=><option key={item} value={item}><LText text={item} /></option>)}</LElement></label>
+              <label className="min-w-0 text-sm font-semibold"><LText text="Modelo de trabalho" /><LElement as="select" aria-label="Modelo de trabalho" value={workModel} onChange={e=>setWorkModel(e.target.value)} className={selectClass}><option value=""><LText text="Todos os modelos" /></option>{Object.entries(workModelLabels).map(([value,label])=><option key={value} value={value}><LText text={label} /></option>)}</LElement></label>
             </div>
           </div>
+          {(activeFilters>0||search||origin)&&<button type="button" onClick={clearFilters} className="mt-4 text-sm font-semibold text-blue-700 underline underline-offset-4"><LText text="Limpar filtros" /></button>}
         </div>
-      </section>
+      </div>
+    </section>
+    <section className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-9" aria-busy={isLoading}>
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+        <LElement as="div" role="group" aria-label="Origem da vaga" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-slate-200 bg-white p-1.5">
+          {[['','Todas'],['internal','ARYNQO'],['external','Vagas externas']].map(([value,label])=><button key={value} type="button" aria-pressed={origin===value} onClick={()=>{setOrigin(value);setPage(1);}} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-blue-500 ${origin===value?'bg-[#07111F] text-white':'text-slate-600 hover:bg-slate-100'}`}><LText text={label} /></button>)}
+        </LElement>
+        <p role="status" aria-live="polite" className="text-sm text-slate-600">{isLoading?<LText text="A carregar vagas..." />:<><strong className="text-[#07111F]">{result.total}</strong><LText text=" vagas encontradas" /></>}</p>
+      </div>
+      {error?<div role="alert" className="rounded-2xl border bg-white p-6"><LText text="Não foi possível carregar as vagas." /><button type="button" className="ml-4 text-blue-700 underline" onClick={()=>setRefresh(n=>n+1)}><LText text="Tentar novamente" /></button></div>:isLoading?<div className="space-y-4" aria-hidden="true">{[0,1,2].map(n=><div key={n} className="h-44 animate-pulse rounded-2xl border border-slate-200 bg-white motion-reduce:animate-none" />)}</div>:result.total===0?<div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center"><h2 className="text-xl font-bold"><LText text="Nenhuma vaga encontrada" /></h2><p className="mt-3 text-sm text-slate-600"><LText text="Tenta alterar os filtros ou pesquisar outro termo." /></p><button type="button" onClick={clearFilters} className="mt-5 rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white"><LText text="Limpar filtros" /></button></div>:<>
+        {internalJobs.length>0&&<section aria-labelledby="arynqo-jobs-heading"><div className="mb-4 flex items-center gap-3"><span aria-hidden="true" className="h-6 w-1 rounded-full bg-[#1683FF]" /><h2 id="arynqo-jobs-heading" className="text-lg font-bold"><LText text="Empresas na ARYNQO" /></h2></div><div className="grid gap-4">{internalJobs.map(job=><VacancyCard key={job.id} job={job} locale={displayLocale} />)}</div></section>}
+        {externalJobs.length>0&&<section aria-labelledby="external-jobs-heading" className={internalJobs.length?'mt-10':''}><h2 id="external-jobs-heading" className="text-lg font-bold"><LText text="Outras oportunidades" /></h2><p className="mb-5 mt-2 max-w-2xl text-sm leading-6 text-slate-600"><LText text="Registo gratuito de candidato necessário para consultar esta oferta." /> <LText text="A candidatura é feita fora da ARYNQO. O estado não é acompanhado nesta plataforma." /></p><div className="grid gap-4">{externalJobs.map(job=><VacancyCard key={job.id} job={job} locale={displayLocale} />)}</div></section>}
+        {result.total>20&&<LElement as="nav" aria-label="Paginação" className="mt-8 flex flex-wrap items-center justify-center gap-4"><button type="button" disabled={result.page<=1} onClick={()=>setPage(result.page-1)} className="rounded-xl border bg-white px-5 py-3 text-sm font-semibold disabled:opacity-40"><LText text="Anterior" /></button><span className="text-sm text-slate-600">{result.page} / {Math.ceil(result.total/20)}</span><button type="button" disabled={result.page*20>=result.total} onClick={()=>setPage(result.page+1)} className="rounded-xl border bg-white px-5 py-3 text-sm font-semibold disabled:opacity-40"><LText text="Seguinte" /></button></LElement>}
+      </>}
+    </section>
+  </main>;
+}
 
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        {error ? <p role="alert"><LText text="Não foi possível carregar as vagas." /><button className="ml-4 underline" onClick={()=>window.location.reload()}><LText text="Tentar novamente" /></button></p> : isLoading ? (
-          <p className="text-sm text-slate-500"><LText text={"A carregar vagas..."} /></p>
-        ) : (
-          <>
-            <p role="status" aria-live="polite" className="mb-6 text-sm text-slate-500">
-              {result.total} <LText text={" vagas encontradas"} /></p>
-
-            {filteredJobs.length === 0 ? (
-              <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center">
-                <h2 className="text-2xl font-semibold">
-                  <LText text={"Nenhuma vaga encontrada"} /></h2>
-
-                <p className="mt-3 text-sm text-slate-500">
-                  <LText text={"Tenta alterar os filtros ou pesquisar outro termo."} /></p>
-              </div>
-            ) : (
-              <div className="grid gap-5">
-                {filteredJobs.map((job) => {
-                  const model = job.work_model || job.work_mode || "";
-
-                  return (
-                    <article
-                      key={job.id}
-                      className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-6">
-                        <div className="min-w-0 flex-1 break-words">
-                          {job.origin === "external" && <p className="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"><LText text="Vaga externa" /></p>}
-                          {job.company_name && <p className="mb-2 text-sm font-semibold">{job.company_name}</p>}
-                          <p className="text-sm font-semibold text-[#1683FF]">
-                            <LText text={job.area || "Área não definida"} />
-                          </p>
-
-                          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                            {job.title}
-                          </h2>
-
-                          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-500">
-                            <LText text={job.description ? (job.description.length > 220 ? `${job.description.slice(0, 220).trim()}…` : job.description) : "Consulta os detalhes desta oportunidade."} />
-                          </p>
-
-                          <p className="mt-3 text-xs text-slate-600"><LText text={"Publicada em "} /><LText text={new Intl.DateTimeFormat(displayLocale, { timeZone: "Europe/Lisbon" }).format(new Date(job.created_at))} /></p>
-                          <div className="mt-5 flex flex-wrap gap-2">
-                            {job.location && (
-                              <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                {job.location}
-                              </span>
-                            )}
-
-                            {model && (
-                              <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                <LText text={workModelLabels[model] || model} />
-                              </span>
-                            )}
-
-                            {job.contract_type && (
-                              <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                <LText text={job.contract_type} />
-                              </span>
-                            )}
-
-                            {job.seniority && (
-                              <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-slate-600">
-                                <LText text={job.seniority} />
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {job.origin === "external" && job.external_id ? <div className="w-full shrink-0 space-y-3 sm:w-auto sm:max-w-xs">
-                          <Link href={`/vagas/externas/${job.external_id}`} className="block rounded-full bg-[#07111F] px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#1683FF]"><LText text="Ver oferta externa" /></Link>
-                          <p className="text-xs leading-5 text-slate-500"><LText text="Registo gratuito de candidato necessário para consultar esta oferta." /></p>
-                          <p className="text-xs text-slate-500"><LText text="Fonte" />: <a href={ADZUNA_ATTRIBUTION_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[23px] min-w-[116px] items-center text-base font-semibold text-blue-700 underline">Adzuna</a></p>
-                        </div> : <Link
-                          aria-label={`Ver vaga: ${job.title}`}
-                          href={`/vagas/${job.id}`}
-                          className="rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
-                        >
-                          <LText text={"Ver vaga"} /></Link>}
-                      </div>
-                    </article>
-                  );
-                })}
-                {result.total>20 && <LElement as="nav" aria-label="Paginação" className="flex items-center justify-center gap-5"><button type="button" disabled={result.page<=1} onClick={()=>setPage(result.page-1)} className="rounded-full border px-5 py-3 disabled:opacity-40"><LText text="Anterior" /></button><span>{result.page} / {Math.ceil(result.total/20)}</span><button type="button" disabled={result.page*20>=result.total} onClick={()=>setPage(result.page+1)} className="rounded-full border px-5 py-3 disabled:opacity-40"><LText text="Seguinte" /></button></LElement>}
-              </div>
-            )}
-          </>
-        )}
-      </section>
-    </main>
-  );
+function VacancyCard({job,locale}:{job:Job;locale:string}){
+ const external=job.origin==='external',model=job.work_model||job.work_mode||'';
+ return <article className={`min-w-0 rounded-2xl border bg-white p-5 transition-shadow hover:shadow-md sm:p-6 ${external?'border-slate-200':'border-blue-200'}`}>
+  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+   <p className="min-w-0 break-words text-sm font-semibold text-slate-600">{job.company_name||<LText text={job.area||'Área não definida'} />}</p>
+   <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold ${external?'bg-slate-100 text-slate-600':'bg-blue-50 text-blue-700'}`}>{external?<LText text="Vaga externa" />:'ARYNQO'}</span>
+  </div>
+  <h3 className="mt-3 break-words text-xl font-bold leading-snug tracking-tight"><Link href={external?`/vagas/externas/${job.external_id}`:`/vagas/${job.id}`} className="hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-600">{job.title}</Link></h3>
+  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">{job.location&&<span className="break-words">{job.location}</span>}{model&&<span><LText text={workModelLabels[model]||model} /></span>}{job.contract_type&&<span><LText text={job.contract_type} /></span>}{job.seniority&&<span><LText text={job.seniority} /></span>}</div>
+  {!external&&job.description&&<p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-slate-500">{job.description}</p>}
+  <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4">
+   <div className="text-xs text-slate-500"><p><LText text="Publicada em " />{new Intl.DateTimeFormat(locale,{timeZone:'Europe/Lisbon'}).format(new Date(job.created_at))}</p>{external&&<p className="mt-1"><LText text="Fonte" />: <a href={ADZUNA_ATTRIBUTION_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[23px] min-w-[116px] items-center text-base font-semibold text-blue-700 underline underline-offset-2">Adzuna</a></p>}</div>
+   <Link href={external?`/vagas/externas/${job.external_id}`:`/vagas/${job.id}`} className={`inline-flex min-h-11 items-center justify-center gap-3 rounded-xl px-5 py-3 text-sm font-semibold transition ${external?'border border-slate-300 text-[#07111F] hover:border-blue-500':'bg-[#07111F] text-white hover:bg-blue-700'}`}><LText text={external?'Ver oferta externa':'Ver vaga'} /><span aria-hidden="true">↗</span></Link>
+  </div>
+ </article>;
 }
