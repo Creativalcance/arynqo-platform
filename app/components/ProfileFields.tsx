@@ -4,6 +4,7 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 import { useEffect, useId, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { countryFlag, languageCodesForCountry, selectProfileLanguage } from "@/lib/language-selection";
 import { countryOptions, languageLevels, languageOptions, optionKey, parseLanguage, profileOptions } from "@/lib/profile-options";
 
 const fieldClass = "mt-2 w-full min-w-0 rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm outline-none focus:border-[#1683FF]";
@@ -20,17 +21,21 @@ export function CountrySelect({ value, onChange, disabled = false }: { value: st
 export function LanguagePicker({ value, onChange, label = "Idiomas" }: { value: string[]; onChange: (value: string[]) => void; label?: string }) {
   const { locale } = useI18n();
   const localizedLanguages = profileOptions(locale).languages;
+  const countries = profileOptions(locale).countries;
+  const [country, setCountry] = useState("");
   const [query, setQuery] = useState("");
   const [code, setCode] = useState("");
   const [level, setLevel] = useState("");
-  const matches = localizedLanguages.filter(o => !query || [o.display, o.label, o.english, o.code].some(s => optionKey(s).includes(optionKey(query))));
+  const countryCodes = languageCodesForCountry(country);
+  const countryLanguages = country === "*" || !countryCodes.length
+    ? localizedLanguages
+    : countryCodes.flatMap(code => localizedLanguages.filter(option => option.code === code));
+  const matches = countryLanguages.filter(o => !query || [o.display, o.label, o.english, o.code].some(s => optionKey(s).includes(optionKey(query))));
   const options = matches.slice(0, 150);
-  const chosen = languageOptions.find(o => o.code === code);
   function add() {
-    if (!chosen) return;
-    const formatted = `${chosen.label}${level ? ` (${level})` : ""}`;
-    onChange([...value.filter(v => parseLanguage(v).code !== code), formatted]);
-    setCode(""); setQuery("");
+    if (!country || !code) return;
+    onChange(selectProfileLanguage(value, code, level));
+    setCode(""); setQuery(""); setLevel("");
   }
   return <div className="min-w-0">
     <ul className="mt-3 space-y-2">{value.map((v, index) => <li key={`${v}-${index}`} className="flex min-w-0 flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2 text-sm">
@@ -39,12 +44,25 @@ export function LanguagePicker({ value, onChange, label = "Idiomas" }: { value: 
         <option value=""><LText text={"Sem nível indicado"} /></option>{languageLevels.map(l => <option value={l} key={l}><LText text={l} /></option>)}
       </LElement><LElement as="button" type="button" aria-label={`Remover ${v}`} className="p-2" onClick={() => onChange(value.filter((_, i) => i !== index))}><LText text={"×"} /></LElement>
     </li>)}</ul>
-    <LElement as="input" className={fieldClass} aria-label={`Pesquisar ${label}`} placeholder="Pesquisar idioma pelo nome ou código" value={query} onChange={e => { setQuery(e.target.value); setCode(""); }} />
-    <LElement as="select" className={fieldClass} aria-label={`Selecionar ${label}`} value={code} onChange={e => setCode(e.target.value)}>
-      <option value=""><LText text={"Selecionar idioma"} /></option>{options.map(o => <option value={o.code} key={o.code}>{o.display} · {o.code}</option>)}
-    </LElement>
-    {matches.length > 150 && <p className="mt-1 text-xs text-slate-500"><LText text={"Pesquisa para encontrar qualquer um dos "} />{languageOptions.length} <LText text={" idiomas."} /></p>}
-    <div className="mt-2 flex flex-wrap gap-2"><LElement as="select" aria-label="Nível do novo idioma" className="min-w-0 flex-1 rounded-xl border bg-white p-3 text-sm" value={level} onChange={e => setLevel(e.target.value)}><option value=""><LText text={"Sem nível indicado"} /></option>{languageLevels.map(l => <option value={l} key={l}><LText text={l} /></option>)}</LElement><button type="button" disabled={!code} onClick={add} className="rounded-xl bg-[#07111F] px-4 py-3 text-sm text-white disabled:opacity-50"><LText text={"Adicionar"} /></button></div>
+    <div className="mt-3 grid min-w-0 gap-3 sm:grid-cols-2">
+      <label className="min-w-0 text-sm font-medium text-slate-700"><LText text="País de referência do idioma" />
+        <LElement as="select" className={fieldClass} value={country} onChange={event => { setCountry(event.target.value); setCode(""); setQuery(""); }}>
+          <option value=""><LText text="Selecionar país" /></option>
+          {countries.map(item => <option key={item.code} value={item.code}>{countryFlag(item.code)} {item.display}</option>)}
+          <option value="*">🌐 <LText text="Todos os idiomas" /></option>
+        </LElement>
+      </label>
+      <label className="min-w-0 text-sm font-medium text-slate-700"><LText text="Idioma" />
+        <LElement as="select" className={fieldClass} disabled={!country} value={code} onChange={event => setCode(event.target.value)}>
+          <option value=""><LText text="Selecionar idioma" /></option>
+          {options.map(item => <option value={item.code} key={item.code}>{item.display}</option>)}
+        </LElement>
+      </label>
+    </div>
+    {country && (country === "*" || !countryCodes.length || countryLanguages.length > 15) && <LElement as="input" className={fieldClass} aria-label={`Pesquisar ${label}`} placeholder="Pesquisar idioma pelo nome ou código" value={query} onChange={event => {setQuery(event.target.value);setCode("");}} />}
+    {country && matches.length > 150 && <p className="mt-1 text-xs text-slate-500"><LText text={"Pesquisa para encontrar qualquer um dos "} />{languageOptions.length} <LText text={" idiomas."} /></p>}
+    <div className="mt-2 flex flex-wrap gap-2"><LElement as="select" aria-label="Nível do novo idioma" className="min-w-0 flex-1 rounded-xl border bg-white p-3 text-sm" value={level} onChange={e => setLevel(e.target.value)}><option value=""><LText text={"Sem nível indicado"} /></option>{languageLevels.map(l => <option value={l} key={l}><LText text={l} /></option>)}</LElement><button type="button" disabled={!country || !code} onClick={add} className="rounded-xl bg-[#07111F] px-4 py-3 text-sm text-white disabled:opacity-50"><LText text={"Adicionar"} /></button></div>
+    <p className="mt-2 text-xs text-slate-600"><LText text="O país ajuda a encontrar o idioma; não indica nacionalidade. Não encontras o idioma? Seleciona Todos os idiomas." /></p>
     <p className="mt-2 text-xs text-slate-500"><LText text={"A1–C2: níveis do QECR. Indica apenas o nível que consegues demonstrar."} /></p>
   </div>;
 }

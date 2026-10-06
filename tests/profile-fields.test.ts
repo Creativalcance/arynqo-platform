@@ -29,3 +29,22 @@ test("writing review requires actual text, not an uploaded file or classificatio
   assert.equal(hasWritingContent({ bio: "Tenho experiência em vendas." }), true);
   assert.equal(hasWritingContent({ headline: "", bio: "", career_goals: "", ai_summary: "" }), false);
 });
+
+test("country-assisted language choices preserve language, level and channel matching", async () => {
+  const {countryFlag,languageCodesForCountry,selectProfileLanguage}=await import('../lib/language-selection');
+  assert.equal(countryFlag('PT'),'🇵🇹');
+  assert.ok(languageCodesForCountry('PT').includes('pt'));
+  assert.ok(languageCodesForCountry('BR').includes('pt'));
+  assert.ok(languageCodesForCountry('CH').includes('de'));
+  assert.ok(languageCodesForCountry('CH').includes('fr'));
+  assert.ok(languageCodesForCountry('CH').includes('it'));
+  const candidate=selectProfileLanguage(['Idioma antigo (B1)'],'pt','C1');
+  assert.equal(candidate[0],'Idioma antigo (B1)');
+  const updated=selectProfileLanguage(candidate,'pt','B2');
+  assert.equal(updated.length,2);
+  assert.equal(languageCompatibility(updated,selectProfileLanguage([],'pt','C1')).score,0);
+  assert.equal(languageCompatibility(updated,selectProfileLanguage([],'pt','B2')).score,100);
+  assert.equal(languageCompatibility(updated.map(v=>'Escrito: '+v),['Falado: Português (B2)']).score,0);
+  assert.equal(selectProfileLanguage(updated,'invalid-country','C2'),updated);
+  for(const country of countryOptions) for(const code of languageCodesForCountry(country.code)) assert.ok(languageOptions.some(language=>language.code===code));
+});
