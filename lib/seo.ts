@@ -8,8 +8,8 @@ export async function pageMetadata(sourceTitle: string, sourceDescription: strin
   const url = `${SITE_URL}${localizedPath(path, locale)}`;
   const ogLocales = {pt:"pt_PT",en:"en_US",fr:"fr_FR",es:"es_ES",de:"de_DE",it:"it_IT"};
   return { title: {absolute:`${title} | ARYNQO`}, description, alternates: { canonical: url, languages: localeAlternates(path) },
-    openGraph: { title, description, url, siteName: "ARYNQO", locale: ogLocales[locale], alternateLocale: locales.filter(code => code !== locale).map(code => ogLocales[code]), type: "website" },
-    twitter: { card: "summary", title, description } };
+    openGraph: { title, description, url, siteName: "ARYNQO", locale: ogLocales[locale], alternateLocale: locales.filter(code => code !== locale).map(code => ogLocales[code]), type: "website", images: [{ url: `${SITE_URL}/share-image.png`, width: 1200, height: 630, type: "image/png", alt: "ARYNQO — Where talent evolves." }] },
+    twitter: { card: "summary_large_image", title, description, images: [`${SITE_URL}/share-image.png`] } };
 }
 export function safeReturnPath(value: string | null): string {
   if (!value || !/^\/(?:en\/|fr\/|es\/|de\/|it\/)?vagas\/(?:externas\/)?[a-f0-9-]{36}$/.test(value)) return "/dashboard";
