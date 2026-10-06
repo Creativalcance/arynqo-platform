@@ -4,10 +4,15 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 import Link from "@/lib/i18n/link";
 import { useMemo, useState } from "react";
+import { ADZUNA_ATTRIBUTION_URL } from "@/lib/external-jobs/adzuna";
 import { profileOptions } from "@/lib/profile-options";
 import { jobLocations, matchesJobLocation } from "@/lib/job-location-filter";
 
 export type Job = {
+  origin?: "external";
+  external_id?: string;
+  company_name?: string;
+  last_seen_at?: string;
   id: string;
   title: string;
   description: string | null;
@@ -32,6 +37,8 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
   const { locale: displayLocale } = useI18n();
   const [jobs] = useState<Job[]>(initialJobs);
   const [search, setSearch] = useState(initialSearch);
+  const [origin, setOrigin] = useState("");
+  const [visibleCount, setVisibleCount] = useState(20);
   const [area, setArea] = useState("");
   const [contractType, setContractType] = useState("");
   const [workModel, setWorkModel] = useState("");
@@ -66,15 +73,18 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
 
       return (
         (!search || text.includes(search.toLowerCase())) &&
+        (!origin || (origin === "external" ? job.origin === "external" : !job.origin)) &&
         (!area || job.area === area) &&
         (!contractType || job.contract_type === contractType) &&
         matchesJobLocation(job, country, location) &&
         (!workModel || model === workModel)
       );
     });
-  }, [jobs, search, area, contractType, workModel, country, location]);
+  }, [jobs, search, area, contractType, workModel, country, location, origin]);
 
   function clearFilters() {
+    setVisibleCount(20);
+    setOrigin("");
     setSearch("");
     setArea("");
     setContractType("");
@@ -97,7 +107,8 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
             <LText text={"Explora vagas alinhadas com as tuas competências, experiência e objetivos profissionais."} /></p>
 
           <div className="mt-10 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm">
-            <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
+            <div onChange={() => setVisibleCount(20)} className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
+              <label className="text-sm font-semibold text-slate-600"><LText text="Origem da vaga" /><select value={origin} onChange={event=>setOrigin(event.target.value)} className="mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm"><option value=""><LText text="Todas" /></option><option value="internal">ARYNQO</option><option value="external"><LText text="Vagas externas" /></option></select></label>
               <LElement as="input"
                 aria-label="Pesquisar vagas"
                 value={search}
@@ -196,7 +207,7 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
               </div>
             ) : (
               <div className="grid gap-5">
-                {filteredJobs.map((job) => {
+                {filteredJobs.slice(0,visibleCount).map((job) => {
                   const model = job.work_model || job.work_mode || "";
 
                   return (
@@ -205,7 +216,9 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
                       className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-6">
-                        <div>
+                        <div className="min-w-0 flex-1 break-words">
+                          {job.origin === "external" && <p className="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"><LText text="Vaga externa" /></p>}
+                          {job.company_name && <p className="mb-2 text-sm font-semibold">{job.company_name}</p>}
                           <p className="text-sm font-semibold text-[#1683FF]">
                             <LText text={job.area || "Área não definida"} />
                           </p>
@@ -246,16 +259,21 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
                           </div>
                         </div>
 
-                        <Link
+                        {job.origin === "external" && job.external_id ? <div className="w-full shrink-0 space-y-3 sm:w-auto sm:max-w-xs">
+                          <Link href={`/vagas/externas/${job.external_id}`} className="block rounded-full bg-[#07111F] px-6 py-3 text-center text-sm font-semibold text-white hover:bg-[#1683FF]"><LText text="Ver oferta externa" /></Link>
+                          <p className="text-xs leading-5 text-slate-500"><LText text="Registo gratuito de candidato necessário para consultar esta oferta." /></p>
+                          <p className="text-xs text-slate-500"><LText text="Fonte" />: <a href={ADZUNA_ATTRIBUTION_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[23px] min-w-[116px] items-center text-base font-semibold text-blue-700 underline">Adzuna</a></p>
+                        </div> : <Link
                           aria-label={`Ver vaga: ${job.title}`}
                           href={`/vagas/${job.id}`}
                           className="rounded-full bg-[#07111F] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1683FF]"
                         >
-                          <LText text={"Ver vaga"} /></Link>
+                          <LText text={"Ver vaga"} /></Link>}
                       </div>
                     </article>
                   );
                 })}
+                {filteredJobs.length>visibleCount && <button type="button" onClick={()=>setVisibleCount(value=>value+20)} className="mx-auto rounded-full border px-6 py-3 text-sm font-semibold"><LText text="Mostrar mais vagas" /></button>}
               </div>
             )}
           </>

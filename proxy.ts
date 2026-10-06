@@ -10,7 +10,7 @@ export function proxy(request: NextRequest) {
   if (explicit && (/^\/(api|_next)(\/|$)/.test(clean) || /\.[a-z0-9]+$/i.test(clean))) return new NextResponse(null, { status: 404 });
   if (explicit === "pt") return NextResponse.redirect(new URL(clean + request.nextUrl.search, request.url), 308);
   const preferred = normalizeLocale(request.cookies.get(localeCookie)?.value);
-  const privateRoute = /^\/(dashboard|empresa|admin|app|definicoes)(\/|$)/.test(clean);
+  const privateRoute = clean.startsWith("/vagas/externas/") || /^\/(dashboard|empresa|admin|app|definicoes)(\/|$)/.test(clean);
   if (!explicit && preferred !== "pt" && privateRoute) return NextResponse.redirect(new URL(localizedPath(path, preferred) + request.nextUrl.search, request.url));
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-arynqo-locale", locale);

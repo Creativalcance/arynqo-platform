@@ -104,6 +104,7 @@ export default function AdminEntryPage() {
                 <LText text={"Acesso desbloqueado. A partir de agora, o botão Admin fica disponível no Header deste browser."} /></p>
 
               <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/admin/vagas-externas" className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F]"><LText text="Vagas externas" /></Link>
                 <Link href="/admin/competencias" className="rounded-full bg-white px-7 py-4 text-sm font-semibold text-[#07111F]"><LText text={"Catálogo de competências"} /></Link>
                 <Link href="/admin/contas" className="rounded-full bg-[#1683FF] px-7 py-4 text-sm font-semibold text-white"><LText text={"Contas e dados"} /></Link>
                 <Link

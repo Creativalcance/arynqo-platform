@@ -12,6 +12,6 @@ export async function pageMetadata(sourceTitle: string, sourceDescription: strin
     twitter: { card: "summary", title, description } };
 }
 export function safeReturnPath(value: string | null): string {
-  if (!value || !/^\/(?:en\/|fr\/|es\/|de\/|it\/)?vagas\/[a-f0-9-]{36}$/.test(value)) return "/dashboard";
+  if (!value || !/^\/(?:en\/|fr\/|es\/|de\/|it\/)?vagas\/(?:externas\/)?[a-f0-9-]{36}$/.test(value)) return "/dashboard";
   return value;
 }
