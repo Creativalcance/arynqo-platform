@@ -40,21 +40,7 @@ type JobAIResponse = {
 
 
 
-const OPPORTUNITY_TYPES = [
-  "Estágio Curricular",
-  "Estágio Profissional",
-  "Trainee",
-  "Part-time",
-  "Full-time",
-  "Freelancer",
-  "Prestação de Serviços",
-  "Contrato a Termo",
-  "Contrato Sem Termo",
-  "Projeto",
-  "Bolsa de Investigação",
-  "Programa Graduados",
-  "Voluntariado",
-];
+
 
 
 
@@ -424,8 +410,6 @@ export default function NovaVagaPage() {
   const textareaClass =
     "mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm leading-6 text-[#07111F] outline-none transition placeholder:text-slate-400 focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10";
 
-  const selectClass =
-    "mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm text-[#07111F] outline-none transition focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10";
 
 
   const selectedChipClass =
@@ -472,7 +456,7 @@ export default function NovaVagaPage() {
           onSubmit={handleSubmit}
           className="grid gap-8 lg:grid-cols-[1fr_420px]"
         >
-          <div className="lg:col-span-2"><MatchingFields kind="job" value={matching.value} onChange={v => { matching.setValue(v); setArea(v.area); setRequiredSkills(v.skills); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={!matching.ready || isSaving} />{matching.error && <p role="alert"><LText text={matching.error} /></p>}</div>
+          <div className="lg:col-span-2"><MatchingFields opportunity={opportunityType} onOpportunityChange={setOpportunityType} kind="job" value={matching.value} onChange={v => { matching.setValue(v); setArea(v.area); setRequiredSkills(v.skills); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={!matching.ready || isSaving} />{matching.error && <p role="alert"><LText text={matching.error} /></p>}</div>
           <div className="space-y-8">
             <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
@@ -516,7 +500,7 @@ export default function NovaVagaPage() {
                 <LText text={"Matching profissional"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                <LText text={"Área, especializações e skills"} /></h2>
+                <LText text={"Especializações e competências preferenciais"} /></h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
                 <LText text={"Selecione competências técnicas, comportamentais e ferramentas no catálogo partilhado com os candidatos. Pode adicionar novas tags quando necessário."} /></p>
@@ -588,7 +572,7 @@ export default function NovaVagaPage() {
                 <LText text={"Condições da oportunidade"} /></p>
 
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
-                <LText text={"Modelo, localização e enquadramento"} /></h2>
+                <LText text={"Localização e condições"} /></h2>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <div>
@@ -607,21 +591,7 @@ export default function NovaVagaPage() {
 
 
 
-                <div>
-                  <label className="text-sm font-semibold">
-                    <LText text={"Tipo de oportunidade"} /></label>
-                  <select
-                    value={opportunityType}
-                    onChange={(event) => setOpportunityType(event.target.value)}
-                    className={selectClass}
-                  >
-                    {OPPORTUNITY_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        <LText text={type} />
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
 
 
@@ -690,8 +660,7 @@ export default function NovaVagaPage() {
 
               <div className="mt-6 grid gap-5">
                 <div>
-                  <label className="text-sm font-semibold">
-                    <LText text={"Critérios de avaliação"} /></label>
+                  <label className="sr-only" htmlFor="vacancy-criteria"><LText text={"Critérios de avaliação"} /></label>
 
                   <div className="mt-2 rounded-2xl border border-[#DDE3EA] bg-white px-3 py-3 transition focus-within:border-[#1683FF] focus-within:ring-4 focus-within:ring-[#1683FF]/10">
                     <div className="flex flex-wrap gap-2">
@@ -714,6 +683,7 @@ export default function NovaVagaPage() {
                       ))}
 
                       <LElement as="input"
+                        id="vacancy-criteria"
                         value={evaluationCriteriaInput}
                         onChange={(event) =>
                           setEvaluationCriteriaInput(event.target.value)
@@ -756,8 +726,9 @@ export default function NovaVagaPage() {
                 <LText text={"Resumo"} /></h2>
 
               <div className="mt-6">
-                <label className="text-sm font-semibold"><LText text={"Resumo"} /></label>
+                <label className="sr-only" htmlFor="vacancy-summary"><LText text={"Resumo"} /></label>
                 <LElement as="textarea"
+                  id="vacancy-summary"
                   value={aiSummary}
                   onChange={(event) => setAiSummary(event.target.value)}
                   rows={5}

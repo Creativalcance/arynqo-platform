@@ -1,5 +1,6 @@
 // Stable codes are independent from display language. No free-text inference.
 export const PROFESSIONAL_AREAS = [
+  "Todas",
   "Administração e Gestão",
   "Agricultura, Floresta e Ambiente",
   "Arquitetura e Design de Interiores",
@@ -51,3 +52,7 @@ export function validPreferences(value:unknown,kind:'candidate'|'job',occupation
  return !v.confirmed||completePreferences(v);
 }
 export function completePreferences(v:MatchingPreferences){return !!(v.profession&&v.area&&v.levels.length&&v.models.length&&v.skills.length);}
+
+// Opportunity type is independent of on-site/hybrid/remote work arrangements.
+export const OPPORTUNITY_TYPES = ['Estágio Curricular','Estágio Profissional','Trainee','Part-time','Full-time','Trabalho temporário','Freelancer','Prestação de Serviços','Contrato a Termo','Contrato Sem Termo','Projeto','Bolsa de Investigação','Programa Graduados','Voluntariado'];
+export function areasCompatible(candidate:string,job:string){return !!candidate&&!!job&&(candidate==='Todas'||job==='Todas'||candidate===job);}

@@ -164,16 +164,7 @@ const availabilityOptions = [
   "A combinar",
 ];
 
-const opportunityTypes = [
-  "Full-time",
-  "Part-time",
-  "Trabalho temporário",
-  "Estágio Curricular",
-  "Estágio Profissional",
-  "Freelance",
-  "Prestação de serviços",
-  "Trainee Program",
-];
+
 
 
 
@@ -1635,7 +1626,7 @@ function getTrainingItems() {
           </div>
         </div>
 
-        <div className="mb-8">{matching.ready ? <MatchingFields kind="candidate" value={matching.value} onChange={v => { matching.setValue(v); setDesiredArea(v.area); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={savingProfile || isUploadingCV || isGeneratingAIProfile} /> : <p role="status"><LText text={matching.error || "A carregar..."} /></p>}</div>
+        <div className="mb-8">{matching.ready ? <MatchingFields opportunity={preferredOpportunityType} onOpportunityChange={setPreferredOpportunityType} kind="candidate" value={matching.value} onChange={v => { matching.setValue(v); setDesiredArea(v.area); setSeniority(SENIORITIES[v.levels[0] as keyof typeof SENIORITIES] || ""); setWorkModel(WORK_MODELS[v.models[0] as keyof typeof WORK_MODELS] || ""); }} disabled={savingProfile || isUploadingCV || isGeneratingAIProfile} /> : <p role="status"><LText text={matching.error || "A carregar..."} /></p>}</div>
         <form onSubmit={handleSave} className="grid gap-8 lg:grid-cols-[320px_1fr]">
           <aside className="space-y-6">
             <div className="relative flex flex-col items-center text-center">
@@ -2106,7 +2097,7 @@ function getTrainingItems() {
 </section>
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
-                    <LText text={"Tipo de oportunidade"} /></h3>
+                    <LText text={"Disponibilidade e condições"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
                     <LText text={"Define aquilo que procuras para melhorar o matching."} /></p>
@@ -2114,24 +2105,7 @@ function getTrainingItems() {
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
                     
 
-                    <div>
-                      <label className="text-sm font-semibold">
-                        <LText text={"Tipo de oportunidade"} /></label>
-                      <select
-                        value={preferredOpportunityType}
-                        onChange={(event) =>
-                          setPreferredOpportunityType(event.target.value)
-                        }
-                        className={inputClass}
-                      >
-                        <option value=""><LText text={"Selecionar tipo"} /></option>
-                        {opportunityTypes.map((type) => (
-                          <option key={type} value={type}>
-                            <LText text={type} />
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+
 
                     
 

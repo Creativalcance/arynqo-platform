@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {calculateFiveFieldMatch} from '../lib/matching-five';
+import {calculateFiveFieldMatch,FIVE_FIELD_VERSION} from '../lib/matching-five';
 import {validPreferences,type MatchingPreferences} from '../lib/matching-preferences';
 import occupations from '../lib/data/occupations.json';
 const base:MatchingPreferences={profession:occupations[0].id,area:'Tecnologia, Software e Dados',levels:['senior'],models:['remote'],skills:['React','TypeScript','SQL','CSS','HTML'],confirmed:true};
@@ -11,4 +11,6 @@ test('accepted seniority and model sets are directional, extra skills do not pen
 test('validators reject spoofed catalog IDs, duplicate or unknown codes and injected metadata',()=>{const exists=(id:string)=>occupations.some(o=>o.id===id);assert.ok(validPreferences(base,'candidate',exists));for(const p of [{...base,profession:'fake'},{...base,models:['telepathy']},{...base,levels:['senior','senior']},{...base,revision:99},{...base,skills:[' ']}])assert.equal(validPreferences(p,'candidate',exists),false);});
 test('all occupation identities have six non-empty translated labels',()=>{assert.equal(occupations.length,3039);assert.equal(new Set(occupations.map(o=>o.id)).size,3039);for(const o of occupations)for(const l of ['pt','en','fr','es','de','it'] as const)assert.ok(o.labels[l].trim());});
 
-test('old pair revisions are never considered current',async()=>{const {currentFiveFieldResult}=await import('../lib/matching-five');assert.ok(currentFiveFieldResult({candidateRevision:2,jobRevision:4},2,4));assert.equal(currentFiveFieldResult({candidateRevision:1,jobRevision:4},2,4),false);assert.equal(currentFiveFieldResult(null,2,4),false);});
+test('old pair revisions are never considered current',async()=>{const {currentFiveFieldResult}=await import('../lib/matching-five');assert.ok(currentFiveFieldResult({version:FIVE_FIELD_VERSION,candidateRevision:2,jobRevision:4},2,4));assert.equal(currentFiveFieldResult({version:FIVE_FIELD_VERSION,candidateRevision:1,jobRevision:4},2,4),false);assert.equal(currentFiveFieldResult(null,2,4),false);});
+
+test('All removes only the area restriction, never profession or skill requirements',()=>{const candidate={...base,area:'Todas'};assert.ok(validPreferences(candidate,'candidate'));assert.equal(calculateFiveFieldMatch(candidate,base).contributions?.area,5);assert.equal(calculateFiveFieldMatch(base,{...base,area:'Todas'}).contributions?.area,5);const mismatch=calculateFiveFieldMatch(candidate,{...base,profession:occupations[1].id,skills:['Python']});assert.equal(mismatch.contributions?.profession,0);assert.equal(mismatch.contributions?.skills,0);});

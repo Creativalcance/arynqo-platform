@@ -38,3 +38,12 @@ As vagas externas mantêm comparação parcial, sem percentagem inventada. A sel
 Testes: sete cenários do motor novo, teste SQL com permissões/rascunhos/confirmacão/revisões e preservação dos registos antigos, seis testes i18n, vinte testes do motor existente. TypeScript, lint direcionado e build de produção com credenciais fictícias. Nenhum pagamento, candidatura, mensagem ou email real foi criado para testar.
 
 A validação de recrutamento e testes visuais autenticados com candidatos/empresas reais permanecem pendentes. As verificações automáticas não estabelecem precisão de recrutamento. O resultado público ainda usa o motor anterior até cumprir os critérios acima.
+
+
+## Ajuste de UX — 7 de outubro
+
+- Profissão num único combobox com sugestões, seleção por teclado, cancelamento de pedidos antigos e pesquisa por palavras em qualquer ordem. Texto digitado sem escolher uma profissão não confirma um UUID.
+- Área «Todas» é uma escolha explícita sem restrição de área, nos dois formulários e na validação SQL. Contribui apenas com os 5 pontos da área; não altera a comparação de profissão/competências. Método paralelo atualizado para five-fields-v2-shadow; prévias de outra versão ficam pendentes.
+- Tipo de oportunidade partilhado, junto ao modelo de trabalho: estágios, trainee, horários e contratos. Continua num campo separado do presencial/híbrido/remoto e fora dos cinco pesos. Opções antigas guardadas continuam visíveis até alteração voluntária.
+- Removidos a pesquisa separada do seletor, os controlos antigos do tipo de oportunidade e os rótulos visuais repetidos. Título do anúncio, descrição, competências preferenciais e requisitos adicionais mantêm funções distintas.
+- Testes: pesquisa localizada, ID estável, área Todas, confirmação e validação SQL. Build e i18n. Validação visual autenticada permanece pendente.

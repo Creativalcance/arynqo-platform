@@ -15,9 +15,10 @@ test('server guards enforce confirmation, validated IDs, revisions, drafts and o
  create policy owner on jobs to authenticated using(user_id::text=current_setting('test.uid')) with check(user_id::text=current_setting('test.uid'));
  insert into jobs(id,is_active) values('00000000-0000-0000-0000-000000000010',true);`);
  await db.exec(await readFile('supabase/migrations/20261006231557_matching_five_fields.sql','utf8'));
+ await db.exec(await readFile('supabase/migrations/20261006234449_matching_area_all.sql','utf8'));
  assert.equal((await db.query('select matching_preferences from jobs')).rows[0].matching_preferences,null);
  const id=(await db.query('select id from matching_occupations limit 1')).rows[0].id;
- const prefs={profession:id,area:'Tecnologia, Software e Dados',levels:['senior'],models:['remote'],skills:['SQL'],confirmed:true};
+ const prefs={profession:id,area:'Todas',levels:['senior'],models:['remote'],skills:['SQL'],confirmed:true};
  await db.exec(`set role authenticated;set test.uid='00000000-0000-0000-0000-000000000001';`);
  await assert.rejects(db.query(`insert into jobs(id,user_id,is_active) values('00000000-0000-0000-0000-000000000020',current_setting('test.uid')::uuid,true)`),/cinco campos/);
  await db.query(`insert into jobs(id,user_id,is_active) values('00000000-0000-0000-0000-000000000020',current_setting('test.uid')::uuid,false)`);
