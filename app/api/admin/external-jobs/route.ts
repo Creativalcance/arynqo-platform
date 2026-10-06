@@ -20,7 +20,7 @@ export async function POST(request:Request){
   if(body.action==='sync')return json(await syncExternalJobs(db));
   if(body.action!=='settings')throw new ApiError(400,'Pedido inválido.');
   const settings=validateSourceSettings(body.settings);if(!settings)throw new ApiError(400,'Seleciona os países suportados e confirma a autorização da fonte.');
-  const ready=externalReady();if(settings.enabled&&(!ready.appId||!ready.appKey||!ready.cron))throw new ApiError(400,'Configura ADZUNA_APP_ID, ADZUNA_APP_KEY e CRON_SECRET antes de ativar.');
+  const ready=externalReady();if(settings.enabled&&(!ready.appId||!ready.appKey||!ready.cron))throw new ApiError(400,'Configura as credenciais da integração e da sincronização automática antes de ativar.');
   const result=await db.rpc('configure_external_jobs',{p_actor:actor.id,p_enabled:settings.enabled,p_countries:settings.countries,p_terms:settings.terms_confirmed});
   if(result.error)throw new ApiError(503,'Não foi possível guardar a configuração.');
   return json({saved:true});

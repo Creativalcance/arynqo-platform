@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { hideCompanyNames } from "@/lib/job-visibility";
 import Link from "@/lib/i18n/link";
 import { useEffect, useState } from "react";
-import { ADZUNA_ATTRIBUTION_URL } from "@/lib/external-jobs/adzuna";
 import type { JobSearchResult } from "@/lib/public-job-search";
 
 export type Job = {
@@ -152,7 +151,7 @@ function VacancyCard({job,locale}:{job:Job;locale:string}){
   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">{job.location&&<span className="break-words">{job.location}</span>}{model&&<span><LText text={workModelLabels[model]||model} /></span>}{job.contract_type&&<span><LText text={job.contract_type} /></span>}{job.seniority&&<span><LText text={job.seniority} /></span>}</div>
   {!external&&job.description&&<p className="mt-4 line-clamp-2 break-words text-sm leading-6 text-slate-500">{job.description}</p>}
   <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4">
-   <div className="text-xs text-slate-500"><p><LText text="Publicada em " />{new Intl.DateTimeFormat(locale,{timeZone:'Europe/Lisbon'}).format(new Date(job.created_at))}</p>{external&&<p className="mt-1"><LText text="Fonte" />: <a href={ADZUNA_ATTRIBUTION_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[23px] min-w-[116px] items-center text-base font-semibold text-blue-700 underline underline-offset-2">Adzuna</a></p>}</div>
+   <div className="text-xs text-slate-500"><p><LText text="Publicada em " />{new Intl.DateTimeFormat(locale,{timeZone:'Europe/Lisbon'}).format(new Date(job.created_at))}</p>{external&&<p className="mt-1"><LText text="Vaga externa" /></p>}</div>
    <Link href={external?`/vagas/externas/${job.external_id}`:`/vagas/${job.id}`} className={`inline-flex min-h-11 items-center justify-center gap-3 rounded-xl px-5 py-3 text-sm font-semibold transition ${external?'border border-slate-300 text-[#07111F] hover:border-blue-500':'bg-[#07111F] text-white hover:bg-blue-700'}`}><LText text={external?'Ver oferta externa':'Ver vaga'} /><span aria-hidden="true">↗</span></Link>
   </div>
  </article>;
