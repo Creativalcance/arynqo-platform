@@ -27,6 +27,23 @@ test('duplicate internal and external adverts retain the internal offer; unknown
  assert.equal(deduplicateJobs([{...internal,company_name:''},{...internal,company_name:'',origin:'external'}]).length,2);
 });
 
+test('future-only country feed retries oldest first without changing dates or exceeding its budget',async()=>{
+ const urls:URL[]=[];
+ const fetcher:typeof fetch=async input=>{
+  urls.push(new URL(String(input)));
+  return Response.json({results:urls.length===1?[{...advert,created:'2030-01-01'}]:[advert,{...advert,id:'future',created:'2030-01-01'}]});
+ };
+ const result=await fetchCountry('de',{id:'test',key:'test'},fetcher,now);
+ assert.equal(urls.length,2);
+ assert.ok(urls.every(url=>url.pathname.endsWith('/de/search/1')));
+ assert.equal(urls[1].searchParams.get('sort_dir'),'up');
+ assert.equal(urls[1].searchParams.get('max_days_old'),'30');
+ assert.equal(result.rows.length,1);
+ assert.equal(result.rows[0].country_code,'DE');
+ assert.equal(result.rows[0].created_at,new Date(advert.created).toISOString());
+ assert.equal(result.rejected,2);
+});
+
 import { externalCompatibility } from '../lib/external-jobs/compatibility';
 test('external evidence never invents a score, requirements or unreviewed translations',()=>{
  const result=externalCompatibility(['Java','SQL','C++','Gestão de projetos'],'JavaScript developer','SQL and C#; Projektmanagement',new Map([['projektmanagement','Gestão de projetos']]));

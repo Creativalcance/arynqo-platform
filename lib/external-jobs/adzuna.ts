@@ -39,14 +39,21 @@ export function providerErrorCode(error:unknown):ProviderErrorCode {
 export async function fetchCountry(country:string,credentials:{id:string;key:string},fetcher:typeof fetch=fetch,now=new Date()){
  if(!ADZUNA_COUNTRIES.some(c=>c===country))throw new Error('Unsupported country');
  const adverts=new Map<string,ExternalAdvert>();const reasons=new Map<ProviderErrorCode,number>();let rejected=0;
- for(let page=1;page<=2;page++){
+ let oldestFirst=false;
+ for(let attempt=1;attempt<=2;attempt++){
+  const page=oldestFirst?1:attempt;
   const url=new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}`);
   url.search=new URLSearchParams({app_id:credentials.id,app_key:credentials.key,results_per_page:'50',sort_by:'date',max_days_old:'30','content-type':'application/json'}).toString();
+  if(oldestFirst)url.searchParams.set('sort_dir','up');
   const response=await fetcher(url,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw new ProviderError([401,403,410].includes(response.status)?'credentials':response.status===429?'rate_limit':'provider');
   const raw=await response.json().catch(()=>{throw new ProviderError('invalid_response');});
   if(!raw||!Array.isArray(raw.results)||raw.results.length>50)throw new ProviderError('invalid_response');
   for(const result of raw.results){const advert=normalizeAdvert(result,country,now);if(advert)adverts.set(advert.provider_id,advert);else {rejected++;const reason=advertRejectionReason(result,country,now)||'invalid_advert';reasons.set(reason,(reasons.get(reason)||0)+1);}}
+  // Some country feeds put future-dated ads at the top. Spend the second
+  // reserved request on the other end of the same 30-day window instead.
+  // Do not relax date validation or increase the two-request country budget.
+  if(attempt===1&&!adverts.size&&reasons.has('future_adverts')){oldestFirst=true;continue;}
   if(raw.results.length<50)break;
  }
  if(!adverts.size&&rejected)throw new ProviderError([...reasons].sort((a,b)=>b[1]-a[1])[0][0]);

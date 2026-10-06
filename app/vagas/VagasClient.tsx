@@ -78,6 +78,14 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
     setLocation("");
   }
 
+  function clearScopedFilters() {
+    // These options depend on country/origin; never retain an invisible selection.
+    setLocation("");
+    setArea("");
+    setContractType("");
+    setPage(1);
+  }
+
   const internalJobs=filteredJobs.filter(job=>job.origin!=='external');
   const externalJobs=filteredJobs.filter(job=>job.origin==='external');
   const activeFilters=[country,location,area,contractType,workModel].filter(Boolean).length;
@@ -91,7 +99,7 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
         <div className="mt-7 rounded-2xl border border-[#DDE3EA] bg-[#F7F9FC] p-4 sm:p-5" onChange={()=>setPage(1)}>
           <div className="grid min-w-0 items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(160px,240px)_auto]">
             <label className="min-w-0 text-sm font-semibold"><LText text="Pesquisar vagas" /><LElement as="input" type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Pesquisar vaga, área ou localização..." className={selectClass} /></label>
-            <label className="min-w-0 text-sm font-semibold"><LText text="País" /><LElement as="select" aria-label="País" value={country} onChange={e=>{setCountry(e.target.value);setLocation('');}} className={selectClass}><option value=""><LText text="Todos" /></option>{countries.map(item=><option key={item.code} value={item.code}>{item.display}</option>)}</LElement></label>
+            <label className="min-w-0 text-sm font-semibold"><LText text="País" /><LElement as="select" aria-label="País" value={country} onChange={e=>{setCountry(e.target.value);clearScopedFilters();}} className={selectClass}><option value=""><LText text="Todos" /></option>{countries.map(item=><option key={item.code} value={item.code}>{item.display}</option>)}</LElement></label>
             <button type="button" aria-expanded={filtersOpen} aria-controls="vacancy-filters" onClick={()=>setFiltersOpen(!filtersOpen)} className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold hover:border-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600"><LText text="Filtros" />{activeFilters>0&&<span className="rounded-full bg-blue-100 px-2 text-blue-800">{activeFilters}</span>}<span aria-hidden="true">{filtersOpen?'−':'+'}</span></button>
           </div>
           <div id="vacancy-filters" hidden={!filtersOpen} className="mt-5 border-t border-slate-200 pt-5">
@@ -109,7 +117,7 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
     <section className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-9" aria-busy={isLoading}>
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <LElement as="div" role="group" aria-label="Origem da vaga" className="flex max-w-full flex-wrap gap-1 rounded-2xl border border-slate-200 bg-white p-1.5">
-          {[['','Todas'],['internal','ARYNQO'],['external','Vagas externas']].map(([value,label])=><button key={value} type="button" aria-pressed={origin===value} onClick={()=>{setOrigin(value);setPage(1);}} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-blue-500 ${origin===value?'bg-[#07111F] text-white':'text-slate-600 hover:bg-slate-100'}`}><LText text={label} /></button>)}
+          {[['','Todas'],['internal','ARYNQO'],['external','Vagas externas']].map(([value,label])=><button key={value} type="button" aria-pressed={origin===value} onClick={()=>{setOrigin(value);clearScopedFilters();}} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-blue-500 ${origin===value?'bg-[#07111F] text-white':'text-slate-600 hover:bg-slate-100'}`}><LText text={label} /></button>)}
         </LElement>
         <p role="status" aria-live="polite" className="text-sm text-slate-600">{isLoading?<LText text="A carregar vagas..." />:<><strong className="text-[#07111F]">{result.total}</strong><LText text=" vagas encontradas" /></>}</p>
       </div>

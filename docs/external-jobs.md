@@ -53,3 +53,8 @@ A página distingue os grupos, concentra as condições de acesso no cabeçalho 
 A comparação externa usa agora `external_skill_equivalences`, que consulta apenas os conceitos aprovados correspondentes às competências do candidato (máximo de 200 entradas), as traduções existentes e os aliases revistos. Não descarrega o catálogo completo. Termos que correspondem a vários conceitos aprovados são excluídos, em vez de escolher uma interpretação. Conceitos rejeitados ou pendentes não estabelecem equivalências.
 
 Cada coincidência inclui um trecho do anúncio original, preservando acentos e pontuação. A interface permite expandir a competência para consultar esse trecho. Isto continua a ser evidência de uma menção, sem classificação automática como requisito obrigatório e sem percentagem de compatibilidade.
+# Country filter and future-dated feeds
+
+Changing country or origin clears dependent location, area and contract selections and returns to page 1. Countries remain selectable even where no valid adverts have been imported; a zero result must not be presented as proof that no employment opportunities exist there.
+
+If the newest Adzuna page contains no valid adverts and includes future-dated records, the second reserved request fetches page 1 ordered by date ascending within the same 30-day window. Validation remains unchanged. This fallback never exceeds two requests per country and cannot guarantee valid results from the provider. Daily budgets and retry scheduling still apply.
