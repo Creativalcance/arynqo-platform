@@ -3,9 +3,8 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 
 import Link from "@/lib/i18n/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ADZUNA_ATTRIBUTION_URL } from "@/lib/external-jobs/adzuna";
-import { profileOptions } from "@/lib/profile-options";
 import type { JobSearchResult } from "@/lib/public-job-search";
 
 export type Job = {
@@ -33,7 +32,7 @@ const workModelLabels: Record<string, string> = {
   presential: "Presencial",
 };
 
-export default function VagasPage({ initialResult, initialSearch }: { initialResult: JobSearchResult; initialSearch:string }) {
+export default function VagasPage({ initialResult, initialSearch, countries }: { countries:{code:string;display:string}[]; initialResult: JobSearchResult; initialSearch:string }) {
   const { locale: displayLocale } = useI18n();
   const [result,setResult] = useState(initialResult);
   const [page,setPage]=useState(1);
@@ -46,7 +45,6 @@ export default function VagasPage({ initialResult, initialSearch }: { initialRes
   const [workModel, setWorkModel] = useState("");
   const [country, setCountry] = useState("");
   const [location, setLocation] = useState("");
-  const countries = useMemo(() => profileOptions(displayLocale).countries, [displayLocale]);
   const locations=result.locations.map(label=>({label,value:label}));
   const areas=result.areas,contractTypes=result.contracts,filteredJobs=result.jobs;
   const [isLoading,setIsLoading]=useState(false);

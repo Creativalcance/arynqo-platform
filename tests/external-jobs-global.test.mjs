@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,readdir} from 'node:fs/promises';
 import {test} from 'node:test';
 import {PGlite} from '@electric-sql/pglite';
 const countries=['gb','us','at','au','be','br','ca','ch','de','es','fr','in','it','mx','nl','nz','pl','sg','za'];
@@ -10,6 +10,7 @@ test('global batches respect budgets, resume countries, reject stale writes and 
   create table public.jobs(id uuid primary key,company_id uuid,title text,description text,area text,location text,country_code text,work_mode text,work_model text,contract_type text,seniority text,is_active boolean,created_at timestamptz);
   grant select on public.jobs,public.company_profiles to anon,authenticated,service_role;`);
   for(const file of ['20261006161657_external_job_feed.sql','20261006170117_external_jobs_global.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+  const diagnostics=(await readdir(new URL('../supabase/migrations/',import.meta.url))).find(f=>f.endsWith('_external_job_rejection_diagnostics.sql'));assert.ok(diagnostics);await db.exec(await readFile(new URL('../supabase/migrations/'+diagnostics,import.meta.url),'utf8'));
   await db.exec('set role service_role');
   await db.query('update external_job_sources set enabled=true,terms_confirmed=true,countries=$1',[countries]);
   const seen=[];
@@ -26,8 +27,8 @@ test('global batches respect budgets, resume countries, reject stale writes and 
   assert.equal((await db.query('select claim_external_job_batch() c')).rows[0].c.skipped,'up_to_date');
   await db.exec("update external_job_country_sync set next_run_at=now() where country='fr'");
   const failed=(await db.query('select claim_external_job_batch() c')).rows[0].c;
-  await db.query('select finish_external_job_batch($1,$2,$3,0)',[failed.lease,'[]',JSON.stringify({fr:'credentials'})]);
-  assert.equal((await db.query("select error_code from external_job_country_sync where country='fr'")).rows[0].error_code,'credentials');
+  await db.query('select finish_external_job_batch($1,$2,$3,0)',[failed.lease,'[]',JSON.stringify({fr:'old_adverts'})]);
+  assert.equal((await db.query("select error_code from external_job_country_sync where country='fr'")).rows[0].error_code,'old_adverts');
   await db.exec("update external_job_sync_state set started_at=now()-interval '2 minutes',reserved_requests=60");
   assert.equal((await db.query('select claim_external_job_batch() c')).rows[0].c.skipped,'daily_budget');
   await db.exec("update external_job_sync_state set reserved_requests=0;update external_job_country_sync set next_run_at=now() where country='fr'");

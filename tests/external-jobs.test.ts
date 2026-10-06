@@ -40,3 +40,10 @@ test('provider failures have safe categories without leaking credentials',async(
   await assert.rejects(fetchCountry('fr',{id:'secret-id',key:'secret-key'},async()=>new Response(null,{status})),error=>error instanceof Error&&error.message===code);
  }
 });
+test('an entirely rejected provider batch is not reported as an empty successful search',async()=>{
+ const fetcher=(patch:Record<string,unknown>):typeof fetch=>async()=>Response.json({results:[{...advert,...patch}]});
+ for(const [patch,reason] of [[{created:'2020-01-01'},'old_adverts'],[{created:'2030-01-01'},'future_adverts'],[{redirect_url:'https://evil.test'},'unsafe_url']] as const){
+  await assert.rejects(fetchCountry('gb',{id:'test',key:'test'},fetcher(patch),now),error=>error instanceof Error&&error.message===reason);
+ }
+ assert.equal((await fetchCountry('gb',{id:'test',key:'test'},async()=>Response.json({results:[]}),now)).rows.length,0);
+});

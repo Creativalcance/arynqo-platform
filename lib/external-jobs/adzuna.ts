@@ -9,6 +9,15 @@ export function safeAdzunaURL(value: unknown): string | null {
 const object=(v:unknown):Record<string,unknown>=>v&&typeof v==='object'&&!Array.isArray(v)?v as Record<string,unknown>:{};
 const plain=(v:unknown,max:number)=>typeof v==='string'?v.replace(/<[^>]*>/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim().slice(0,max):'';
 export type ExternalAdvert = { provider_id:string; country_code:string; title:string; company_name:string; description:string; location:string; area:string; contract_type:string|null; source_url:string; created_at:string };
+export function advertRejectionReason(raw:unknown,country:string,now=new Date()):ProviderErrorCode|null {
+ const v=object(raw),created=new Date(typeof v.created==='string'?v.created:'');
+ if(!ADZUNA_COUNTRIES.some(c=>c===country)||!plain(v.title,300)||!(typeof v.id==='number'?String(v.id):plain(v.id,100)))return 'invalid_advert';
+ if(!safeAdzunaURL(v.redirect_url))return 'unsafe_url';
+ if(!Number.isFinite(created.getTime()))return 'invalid_date';
+ if(created.getTime()>now.getTime()+300000)return 'future_adverts';
+ if(created.getTime()<=now.getTime()-30*86400000)return 'old_adverts';
+ return null;
+}
 export function normalizeAdvert(raw:unknown,country:string,now=new Date()):ExternalAdvert|null {
  const v=object(raw),title=plain(v.title,300),id=typeof v.id==='number'?String(v.id):plain(v.id,100),source=safeAdzunaURL(v.redirect_url),created=new Date(typeof v.created==='string'?v.created:'');
  if(!ADZUNA_COUNTRIES.some(c=>c===country)||!title||!id||!source||!Number.isFinite(created.getTime())||created.getTime()>now.getTime()+300000||created.getTime()<=now.getTime()-30*86400000)return null;
@@ -21,7 +30,7 @@ export function validateSourceSettings(raw:unknown){
  if(v.enabled&&(!v.terms_confirmed||!countries.length))return null;
  return {enabled:v.enabled,terms_confirmed:v.terms_confirmed,countries};
 }
-export type ProviderErrorCode='credentials'|'rate_limit'|'timeout'|'provider'|'invalid_response';
+export type ProviderErrorCode='credentials'|'rate_limit'|'timeout'|'provider'|'invalid_response'|'old_adverts'|'future_adverts'|'invalid_date'|'invalid_advert'|'unsafe_url';
 export class ProviderError extends Error { constructor(public code:ProviderErrorCode){super(code);} }
 export function providerErrorCode(error:unknown):ProviderErrorCode {
  if(error instanceof ProviderError)return error.code;
@@ -29,7 +38,7 @@ export function providerErrorCode(error:unknown):ProviderErrorCode {
 }
 export async function fetchCountry(country:string,credentials:{id:string;key:string},fetcher:typeof fetch=fetch,now=new Date()){
  if(!ADZUNA_COUNTRIES.some(c=>c===country))throw new Error('Unsupported country');
- const adverts=new Map<string,ExternalAdvert>();let rejected=0;
+ const adverts=new Map<string,ExternalAdvert>();const reasons=new Map<ProviderErrorCode,number>();let rejected=0;
  for(let page=1;page<=2;page++){
   const url=new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}`);
   url.search=new URLSearchParams({app_id:credentials.id,app_key:credentials.key,results_per_page:'50',sort_by:'date',max_days_old:'30','content-type':'application/json'}).toString();
@@ -37,8 +46,9 @@ export async function fetchCountry(country:string,credentials:{id:string;key:str
   if(!response.ok)throw new ProviderError([401,403,410].includes(response.status)?'credentials':response.status===429?'rate_limit':'provider');
   const raw=await response.json().catch(()=>{throw new ProviderError('invalid_response');});
   if(!raw||!Array.isArray(raw.results)||raw.results.length>50)throw new ProviderError('invalid_response');
-  for(const result of raw.results){const advert=normalizeAdvert(result,country,now);if(advert)adverts.set(advert.provider_id,advert);else rejected++;}
+  for(const result of raw.results){const advert=normalizeAdvert(result,country,now);if(advert)adverts.set(advert.provider_id,advert);else {rejected++;const reason=advertRejectionReason(result,country,now)||'invalid_advert';reasons.set(reason,(reasons.get(reason)||0)+1);}}
   if(raw.results.length<50)break;
  }
+ if(!adverts.size&&rejected)throw new ProviderError([...reasons].sort((a,b)=>b[1]-a[1])[0][0]);
  return {rows:[...adverts.values()],rejected};
 }
