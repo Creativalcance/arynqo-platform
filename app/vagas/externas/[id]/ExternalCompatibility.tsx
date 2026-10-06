@@ -23,11 +23,10 @@ export default function ExternalCompatibility({id}:{id:string}) {
  const current=state?.id===id?state:null;
  if(current?.status==="hidden")return null;
  const result=current?.status==="ready"?current.data:null;
- return <section className="mt-7 min-w-0 rounded-2xl border bg-slate-50 p-5">
+ return <section className="mt-7 min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-900 [color-scheme:light]">
   <h2 className="font-semibold"><LText text="Compatibilidade" /></h2>
   {current?.status==="error"?<div role="status" className="mt-3 text-sm"><LText text="Não foi possível consultar a compatibilidade." /><button type="button" className="ml-3 min-h-11 text-blue-700 underline" onClick={()=>{setState(null);setAttempt(n=>n+1);}}><LText text="Tentar novamente" /></button></div>:!result?<p className="mt-3 text-sm"><LText text="A carregar..." /></p>:<>
    <p className="mt-3 text-sm font-medium"><LText text="Comparação parcial com o teu perfil" /></p>
-   <p className="mt-2 text-xs leading-5 text-slate-600"><LText text="A fonte fornece apenas um excerto. As coincidências abaixo não confirmam requisitos obrigatórios nem substituem a leitura do anúncio completo." /></p>
    {result.mentions.length>0?<Evidence title="Competências do teu perfil mencionadas no anúncio" items={result.mentions} />:<p className="mt-4 text-sm"><LText text={result.hasProfileSkills?"Não foram identificadas coincidências explícitas. Isto não significa que o teu perfil seja incompatível.":"Adiciona competências ao teu perfil para comparar com esta oferta."} /></p>}
    {result.notRequired.length>0&&<Evidence title="Competências indicadas como não necessárias" items={result.notRequired} />}
    <dl className="mt-6 divide-y divide-slate-200">
@@ -45,5 +44,5 @@ export default function ExternalCompatibility({id}:{id:string}) {
  </section>;
 }
 function Evidence({title,items}:{title:string;items:Result['mentions']}) {
- return <div className="mt-5"><h3 className="text-sm font-semibold"><LText text={title} /></h3><ul className="mt-3 space-y-3">{items.map(item=><li key={item.skill} className="rounded-xl border bg-white px-4 py-3 text-sm"><details><summary className="cursor-pointer font-semibold">{item.skill}</summary><blockquote className="mt-3 whitespace-pre-wrap break-words border-l-2 border-blue-400 pl-3 text-slate-600">{item.excerpt}</blockquote></details></li>)}</ul></div>;
+ return <div className="mt-5"><h3 className="text-sm font-semibold"><LText text={title} /></h3><ul className="mt-3 space-y-3">{items.map(item=><li key={item.skill} className="rounded-xl border border-slate-200 bg-white text-slate-900 px-4 py-3 text-sm"><details><summary className="cursor-pointer font-semibold">{item.skill}</summary><blockquote className="mt-3 whitespace-pre-wrap break-words border-l-2 border-blue-400 pl-3 text-slate-600">{item.excerpt}</blockquote></details></li>)}</ul></div>;
 }
