@@ -2,8 +2,10 @@
 import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 
+import { supabase } from "@/lib/supabase";
+import { hideCompanyNames } from "@/lib/job-visibility";
 import Link from "@/lib/i18n/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ADZUNA_ATTRIBUTION_URL } from "@/lib/external-jobs/adzuna";
 import type { JobSearchResult } from "@/lib/public-job-search";
 
@@ -39,7 +41,17 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
   const [error,setError]=useState(false);
   const [refresh,setRefresh]=useState(0);
   const [filtersOpen,setFiltersOpen]=useState(false);
-  const firstRequest=useRef(true);
+  const [accessToken,setAccessToken]=useState("");
+  useEffect(()=>{
+    let active=true;
+    void supabase.auth.getSession().then(({data})=>{if(active)setAccessToken(data.session?.access_token||"");});
+    const {data}=supabase.auth.onAuthStateChange((_event,session)=>{
+      if(!active)return;
+      setAccessToken(session?.access_token||"");
+      if(!session)setResult(current=>({...current,jobs:hideCompanyNames(current.jobs)}));
+    });
+    return()=>{active=false;data.subscription.unsubscribe();};
+  },[]);
   const [search, setSearch] = useState(initialSearch);
   const [origin, setOrigin] = useState("");
   const [area, setArea] = useState("");
@@ -51,13 +63,12 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
   const areas=result.areas,contractTypes=result.contracts,filteredJobs=result.jobs;
   const [isLoading,setIsLoading]=useState(false);
   useEffect(()=>{
-    if(firstRequest.current){firstRequest.current=false;return;}
     const controller=new AbortController();
     const timer=setTimeout(async()=>{
       setIsLoading(true);setError(false);
       try{
         const params=new URLSearchParams({q:search,origin,country,location,area,contract:contractType,model:workModel,page:String(page)});
-        const response=await fetch(`/api/vagas?${params}`,{signal:controller.signal,cache:'no-store'});
+        const response=await fetch(`/api/vagas?${params}`,{signal:controller.signal,cache:'no-store',headers:accessToken?{Authorization:`Bearer ${accessToken}`}:{}});
         if(!response.ok)throw new Error('Unavailable');
         const value=await response.json();
         if(!controller.signal.aborted)setResult(value);
@@ -65,7 +76,7 @@ export default function VagasPage({ initialResult, initialSearch, countries }: {
       finally{if(!controller.signal.aborted)setIsLoading(false);}
     },250);
     return()=>{clearTimeout(timer);controller.abort();};
-  },[search,origin,country,location,area,contractType,workModel,page,refresh]);
+  },[search,origin,country,location,area,contractType,workModel,page,refresh,accessToken]);
 
   function clearFilters() {
     setPage(1);

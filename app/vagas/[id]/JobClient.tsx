@@ -84,6 +84,7 @@ export default function JobPage({
   const { locale: displayLocale } = useI18n();
   const { id } = use(params);
 
+  const [authenticatedCompany,setAuthenticatedCompany]=useState<Company|null>(null);
   const [job] = useState<Job | null>(initialJob);
   const [studentProfile, setStudentProfile] =
     useState<StudentProfile | null>(null);
@@ -158,6 +159,26 @@ export default function JobPage({
     void loadStudentAndSavedStatus().catch(() => { /* Public vacancy remains available if account data cannot load. */ });
     return () => { active = false; };
   }, [id]);
+
+  useEffect(() => {
+    let active=true;
+    let version=0;
+    async function loadCompany() {
+      const requestVersion=++version;
+      try {
+        const response=await authenticatedFetch(`/api/vagas/${id}/empresa`,{cache:"no-store"});
+        if(!response.ok)return;
+        const data=await response.json();
+        if(active && requestVersion===version)setAuthenticatedCompany(data.company);
+      } catch { /* Company identity remains hidden without a verified session. */ }
+    }
+    void loadCompany();
+    const {data}=supabase.auth.onAuthStateChange((event)=>{
+      if(event==='SIGNED_OUT'){version++;setAuthenticatedCompany(null);}
+      else if(event==='SIGNED_IN')void loadCompany();
+    });
+    return()=>{active=false;version++;data.subscription.unsubscribe();};
+  },[id]);
 
   async function generateMatchForCurrentStudent() {
     if (!studentProfile) {
@@ -356,9 +377,7 @@ export default function JobPage({
     );
   }
 
-  const company = Array.isArray(job.company_profiles)
-    ? job.company_profiles[0]
-    : job.company_profiles;
+  const company = authenticatedCompany;
 
   const requiredSkills = job.required_skills || [];
   const preferredSkills = job.preferred_skills || [];
@@ -389,7 +408,6 @@ export default function JobPage({
 
             <div className="mt-8 flex flex-wrap items-center gap-4 text-white/70">
               <p className="mt-4 text-sm text-white/80"><LText text={"Publicada em "} /><LText text={new Intl.DateTimeFormat(displayLocale, { timeZone: "Europe/Lisbon" }).format(new Date(job.created_at))} /></p>
-              {!company?.company_name && <p className="mt-3 text-sm text-white/80"><LText text={"Empresa não identificada neste anúncio."} /></p>}
               {company?.company_name && (
                 <span className="text-lg font-semibold text-white">
                   {company.company_name}

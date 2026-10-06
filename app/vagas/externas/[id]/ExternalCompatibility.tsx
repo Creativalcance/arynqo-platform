@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { LText } from "@/lib/i18n/client";
-import Link from "@/lib/i18n/link";
 import type { assessExternalJob } from "@/lib/external-jobs/assessment";
 
 type Result = ReturnType<typeof assessExternalJob>;
@@ -23,14 +22,16 @@ export default function ExternalCompatibility({id}:{id:string}) {
  const current=state?.id===id?state:null;
  if(current?.status==="hidden")return null;
  const result=current?.status==="ready"?current.data:null;
+ const alignedCriteria=result?.criteria.filter(item=>item.state==='aligned')||[];
+ const hasMatches=!!result && (result.mentions.length>0 || alignedCriteria.length>0);
  return <section className="mt-7 min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-900 [color-scheme:light]">
   <h2 className="font-semibold"><LText text="Compatibilidade" /></h2>
   {current?.status==="error"?<div role="status" className="mt-3 text-sm"><LText text="Não foi possível consultar a compatibilidade." /><button type="button" className="ml-3 min-h-11 text-blue-700 underline" onClick={()=>{setState(null);setAttempt(n=>n+1);}}><LText text="Tentar novamente" /></button></div>:!result?<p className="mt-3 text-sm"><LText text="A carregar..." /></p>:<>
    <p className="mt-3 text-sm font-medium"><LText text="Comparação parcial com o teu perfil" /></p>
-   {result.mentions.length>0?<Evidence title="Competências do teu perfil mencionadas no anúncio" items={result.mentions} />:<p className="mt-4 text-sm"><LText text={result.hasProfileSkills?"Não foram identificadas coincidências explícitas. Isto não significa que o teu perfil seja incompatível.":"Adiciona competências ao teu perfil para comparar com esta oferta."} /></p>}
-   {result.notRequired.length>0&&<Evidence title="Competências indicadas como não necessárias" items={result.notRequired} />}
+   {!hasMatches ? <p className="mt-4 text-sm leading-6"><LText text="Não foram identificadas coincidências explícitas. Isto não significa que o teu perfil seja incompatível." /></p> : <>
+   {result.mentions.length>0 && <Evidence title="Competências do teu perfil mencionadas no anúncio" items={result.mentions} />}
    <dl className="mt-6 divide-y divide-slate-200">
-    {result.criteria.map(item=><div key={item.key} className="py-4 text-sm">
+    {alignedCriteria.map(item=><div key={item.key} className="py-4 text-sm">
      <dt className="flex flex-wrap items-start justify-between gap-2 font-semibold"><LText text={item.key} /><span className={`text-xs font-normal ${item.state==='aligned'?'text-blue-700':'text-slate-600'}`}><LText text={labels[item.state]} /></span></dt>
      <dd className="mt-2 grid min-w-0 gap-2 break-words text-slate-600 sm:grid-cols-2">
       <p><strong className="font-medium"><LText text="O teu perfil" />: </strong>{item.candidate||'—'}</p>
@@ -38,8 +39,7 @@ export default function ExternalCompatibility({id}:{id:string}) {
      </dd>
     </div>)}
    </dl>
-   <p className="mt-4 text-xs text-slate-600"><LText text="Informação insuficiente para calcular a compatibilidade." /></p>
-   <Link href="/dashboard/perfil" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-blue-700 underline"><LText text="Completar perfil" /></Link>
+   </>}
   </>}
  </section>;
 }
