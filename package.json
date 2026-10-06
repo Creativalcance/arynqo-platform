@@ -16,7 +16,7 @@
     "test:profile": "node --import tsx tests/profile-fields.test.ts && node tests/profile-tags.test.mjs && node tests/profile-tag-moderation.test.mjs",
     "test:accounts": "node --import tsx tests/account-administration.test.ts && node tests/account-administration-database.test.mjs",
     "test:linkedin": "node --import tsx tests/linkedin-import.test.ts && node --import tsx tests/linkedin-import-api.test.ts",
-    "test:external-jobs": "node --import tsx tests/external-jobs.test.ts && node --import tsx tests/external-jobs-api.test.ts && node tests/external-jobs-database.test.mjs"
+    "test:external-jobs": "node --import tsx tests/external-jobs.test.ts && node --import tsx tests/external-jobs-api.test.ts && node tests/external-jobs-database.test.mjs && node tests/external-jobs-global.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

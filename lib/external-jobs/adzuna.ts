@@ -16,10 +16,16 @@ export function normalizeAdvert(raw:unknown,country:string,now=new Date()):Exter
 }
 export function validateSourceSettings(raw:unknown){
  const v=object(raw);
- if(typeof v.enabled!=='boolean'||typeof v.terms_confirmed!=='boolean'||!Array.isArray(v.countries)||v.countries.length>3||!v.countries.every(c=>typeof c==='string'&&ADZUNA_COUNTRIES.some(allowed=>allowed===c)))return null;
+ if(typeof v.enabled!=='boolean'||typeof v.terms_confirmed!=='boolean'||!Array.isArray(v.countries)||v.countries.length>ADZUNA_COUNTRIES.length||!v.countries.every(c=>typeof c==='string'&&ADZUNA_COUNTRIES.some(allowed=>allowed===c)))return null;
  const countries=[...new Set(v.countries as string[])];
  if(v.enabled&&(!v.terms_confirmed||!countries.length))return null;
  return {enabled:v.enabled,terms_confirmed:v.terms_confirmed,countries};
+}
+export type ProviderErrorCode='credentials'|'rate_limit'|'timeout'|'provider'|'invalid_response';
+export class ProviderError extends Error { constructor(public code:ProviderErrorCode){super(code);} }
+export function providerErrorCode(error:unknown):ProviderErrorCode {
+ if(error instanceof ProviderError)return error.code;
+ return error instanceof Error && ['TimeoutError','AbortError'].includes(error.name)?'timeout':'provider';
 }
 export async function fetchCountry(country:string,credentials:{id:string;key:string},fetcher:typeof fetch=fetch,now=new Date()){
  if(!ADZUNA_COUNTRIES.some(c=>c===country))throw new Error('Unsupported country');
@@ -28,9 +34,9 @@ export async function fetchCountry(country:string,credentials:{id:string;key:str
   const url=new URL(`https://api.adzuna.com/v1/api/jobs/${country}/search/${page}`);
   url.search=new URLSearchParams({app_id:credentials.id,app_key:credentials.key,results_per_page:'50',sort_by:'date',max_days_old:'30','content-type':'application/json'}).toString();
   const response=await fetcher(url,{cache:'no-store',redirect:'error',signal:AbortSignal.timeout(12000)});
-  if(!response.ok)throw new Error('Provider unavailable');
-  const raw=await response.json();
-  if(!raw||!Array.isArray(raw.results)||raw.results.length>50)throw new Error('Invalid provider response');
+  if(!response.ok)throw new ProviderError([401,403,410].includes(response.status)?'credentials':response.status===429?'rate_limit':'provider');
+  const raw=await response.json().catch(()=>{throw new ProviderError('invalid_response');});
+  if(!raw||!Array.isArray(raw.results)||raw.results.length>50)throw new ProviderError('invalid_response');
   for(const result of raw.results){const advert=normalizeAdvert(result,country,now);if(advert)adverts.set(advert.provider_id,advert);else rejected++;}
   if(raw.results.length<50)break;
  }

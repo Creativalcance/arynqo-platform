@@ -1,3 +1,4 @@
+import { GET as compareOffer } from '../app/api/external-jobs/[id]/compatibility/route';
 import assert from 'node:assert/strict';
 import {test,type TestContext} from 'node:test';
 import {GET as readOffer} from '../app/api/external-jobs/[id]/route';
@@ -9,6 +10,8 @@ const id='10000000-0000-0000-0000-000000000001';
 function mock(context:TestContext,role:string,expired=false){const calls:string[]=[];context.mock.method(globalThis,'fetch',async(input:RequestInfo|URL)=>{
  const url=String(input);calls.push(url);
  if(url.endsWith('/auth/v1/user'))return Response.json({id,is_anonymous:false});
+ if(url.includes('/student_profiles?')){assert.ok(url.includes('user_id=eq.'+id));return Response.json({skills_normalized:['SQL'],student_skills:[]});}
+ if(url.includes('/profile_tag_aliases?'))return Response.json([]);
  if(url.includes('/profiles?'))return Response.json({role,locale:'pt'});
  if(url.includes('/rpc/consume_api_limit'))return Response.json(null);
  if(url.includes('/rpc/configure_external_jobs'))return Response.json(null);
@@ -38,3 +41,10 @@ test('administrators can save a paused source and cannot enable it without provi
  const req=(enabled:boolean)=>new Request('https://arynqo.test.invalid/api/admin/external-jobs',{method:'POST',headers:{authorization:'Bearer test','Content-Type':'application/json'},body:JSON.stringify({action:'settings',settings:{enabled,countries:['fr'],terms_confirmed:true}})});
  assert.equal((await writeAdmin(req(false))).status,200);assert.equal((await writeAdmin(req(true))).status,400);assert.equal(calls.filter(url=>url.includes('/rpc/configure_external_jobs')).length,1);
 });
+
+test('external compatibility is private, scoped to the signed-in candidate and absent after expiry',async context=>{
+ mock(context,'student');const response=await compareOffer(request(),{params:Promise.resolve({id})});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'private, no-store');const result=await response.json();assert.equal(result.score,null);assert.equal(result.status,'insufficient_information');
+ assert.equal((await compareOffer(request(false),{params:Promise.resolve({id})})).status,401);
+});
+test('companies cannot request external compatibility',async context=>{mock(context,'company');assert.equal((await compareOffer(request(),{params:Promise.resolve({id})})).status,403);});
+test('expired external jobs cannot be compared',async context=>{mock(context,'student',true);assert.equal((await compareOffer(request(),{params:Promise.resolve({id})})).status,404);});

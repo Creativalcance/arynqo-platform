@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/cron/external-jobs",
-      "schedule": "0 7 * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

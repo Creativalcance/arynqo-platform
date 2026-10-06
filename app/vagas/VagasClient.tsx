@@ -3,10 +3,10 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 
 import Link from "@/lib/i18n/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ADZUNA_ATTRIBUTION_URL } from "@/lib/external-jobs/adzuna";
 import { profileOptions } from "@/lib/profile-options";
-import { jobLocations, matchesJobLocation } from "@/lib/job-location-filter";
+import type { JobSearchResult } from "@/lib/public-job-search";
 
 export type Job = {
   origin?: "external";
@@ -33,57 +33,42 @@ const workModelLabels: Record<string, string> = {
   presential: "Presencial",
 };
 
-export default function VagasPage({ initialJobs, initialSearch }: { initialJobs: Job[]; initialSearch:string }) {
+export default function VagasPage({ initialResult, initialSearch }: { initialResult: JobSearchResult; initialSearch:string }) {
   const { locale: displayLocale } = useI18n();
-  const [jobs] = useState<Job[]>(initialJobs);
+  const [result,setResult] = useState(initialResult);
+  const [page,setPage]=useState(1);
+  const [error,setError]=useState(false);
+  const firstRequest=useRef(true);
   const [search, setSearch] = useState(initialSearch);
   const [origin, setOrigin] = useState("");
-  const [visibleCount, setVisibleCount] = useState(20);
   const [area, setArea] = useState("");
   const [contractType, setContractType] = useState("");
   const [workModel, setWorkModel] = useState("");
   const [country, setCountry] = useState("");
   const [location, setLocation] = useState("");
   const countries = useMemo(() => profileOptions(displayLocale).countries, [displayLocale]);
-  const locations = useMemo(() => jobLocations(jobs, country, displayLocale), [jobs, country, displayLocale]);
-  const [isLoading] = useState(false);
-
-
-
-
-  const areas = useMemo(() => {
-    return Array.from(
-      new Set(jobs.map((job) => job.area).filter(Boolean) as string[])
-    ).sort();
-  }, [jobs]);
-
-  const contractTypes = useMemo(() => {
-    return Array.from(
-      new Set(jobs.map((job) => job.contract_type).filter(Boolean) as string[])
-    ).sort();
-  }, [jobs]);
-
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      const text = `${job.title} ${job.description || ""} ${job.area || ""} ${
-        job.location || ""
-      }`.toLowerCase();
-
-      const model = job.work_model || job.work_mode || "";
-
-      return (
-        (!search || text.includes(search.toLowerCase())) &&
-        (!origin || (origin === "external" ? job.origin === "external" : !job.origin)) &&
-        (!area || job.area === area) &&
-        (!contractType || job.contract_type === contractType) &&
-        matchesJobLocation(job, country, location) &&
-        (!workModel || model === workModel)
-      );
-    });
-  }, [jobs, search, area, contractType, workModel, country, location, origin]);
+  const locations=result.locations.map(label=>({label,value:label}));
+  const areas=result.areas,contractTypes=result.contracts,filteredJobs=result.jobs;
+  const [isLoading,setIsLoading]=useState(false);
+  useEffect(()=>{
+    if(firstRequest.current){firstRequest.current=false;return;}
+    const controller=new AbortController();
+    const timer=setTimeout(async()=>{
+      setIsLoading(true);setError(false);
+      try{
+        const params=new URLSearchParams({q:search,origin,country,location,area,contract:contractType,model:workModel,page:String(page)});
+        const response=await fetch(`/api/vagas?${params}`,{signal:controller.signal,cache:'no-store'});
+        if(!response.ok)throw new Error('Unavailable');
+        const value=await response.json();
+        if(!controller.signal.aborted)setResult(value);
+      }catch{if(!controller.signal.aborted)setError(true);}
+      finally{if(!controller.signal.aborted)setIsLoading(false);}
+    },250);
+    return()=>{clearTimeout(timer);controller.abort();};
+  },[search,origin,country,location,area,contractType,workModel,page]);
 
   function clearFilters() {
-    setVisibleCount(20);
+    setPage(1);
     setOrigin("");
     setSearch("");
     setArea("");
@@ -107,7 +92,7 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
             <LText text={"Explora vagas alinhadas com as tuas competências, experiência e objetivos profissionais."} /></p>
 
           <div className="mt-10 rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-sm">
-            <div onChange={() => setVisibleCount(20)} className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
+            <div onChange={() => setPage(1)} className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 [&_input]:min-w-0 [&_select]:min-w-0 [&_select]:w-full">
               <label className="text-sm font-semibold text-slate-600"><LText text="Origem da vaga" /><select value={origin} onChange={event=>setOrigin(event.target.value)} className="mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-4 text-sm"><option value=""><LText text="Todas" /></option><option value="internal">ARYNQO</option><option value="external"><LText text="Vagas externas" /></option></select></label>
               <LElement as="input"
                 aria-label="Pesquisar vagas"
@@ -190,12 +175,12 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12">
-        {isLoading ? (
+        {error ? <p role="alert"><LText text="Não foi possível carregar as vagas." /><button className="ml-4 underline" onClick={()=>window.location.reload()}><LText text="Tentar novamente" /></button></p> : isLoading ? (
           <p className="text-sm text-slate-500"><LText text={"A carregar vagas..."} /></p>
         ) : (
           <>
             <p role="status" aria-live="polite" className="mb-6 text-sm text-slate-500">
-              {filteredJobs.length} <LText text={" vagas encontradas"} /></p>
+              {result.total} <LText text={" vagas encontradas"} /></p>
 
             {filteredJobs.length === 0 ? (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-white p-12 text-center">
@@ -207,7 +192,7 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
               </div>
             ) : (
               <div className="grid gap-5">
-                {filteredJobs.slice(0,visibleCount).map((job) => {
+                {filteredJobs.map((job) => {
                   const model = job.work_model || job.work_mode || "";
 
                   return (
@@ -273,7 +258,7 @@ export default function VagasPage({ initialJobs, initialSearch }: { initialJobs:
                     </article>
                   );
                 })}
-                {filteredJobs.length>visibleCount && <button type="button" onClick={()=>setVisibleCount(value=>value+20)} className="mx-auto rounded-full border px-6 py-3 text-sm font-semibold"><LText text="Mostrar mais vagas" /></button>}
+                {result.total>20 && <LElement as="nav" aria-label="Paginação" className="flex items-center justify-center gap-5"><button type="button" disabled={result.page<=1} onClick={()=>setPage(result.page-1)} className="rounded-full border px-5 py-3 disabled:opacity-40"><LText text="Anterior" /></button><span>{result.page} / {Math.ceil(result.total/20)}</span><button type="button" disabled={result.page*20>=result.total} onClick={()=>setPage(result.page+1)} className="rounded-full border px-5 py-3 disabled:opacity-40"><LText text="Seguinte" /></button></LElement>}
               </div>
             )}
           </>
