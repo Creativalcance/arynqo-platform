@@ -312,6 +312,7 @@ export default function EmpresaEditarVagaPage({
       `
       )
       .eq("id", id)
+      .is("deleted_at", null)
       .eq("company_id", companyProfile.id)
       .single();
 
@@ -606,6 +607,7 @@ export default function EmpresaEditarVagaPage({
         is_featured: isFeatured,
       })
       .eq("id", id)
+      .is("deleted_at", null)
       .eq("company_id", companyId);
 
     if (error) {

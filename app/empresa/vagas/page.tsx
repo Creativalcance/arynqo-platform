@@ -1,11 +1,11 @@
 "use client";
-import { localizedAlert } from "@/lib/i18n/browser-feedback";
+import { localizedAlert, localizedConfirm } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, useI18n } from "@/lib/i18n/client";
 
 
 import Link from "@/lib/i18n/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type Job = {
@@ -21,6 +21,8 @@ type Job = {
   created_at: string;
   expires_at: string | null;
   renewal_deadline: string | null;
+  archived_at: string | null;
+  deleted_at: string | null;
 };
 
 const workModeLabels: Record<string, string> = {
@@ -34,11 +36,15 @@ export default function EmpresaVagasPage() {
   const [companyId, setCompanyId] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const operationLock = useRef(false);
+  const [busy, setBusy] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [renewingId, setRenewingId] = useState("");
   const [renewalMessages, setRenewalMessages] = useState<Record<string, string>>({});
 
   async function confirmRenewal(job: Job) {
-    if (renewingId) return;
+    if (operationLock.current) return;
+    operationLock.current=true; setBusy(true);
     setRenewingId(job.id);
     try {
       const { data, error } = await supabase.rpc("confirm_job_renewal", { job_id: job.id, expected_expiry: job.expires_at });
@@ -49,12 +55,11 @@ export default function EmpresaVagasPage() {
       setRenewalMessages(current => ({ ...current, [job.id]: "Não foi possível confirmar. Atualiza a página para verificar o estado da vaga e tenta novamente." }));
     } finally {
       setRenewingId("");
+      operationLock.current=false; setBusy(false);
     }
   }
 
-  useEffect(() => {
-    loadCompanyJobs();
-  }, []);
+
 
   async function loadCompanyJobs() {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -95,10 +100,13 @@ export default function EmpresaVagasPage() {
         is_active,
         created_at,
         expires_at,
-        renewal_deadline
+        renewal_deadline,
+        archived_at,
+        deleted_at
       `
       )
       .eq("company_id", companyProfile.id)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -111,30 +119,40 @@ export default function EmpresaVagasPage() {
     setIsLoading(false);
   }
 
+  useEffect(() => {
+    let active=true;
+    queueMicrotask(() => { if(active) void loadCompanyJobs(); });
+    return () => { active=false; };
+  }, []);
+
+  async function manageJob(job: Job, action: "archive" | "restore" | "delete") {
+    if (operationLock.current) return;
+    if (action === "delete" && !localizedConfirm("Eliminar esta vaga da gestão da empresa? Deixará de estar publicada e não poderá ser recuperada nesta área. As candidaturas e os registos associados serão preservados.")) return;
+    if (action === "archive" && !localizedConfirm("Arquivar esta vaga? Deixará de estar publicada. Poderá recuperá-la mais tarde, mantendo as candidaturas.")) return;
+    operationLock.current=true; setBusy(true);
+    try {
+      const {error}=await supabase.rpc("manage_owned_job", {job_id:job.id, action});
+      if(error) throw error;
+      await loadCompanyJobs();
+    } catch { localizedAlert("Não foi possível atualizar a vaga. Atualize a página e tente novamente."); }
+    finally { operationLock.current=false; setBusy(false); }
+  }
+
   async function toggleJobStatus(jobId: string, currentStatus: boolean | null) {
-    if (!currentStatus) {
-      const {error}=await supabase.rpc('renew_job_publication',{job_id:jobId});
-      if(error){localizedAlert('Não foi possível renovar a vaga.');return;}
-      await loadCompanyJobs();return;
-    }
-    const { error } = await supabase
-      .from("jobs")
-      .update({
-        is_active: !currentStatus,
-      })
-      .eq("id", jobId)
-      .eq("company_id", companyId);
-
-    if (error) {
-      localizedAlert(error.message);
-      return;
-    }
-
-    setJobs((currentJobs) =>
-      currentJobs.map((job) =>
-        job.id === jobId ? { ...job, is_active: !currentStatus } : job
-      )
-    );
+    if(operationLock.current) return;
+    operationLock.current=true; setBusy(true);
+    try {
+      if (!currentStatus) {
+        const {error}=await supabase.rpc('renew_job_publication',{job_id:jobId});
+        if(error) throw error;
+      } else {
+        const {error}=await supabase.from("jobs").update({is_active:false})
+          .eq("id",jobId).eq("company_id",companyId).is("deleted_at",null).is("archived_at",null).select("id").single();
+        if(error) throw error;
+      }
+      await loadCompanyJobs();
+    } catch { localizedAlert("Não foi possível atualizar a vaga. Atualize a página e tente novamente."); }
+    finally { operationLock.current=false; setBusy(false); }
   }
 
   function formatDate(date: string) {
@@ -146,7 +164,8 @@ export default function EmpresaVagasPage() {
   }
 
   const activeJobs = jobs.filter((job) => job.is_active).length;
-  const inactiveJobs = jobs.filter((job) => !job.is_active).length;
+  const inactiveJobs = jobs.filter((job) => !job.is_active && !job.archived_at).length;
+  const visibleJobs = jobs.filter(job => showArchived ? !!job.archived_at : !job.archived_at);
   const featuredJobs = jobs.filter((job) => job.is_featured).length;
 
   if (isLoading) {
@@ -207,8 +226,12 @@ export default function EmpresaVagasPage() {
             </p>
           </div>
 
+          <div className="mb-6 flex flex-wrap gap-3">
+            <button type="button" aria-pressed={!showArchived} onClick={()=>setShowArchived(false)} className="rounded-full border px-5 py-3 text-sm font-semibold"><LText text="Vagas atuais" /></button>
+            <button type="button" aria-pressed={showArchived} onClick={()=>setShowArchived(true)} className="rounded-full border px-5 py-3 text-sm font-semibold"><LText text="Arquivadas" /> ({jobs.filter(job=>job.archived_at).length})</button>
+          </div>
           <div className="space-y-4">
-            {jobs.map((job) => (
+            {visibleJobs.map((job) => (
               <article
                 key={job.id}
                 className="rounded-[28px] border border-[#DDE3EA] bg-white p-6 transition hover:border-[#1683FF]/30 hover:shadow-[0_20px_60px_rgba(7,17,31,0.08)]"
@@ -223,7 +246,7 @@ export default function EmpresaVagasPage() {
                             : "rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
                         }
                       >
-                        <LText text={job.is_active ? "Ativa" : "Inativa"} />
+                        <LText text={job.archived_at ? "Arquivada" : job.is_active ? "Ativa" : "Inativa"} />
                       </span>
 
                       {job.is_featured && (
@@ -258,7 +281,7 @@ export default function EmpresaVagasPage() {
 
                   <div className="flex flex-wrap justify-end gap-3">
                     <Link href={`/empresa/candidatos?jobId=${job.id}`} className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold"><LText text={"Ver candidaturas"} /></Link>
-                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p><LText text={"Confirma até "} /><LText text={new Date(job.renewal_deadline).toLocaleDateString(displayLocale)} /> <LText text={" se continuas a recrutar."} /></p><button type="button" disabled={!!renewingId} className="mt-2 font-semibold underline disabled:opacity-50" onClick={() => confirmRenewal(job)}><LText text={renewingId === job.id ? "A confirmar…" : "Sim, renovar por 30 dias"} /></button><button type="button" disabled={!!renewingId} className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}><LText text={"Não, desativar"} /></button></div>}
+                    {job.is_active && job.renewal_deadline && <div className="w-full rounded-xl bg-amber-50 p-4 text-sm"><p><LText text={"Confirma até "} /><LText text={new Date(job.renewal_deadline).toLocaleDateString(displayLocale)} /> <LText text={" se continuas a recrutar."} /></p><button type="button" disabled={busy} className="mt-2 font-semibold underline disabled:opacity-50" onClick={() => confirmRenewal(job)}><LText text={renewingId === job.id ? "A confirmar…" : "Sim, renovar por 30 dias"} /></button><button type="button" disabled={busy} className="ml-4 underline" onClick={()=>toggleJobStatus(job.id,true)}><LText text={"Não, desativar"} /></button></div>}
                     {renewalMessages[job.id] && <p role="status" className="w-full text-sm"><LText text={renewalMessages[job.id]} /></p>}
                     <Link
                       href={`/empresa/matches?jobId=${job.id}`}
@@ -272,19 +295,23 @@ export default function EmpresaVagasPage() {
                     >
                       <LText text={"Editar"} /></Link>
 
-                    <button
+                    {!job.archived_at && <button
                       type="button"
+                      disabled={busy}
                       onClick={() => toggleJobStatus(job.id, job.is_active)}
                       className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold text-slate-500 transition hover:border-[#1683FF] hover:text-[#1683FF]"
                     >
                       <LText text={job.is_active ? "Desativar" : "Ativar"} />
-                    </button>
+                    </button>}
+                    <button type="button" disabled={busy} onClick={()=>manageJob(job,job.archived_at ? "restore" : "archive")} className="rounded-full border px-5 py-3 text-sm font-semibold disabled:opacity-50"><LText text={job.archived_at ? "Recuperar como inativa" : "Arquivar"} /></button>
+                    <button type="button" disabled={busy} onClick={()=>manageJob(job,"delete")} className="rounded-full border border-red-200 px-5 py-3 text-sm font-semibold text-red-700 disabled:opacity-50"><LText text="Eliminar vaga" /></button>
                   </div>
                 </div>
               </article>
             ))}
 
-            {jobs.length === 0 && (
+            {showArchived && visibleJobs.length === 0 && <p className="py-8 text-center text-slate-600"><LText text="Não existem vagas arquivadas." /></p>}
+            {!showArchived && visibleJobs.length === 0 && (
               <div className="rounded-[32px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-12 text-center">
                 <h2 className="text-2xl font-semibold tracking-[-0.04em]">
                   <LText text={"Ainda não existem vagas publicadas."} /></h2>
