@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,15 +13,32 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Auth screens use light surfaces in every device theme. Keep typed values,
+   password dots and browser autofill at the same readable contrast. */
+.auth-surface {
+  color: #07111f;
+  color-scheme: light;
+}
+.auth-surface :is(input[type="email"], input[type="password"], input[type="text"], input:not([type]), textarea, select) {
+  color: #07111f;
+  background-color: #ffffff;
+  caret-color: #07111f;
+  -webkit-text-fill-color: #07111f;
+}
+.auth-surface :is(input, textarea)::placeholder {
+  color: #64748b;
+  -webkit-text-fill-color: #64748b;
+  opacity: 1;
+}
+.auth-surface input:is(:autofill, :-webkit-autofill) {
+  -webkit-text-fill-color: #07111f;
+  caret-color: #07111f;
+  box-shadow: 0 0 0 1000px #ffffff inset;
 }

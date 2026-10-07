@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F9FC] px-6 py-12 text-[#07111F]">
+    <main className="auth-surface flex min-h-screen items-center justify-center bg-[#F7F9FC] px-6 py-12 text-[#07111F]">
       <section className="w-full max-w-md rounded-[36px] border border-[#DDE3EA] bg-white p-8 shadow-[0_24px_80px_rgba(7,17,31,0.08)]">
         <div className="flex justify-center">
           <Image

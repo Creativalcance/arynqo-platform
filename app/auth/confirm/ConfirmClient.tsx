@@ -58,7 +58,7 @@ export default function ConfirmEmailPage({initialNext}:{initialNext:string}) {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F9FC] px-6 py-20">
+    <main className="auth-surface min-h-screen bg-[#F7F9FC] px-6 py-20">
       <div className="mx-auto max-w-md rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
         <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]"><LText text={"ARYNQO"} /></p>
         <h1 className="text-3xl font-semibold tracking-tight text-[#07111F]"><LText text={confirmed ? "Email confirmado." : "Confirma o teu email."} /></h1>
