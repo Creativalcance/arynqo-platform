@@ -2671,5 +2671,16 @@
   "Condições da vaga": "Condições da vaga",
   "Compatibilidade média das vagas apresentadas": "Compatibilidade média das vagas apresentadas",
   "As minhas candidaturas": "As minhas candidaturas",
-  "Candidaturas recebidas": "Candidaturas recebidas"
+  "Candidaturas recebidas": "Candidaturas recebidas",
+  "Gerir vagas": "Gerir vagas",
+  "Consulta as vagas de todas as empresas e elimina as que precisas de retirar. As operações ficam registadas no histórico administrativo.": "Consulta as vagas de todas as empresas e elimina as que precisas de retirar. As operações ficam registadas no histórico administrativo.",
+  "A vaga deixa de estar publicada e sai da gestão da empresa. As candidaturas e os registos associados ficam guardados. Esta ação não pode ser desfeita.": "A vaga deixa de estar publicada e sai da gestão da empresa. As candidaturas e os registos associados ficam guardados. Esta ação não pode ser desfeita.",
+  "Escreve o título da vaga para confirmar.": "Escreve o título da vaga para confirmar.",
+  "O título não corresponde à vaga. Atualiza a lista e confirma novamente.": "O título não corresponde à vaga. Atualiza a lista e confirma novamente.",
+  "Não foi possível eliminar a vaga. Tenta novamente.": "Não foi possível eliminar a vaga. Tenta novamente.",
+  "Confirmar eliminação": "Confirmar eliminação",
+  "Vaga eliminada": "Vaga eliminada",
+  "Vaga eliminada.": "Vaga eliminada.",
+  "Arquivada em": "Arquivada em",
+  "Eliminada em": "Eliminada em"
 }

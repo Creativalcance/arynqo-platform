@@ -66,6 +66,8 @@ export async function readDataset(db: SupabaseClient, dataset: AdminDataset, f: 
     }
     const spec = adminCatalog[dataset];
     let query = db.from(spec.table).select(spec.fields, { count: 'exact' }).order(spec.key, { ascending: true });
+    if (dataset === 'vagas' && f.search)
+        query = query.ilike('title', `%${f.search.replace(/[\\%_]/g, '\\$&')}%`);
     if (dataset === 'competencias_candidatos' || dataset === 'competencias_vagas')
         query = query.order('skill_id', { ascending: true });
     if (f.user) {
