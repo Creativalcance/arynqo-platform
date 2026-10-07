@@ -9,7 +9,7 @@ import AutomationPanel from "./components/AutomationPanel";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import Link from "@/lib/i18n/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type AcademyPostStatus = "draft" | "published" | "archived";
@@ -77,43 +77,27 @@ export default function AdminAcademiaPage() {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
 
-  useEffect(() => {
-    loadAdminPage();
-  }, []);
 
   const selectedPost = useMemo(() => {
     return posts.find((post) => post.id === selectedPostId) || null;
   }, [posts, selectedPostId]);
 
-  async function loadAdminPage() {
-    setIsLoading(true);
+  const selectPost = useCallback((post: AcademyPost) => {
+    setSelectedPostId(post.id);
+    setTitle(post.title || "");
+    setSlug(post.slug || "");
+    setExcerpt(post.excerpt || "");
+    setContent(post.content || "");
+    setEditCategory(post.category || "Carreira");
+    setEditAudience(post.audience || "Candidatos");
+    setReadingTime(post.reading_time || "5 min");
+    setFeatured(Boolean(post.featured));
+    setStatus(post.status || "draft");
+    setSeoTitle(post.seo_title || "");
+    setSeoDescription(post.seo_description || "");
+  }, []);
 
-    const { data: sessionData } = await supabase.auth.getSession();
-
-    if (!sessionData.session) {
-      const returnPath = window.location.pathname + window.location.search;
-      window.location.href = browserLocalizedPath("/login") + "?next=" + encodeURIComponent(returnPath);
-      return;
-    }
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", sessionData.session.user.id)
-      .single();
-
-    if (profileData?.role !== "admin") {
-      setIsAuthorized(false);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsAuthorized(true);
-    await loadPosts();
-    setIsLoading(false);
-  }
-
-  async function loadPosts() {
+  const loadPosts = useCallback(async (selectInitial = false) => {
     const { data, error } = await supabase
       .from("academy_posts")
       .select(
@@ -148,26 +132,47 @@ export default function AdminAcademiaPage() {
     const currentPosts = (data || []) as AcademyPost[];
     setPosts(currentPosts);
 
-    if (!selectedPostId && currentPosts.length > 0) {
+    if (selectInitial && currentPosts.length > 0) {
       const requestedId = new URLSearchParams(window.location.search).get("post");
       selectPost(currentPosts.find((post) => post.id === requestedId) || currentPosts[0]);
     }
+  }, [selectPost]);
+
+
+  useEffect(() => {
+    let active = true;
+    async function loadAdminPage() {
+const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
+
+    if (!sessionData.session) {
+      const returnPath = window.location.pathname + window.location.search;
+      window.location.href = browserLocalizedPath("/login") + "?next=" + encodeURIComponent(returnPath);
+      return;
+    }
+
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", sessionData.session.user.id)
+      .single();
+    if (!active) return;
+
+    if (profileData?.role !== "admin") {
+      setIsAuthorized(false);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsAuthorized(true);
+    await loadPosts(true);
+    setIsLoading(false);
   }
 
-  function selectPost(post: AcademyPost) {
-    setSelectedPostId(post.id);
-    setTitle(post.title || "");
-    setSlug(post.slug || "");
-    setExcerpt(post.excerpt || "");
-    setContent(post.content || "");
-    setEditCategory(post.category || "Carreira");
-    setEditAudience(post.audience || "Candidatos");
-    setReadingTime(post.reading_time || "5 min");
-    setFeatured(Boolean(post.featured));
-    setStatus(post.status || "draft");
-    setSeoTitle(post.seo_title || "");
-    setSeoDescription(post.seo_description || "");
-  }
+    void loadAdminPage();
+    return () => { active = false; };
+  }, [loadPosts]);
+
 
   async function generatePost(generateFromTrend: boolean) {
     setIsGenerating(true);

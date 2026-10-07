@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint . --max-warnings=0",
     "test:academy": "node --import tsx tests/academy-calendar.test.ts && node --import tsx tests/academy-quality.test.ts && node --import tsx tests/academy-generation.test.ts && node --import tsx tests/academy-api.test.ts && node tests/academy-database.test.mjs && node --import tsx tests/academy-email.test.ts && node tests/academy-email-database.test.mjs",
     "test:notifications": "node --import tsx tests/notification-read.test.ts",
     "test:applications": "node --import tsx tests/application-decision.test.ts && node tests/application-decision-database.test.mjs && node tests/recruitment-actions.test.mjs",
@@ -19,7 +19,9 @@
     "test:accounts": "node --import tsx tests/account-administration.test.ts && node tests/account-administration-database.test.mjs",
     "test:linkedin": "node --import tsx tests/linkedin-import.test.ts && node --import tsx tests/linkedin-import-api.test.ts",
     "test:external-jobs": "node --import tsx tests/external-jobs.test.ts && node --import tsx tests/external-jobs-api.test.ts && node tests/external-jobs-database.test.mjs && node tests/external-jobs-global.test.mjs && node tests/external-skill-evidence.test.mjs",
-    "test:job-management": "node tests/job-management-database.test.mjs"
+    "test:job-management": "node tests/job-management-database.test.mjs",
+    "typecheck": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "test": "node --import tsx --test --test-concurrency=4 tests/*.test.ts tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

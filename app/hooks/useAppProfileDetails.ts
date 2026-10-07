@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useAsyncResource } from "./useAsyncResource";
 import { supabase } from "@/lib/supabase";
 import { useAppProfile } from "./useAppProfile";
 
@@ -160,29 +161,18 @@ export function getCompanyProfileCompletion(
   return Math.round((getCompletedFields(fields) / fields.length) * 100);
 }
 
-export function useAppProfileDetails(): UseAppProfileDetailsResult {
-  const { hasSession, appMode } = useAppProfile();
+const emptyDetails = {
+  studentProfile: null as AppStudentProfileDetails | null,
+  companyProfile: null as AppCompanyProfileDetails | null,
+};
 
-  const [studentProfile, setStudentProfile] =
-    useState<AppStudentProfileDetails | null>(null);
+async function fetchProfileDetails(hasSession: boolean, appMode: string) {
 
-  const [companyProfile, setCompanyProfile] =
-    useState<AppCompanyProfileDetails | null>(null);
-
-  const [isLoadingDetails, setIsLoadingDetails] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  async function loadDetails() {
-    setIsLoadingDetails(true);
-    setErrorMessage(null);
-    setStudentProfile(null);
-    setCompanyProfile(null);
 
     const { data: sessionData } = await supabase.auth.getSession();
 
     if (!sessionData.session || !hasSession) {
-      setIsLoadingDetails(false);
-      return;
+      return emptyDetails;
     }
 
     const userId = sessionData.session.user.id;
@@ -214,14 +204,10 @@ export function useAppProfileDetails(): UseAppProfileDetailsResult {
 
       if (error) {
         console.error(error);
-        setErrorMessage("Não foi possível carregar o perfil da empresa.");
-        setIsLoadingDetails(false);
-        return;
+        throw new Error("Não foi possível carregar o perfil da empresa.");
       }
 
-      setCompanyProfile((data as AppCompanyProfileDetails) || null);
-      setIsLoadingDetails(false);
-      return;
+      return { companyProfile: (data as AppCompanyProfileDetails) || null, studentProfile: null };
     }
 
     const { data, error } = await supabase
@@ -273,24 +259,17 @@ export function useAppProfileDetails(): UseAppProfileDetailsResult {
 
     if (error) {
       console.error(error);
-      setErrorMessage("Não foi possível carregar o perfil profissional.");
-      setIsLoadingDetails(false);
-      return;
+      throw new Error("Não foi possível carregar o perfil profissional.");
     }
 
-    setStudentProfile((data as AppStudentProfileDetails) || null);
-    setIsLoadingDetails(false);
+    return { studentProfile: (data as AppStudentProfileDetails) || null, companyProfile: null };
   }
 
-  useEffect(() => {
-    loadDetails();
-  }, [hasSession, appMode]);
-
-  return {
-    studentProfile,
-    companyProfile,
-    isLoadingDetails,
-    errorMessage,
-    reloadDetails: loadDetails,
-  };
+export function useAppProfileDetails(): UseAppProfileDetailsResult {
+  const { hasSession, appMode } = useAppProfile();
+  const load = useCallback(() => fetchProfileDetails(hasSession, appMode), [hasSession, appMode]);
+  const { data, isLoading, errorMessage, reload } = useAsyncResource(
+    load, emptyDetails, "Não foi possível carregar o perfil.",
+  );
+  return { ...data, isLoadingDetails: isLoading, errorMessage, reloadDetails: reload };
 }

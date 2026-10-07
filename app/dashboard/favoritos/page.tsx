@@ -40,11 +40,10 @@ export default function FavoritosPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadSavedJobs();
-  }, []);
-
-  async function loadSavedJobs() {
+    let active = true;
+    async function loadSavedJobs() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       window.location.href = browserLocalizedPath("/login");
@@ -58,6 +57,7 @@ export default function FavoritosPage() {
       .select("id")
       .eq("user_id", userId)
       .single();
+    if (!active) return;
 
     if (!studentProfile) {
       setIsLoading(false);
@@ -85,6 +85,7 @@ export default function FavoritosPage() {
       )
       .eq("student_id", studentProfile.id)
       .order("created_at", { ascending: false });
+    if (!active) return;
 
     if (error) {
       localizedAlert(error.message);
@@ -120,6 +121,11 @@ export default function FavoritosPage() {
     setSavedJobs(normalizedSavedJobs);
     setIsLoading(false);
   }
+
+    void loadSavedJobs();
+    return () => { active = false; };
+  }, []);
+
 
   async function removeSavedJob(savedJobId: string) {
     const { error } = await supabase
@@ -212,7 +218,6 @@ export default function FavoritosPage() {
                     <div className="flex gap-4">
                       <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#07111F] to-[#1683FF] text-lg font-semibold text-white">
                         {company?.logo_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <LElement as="img"
                             src={company.logo_url}
                             alt={company.company_name || "Empresa"}

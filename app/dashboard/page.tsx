@@ -35,15 +35,11 @@ export default function DashboardPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
-    setIsLoading(true);
-    setErrorMessage("");
-
-    try {
+    let active = true;
+    async function loadProfile() {
+try {
       const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
       if (!sessionData.session) {
         window.location.href = browserLocalizedPath("/login");
@@ -57,6 +53,7 @@ export default function DashboardPage() {
         .select("id, role, name, email")
         .eq("id", userId)
         .single();
+    if (!active) return;
 
       if (error || !data) {
         setErrorMessage(error?.message || "Perfil não encontrado.");
@@ -78,6 +75,7 @@ export default function DashboardPage() {
           .eq("user_id", userId)
           .maybeSingle(),
       ]);
+    if (!active) return;
 
       setCompanyProfile((companyData as CompanyProfile) || null);
       setStudentProfile((studentData as StudentProfile) || null);
@@ -87,6 +85,11 @@ export default function DashboardPage() {
 
     setIsLoading(false);
   }
+
+    void loadProfile();
+    return () => { active = false; };
+  }, []);
+
 
   async function handleLogout() {
     await supabase.auth.signOut();

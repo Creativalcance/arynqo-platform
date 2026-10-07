@@ -91,11 +91,10 @@ export default function PerfilEmpresaPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    loadCompanyProfile();
-  }, []);
-
-  async function loadCompanyProfile() {
+    let active = true;
+    async function loadCompanyProfile() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       window.location.href = browserLocalizedPath("/login");
@@ -127,6 +126,7 @@ export default function PerfilEmpresaPage() {
       )
       .eq("user_id", userId)
       .single();
+    if (!active) return;
 
     if (error || !data) {
       localizedAlert("Apenas empresas podem editar este perfil.");
@@ -155,6 +155,11 @@ export default function PerfilEmpresaPage() {
     setIsEditing(false);
     setIsLoading(false);
   }
+
+    void loadCompanyProfile();
+    return () => { active = false; };
+  }, []);
+
 
   async function handleSave() {
     if (!isEditing || isSaving) {

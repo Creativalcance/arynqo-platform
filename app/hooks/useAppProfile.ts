@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAsyncResource } from "./useAsyncResource";
+import { browserLocalizedPath } from "@/lib/i18n/config";
 import { supabase } from "@/lib/supabase";
 
 export type AppRole =
@@ -212,69 +213,35 @@ function mapRawProfile(profile: RawProfile): AppProfile {
   };
 }
 
+const emptyProfile = { profile: null as AppProfile | null, hasSession: false };
+
+async function loadProfile() {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!sessionData.session) return emptyProfile;
+  const { data, error } = await supabase.from("profiles")
+    .select("id, role, name, email").eq("id", sessionData.session.user.id).single();
+  if (error) throw error;
+  return { profile: data ? mapRawProfile(data as RawProfile) : null, hasSession: true };
+}
+
 export function useAppProfile(): UseAppProfileResult {
-  const [profile, setProfile] = useState<AppProfile | null>(null);
-  const [hasSession, setHasSession] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  async function loadProfile() {
-    setIsLoading(true);
-
-    const { data: sessionData } = await supabase.auth.getSession();
-
-    if (!sessionData.session) {
-      setHasSession(false);
-      setProfile(null);
-      setIsLoading(false);
-      return;
-    }
-
-    setHasSession(true);
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, role, name, email")
-      .eq("id", sessionData.session.user.id)
-      .single();
-
-    if (error || !data) {
-      setProfile(null);
-      setIsLoading(false);
-      return;
-    }
-
-    setProfile(mapRawProfile(data as RawProfile));
-    setIsLoading(false);
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setHasSession(false);
-    window.location.href = "/login";
-  }
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
+  const { data: { profile, hasSession }, isLoading, reload } = useAsyncResource(
+    loadProfile, emptyProfile, "Não foi possível carregar o perfil.",
+  );
   const appMode = profile?.appMode ?? "public";
   const appRole = profile?.appRole ?? "unknown";
   const roleLabel = profile?.roleLabel ?? "Visitante";
-
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    await reload();
+    window.location.assign(browserLocalizedPath("/login"));
+  }
   return {
-    profile,
-    hasSession,
-    isLoading,
-    appMode,
-    appRole,
-    roleLabel,
-    isTalent: appMode === "talent",
-    isCompany: appMode === "company",
-    isRecruiter: appMode === "recruiter",
-    isEducation: appMode === "education",
-    isAdmin: appMode === "admin",
-    reloadProfile: loadProfile,
-    signOut,
+    profile, hasSession, isLoading, appMode, appRole, roleLabel,
+    isTalent: appMode === "talent", isCompany: appMode === "company",
+    isRecruiter: appMode === "recruiter", isEducation: appMode === "education",
+    isAdmin: appMode === "admin", reloadProfile: reload, signOut,
   };
 }

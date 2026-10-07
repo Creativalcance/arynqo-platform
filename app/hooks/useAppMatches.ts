@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAsyncResource } from "./useAsyncResource";
 import { supabase } from "@/lib/supabase";
 
 export type AppMatchItem = {
@@ -163,21 +163,15 @@ async function getCurrentStudentProfileId() {
   return data?.id || null;
 }
 
-export function useAppMatches(): UseAppMatchesResult {
-  const [matches, setMatches] = useState<AppMatchItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+const emptyMatches: AppMatchItem[] = [];
 
-  async function loadMatches() {
-    setIsLoading(true);
-    setErrorMessage(null);
+async function loadMatches(): Promise<AppMatchItem[]> {
+
 
     const studentId = await getCurrentStudentProfileId();
 
     if (!studentId) {
-      setMatches([]);
-      setIsLoading(false);
-      return;
+      return [];
     }
 
     const { data, error } = await supabase
@@ -221,24 +215,13 @@ export function useAppMatches(): UseAppMatchesResult {
 
     if (error) {
       console.error(error);
-      setMatches([]);
-      setErrorMessage("Não foi possível carregar os matches IA do Supabase.");
-      setIsLoading(false);
-      return;
+      throw new Error("Não foi possível carregar os matches IA do Supabase.");
     }
 
-    setMatches(((data || []) as RawAIMatch[]).map(mapRawMatchToAppMatch));
-    setIsLoading(false);
+    return ((data || []) as RawAIMatch[]).map(mapRawMatchToAppMatch);
   }
 
-  useEffect(() => {
-    loadMatches();
-  }, []);
-
-  return {
-    matches,
-    isLoading,
-    errorMessage,
-    reloadMatches: loadMatches,
-  };
+export function useAppMatches(): UseAppMatchesResult {
+  const { data, isLoading, errorMessage, reload } = useAsyncResource(loadMatches, emptyMatches, "Não foi possível carregar os matches IA do Supabase.");
+  return { matches: data, isLoading, errorMessage, reloadMatches: reload };
 }
