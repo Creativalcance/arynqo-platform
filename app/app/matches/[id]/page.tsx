@@ -236,11 +236,6 @@ export default function AppMatchDetailPage() {
             tone="warning"
           />
 
-          <TagList
-            title="Recomendações IA"
-            items={match.recommendations}
-            tone="neutral"
-          />
         </div>
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">

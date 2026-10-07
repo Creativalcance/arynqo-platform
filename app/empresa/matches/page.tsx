@@ -1202,15 +1202,6 @@ function CandidateDetail({
                 </InfoPanel>
               )}
 
-              {match.aiRecommendations.length > 0 && (
-                <InfoPanel title="Recomendações IA">
-                  <ul className="space-y-2">
-                    {match.aiRecommendations.map((item) => (
-                      <li key={item}>• <LText text={item} /></li>
-                    ))}
-                  </ul>
-                </InfoPanel>
-              )}
             </div>
           )}
 

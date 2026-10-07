@@ -506,10 +506,6 @@ export default function JobPage({
 
                   <MatchList title="A validar" items={aiMatch.gaps || []} />
 
-                  <MatchList
-                    title="Recomendações IA"
-                    items={aiMatch.ai_recommendations || []}
-                  />
                 </div>
               ) : (
                 <p className="mt-6 rounded-3xl bg-[#F7F9FC] p-5 text-sm leading-6 text-slate-600">

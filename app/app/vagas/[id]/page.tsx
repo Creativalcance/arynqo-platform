@@ -568,11 +568,6 @@ export default function AppVagaDetailPage() {
             tone="warning"
           />
 
-          <TagList
-            title="Recomendações IA"
-            items={aiMatch?.ai_recommendations || []}
-            tone="neutral"
-          />
         </div>
 
         {job.companyProfile && (

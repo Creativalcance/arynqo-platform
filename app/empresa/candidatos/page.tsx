@@ -685,11 +685,6 @@ export default function EmpresaCandidatosPage() {
                           />
                         </div>
 
-                        <MatchBlock
-                          title="Recomendações IA"
-                          items={match.ai_recommendations || []}
-                          className="mt-5"
-                        />
                       </section>
                     )}
 
