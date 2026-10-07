@@ -10,9 +10,9 @@ const require=createRequire(import.meta.url);
 const source=readFileSync('app/empresa/talentos/page.tsx','utf8');
 const compiled=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS}}).outputText;
 const candidate={id:'candidate-1',profession:'Engenheiro',headline:null,location:'Coimbra',seniority:'Júnior',work_model:'Híbrido',profiles:null,contact_visibility:'approval_required'};
-function render({items=[candidate],jobId='',status=null}={}){
+function render({items=[candidate],status=null}={}){
  let state=0;const exports={};
- const values=[{id:'company'},[{id:'job',title:'Vaga de engenharia'}],{query:'',location:'',skill:'',seniority:'',work_model:'',availability:'',jobId,page:1},undefined,items.map(item=>({...item,contact_request_status:status})),items.length,false,'','','',0,0];
+ const values=[{id:'company'},{query:'',location:'',skill:'',seniority:'',work_model:'',availability:'',page:1},undefined,items.map(item=>({...item,contact_request_status:status})),items.length,false,'','','',0,0];
  const mockRequire=name=>{
   if(name==='react')return {...React,useEffect:()=>{},useRef:()=>({current:false}),useState:initial=>{const value=values[state++];return [value===undefined?initial:value,()=>{}];}};
   if(name==='@/lib/i18n/client')return {LText:({text})=>text,LElement:({as,...props})=>React.createElement(as,props)};
@@ -28,15 +28,15 @@ function render({items=[candidate],jobId='',status=null}={}){
 test('directory displays visible profiles without selecting a job and separates search from contact',()=>{
  const html=render();
  for(const label of ['Profissão ou área','Localização','Competência','Senioridade','Modelo de trabalho','Disponibilidade','Engenheiro','Identidade protegida'])assert.ok(html.includes(label),label);
- assert.match(html,/<option value="" selected="">Escolher uma vaga/);
- assert.match(html,/<button type="button" disabled=""[^>]*>Pedir autorização<\/button>/);
+ assert.ok(!html.includes('Vaga para o pedido'));assert.ok(html.includes('mesmo sem publicar uma vaga'));
+ assert.match(html,/<button type="button" class="[^"]*">Pedir autorização<\/button>/);
  assert.ok(!html.includes('/empresa/candidatos/candidate-1'));
 });
-test('contact requires a job and an existing request cannot be sent again',()=>{
- const html=render({jobId:'job'});
+test('contact works without a job and an existing request cannot be sent again',()=>{
+ const html=render();
  assert.match(html,/<button type="button" class="[^"]*">Pedir autorização<\/button>/);
- const pending=render({jobId:'job',status:'pending'});assert.ok(pending.includes('A aguardar resposta'));assert.ok(!pending.includes('>Pedir autorização</button>'));
- const rejected=render({jobId:'job',status:'rejected'});assert.ok(rejected.includes('recusou este pedido'));
+ const pending=render({status:'pending'});assert.ok(pending.includes('A aguardar resposta'));assert.ok(!pending.includes('>Pedir autorização</button>'));
+ const rejected=render({status:'rejected'});assert.ok(rejected.includes('recusou este pedido'));
 });
 test('authorized profiles can be opened without a selected vacancy',()=>{
  const html=render({items:[{...candidate,profiles:{name:'Nome autorizado'}}]});

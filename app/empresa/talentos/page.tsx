@@ -23,15 +23,13 @@ type Candidate = {
   has_application: boolean;
   contact_request_status: "pending" | "accepted" | "rejected" | null;
 };
-type Job = { id: string; title: string };
 const emptySearch = { query: "", location: "", skill: "", seniority: "", work_model: "", availability: "" };
 
 type Company = { id: string; company_name: string | null };
 
 export default function CompanyTalentDirectory() {
   const [company, setCompany] = useState<Company | null>(null);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [filters, setFilters] = useState({ ...emptySearch, jobId: "", page: 1 });
+  const [filters, setFilters] = useState({ ...emptySearch, page: 1 });
   const [searchInput, setSearchInput] = useState(emptySearch);
   const sending = useRef(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -54,12 +52,7 @@ export default function CompanyTalentDirectory() {
         const { data, error: companyError } = await supabase.from("company_profiles")
           .select("id,company_name").eq("user_id", session.user.id).single();
         if (companyError || !data) throw new Error("Esta área está disponível para contas de empresa.");
-        const { data: jobData, error: jobError } = await supabase.from("jobs")
-          .select("id,title,renewal_deadline").eq("company_id", data.id).eq("is_active", true).order("created_at", { ascending: false });
-        if (jobError) throw new Error("Não foi possível carregar as vagas.");
-        const activeJobs = (jobData || []).filter(job => !job.renewal_deadline || new Date(job.renewal_deadline).getTime() > Date.now());
         if (!cancelled) {
-          setJobs(activeJobs);
           setCompany(data);
         }
       } catch (cause) {
@@ -78,7 +71,7 @@ export default function CompanyTalentDirectory() {
       setError("");
       try {
       const { data, error: directoryError } = await supabase.rpc("company_candidate_search", {
-        target_job_id: filters.jobId || null, search_text: filters.query, page_number: filters.page,
+        target_job_id: null, search_text: filters.query, page_number: filters.page,
         filters: { location: filters.location, skill: filters.skill, seniority: filters.seniority, work_model: filters.work_model, availability: filters.availability },
       });
       if (cancelled) return;
@@ -96,15 +89,15 @@ export default function CompanyTalentDirectory() {
   }, [company, filters, reload]);
 
   async function requestContact(candidate: Candidate) {
-    if (!company || !filters.jobId || sending.current) return;
+    if (!company || sending.current) return;
     sending.current = true;
     setSendingId(candidate.id); setFeedback("");
     try {
       const { data, error: requestError } = await supabase.from("candidate_contact_requests").insert({
-        company_id: company.id, student_id: candidate.id, job_id: filters.jobId, status: "pending",
-        message: `A empresa ${company.company_name || "ARYNQO"} pretende contactar-te sobre a vaga "${jobs.find(job => job.id === filters.jobId)?.title || ""}".`,
+        company_id: company.id, student_id: candidate.id, job_id: null, status: "pending",
+        message: `A empresa ${company.company_name || "ARYNQO"} pede autorização para consultar o teu perfil completo e os teus contactos.`,
       }).select("id").single();
-      if (requestError || !data) throw new Error("Não foi possível enviar. Verifica se a vaga continua ativa e se já existe um pedido para este candidato.");
+      if (requestError || !data) throw new Error("Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.");
       // The database creates the notification atomically; this requests immediate email delivery.
       await createNotification({ userId: "", title: "", message: "", relatedType: "candidate_contact_request", relatedId: data.id })
         .catch(() => undefined);
@@ -155,15 +148,8 @@ export default function CompanyTalentDirectory() {
         </form>
         <section className="mb-6 rounded-3xl border border-[#DDE3EA] bg-white p-5">
           <h2 className="text-lg font-semibold"><LText text="Pedir acesso a um perfil" /></h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600"><LText text="Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa." /></p>
-          <label className="mt-4 block max-w-xl text-sm font-semibold"><LText text="Vaga para o pedido" />
-            <select disabled={!!sendingId} value={filters.jobId} onChange={event => { setFeedback(""); setFilters(current => ({ ...current, jobId: event.target.value })); }} className="mt-2 w-full rounded-xl border border-[#DDE3EA] bg-white px-4 py-3 font-normal">
-              <option value=""><LText text="Escolher uma vaga para pedir autorização" /></option>
-              {jobs.map(job => <option key={job.id} value={job.id}>{job.title}</option>)}
-            </select>
-          </label>
+          <p className="mt-2 text-sm leading-6 text-slate-600"><LText text="Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos." /></p>
         </section>
-        {!jobs.length && company && <p className="mb-6 text-sm"><LText text={"Podes consultar os candidatos. "} /><Link href="/empresa/vagas/nova" className="text-[#1683FF] underline"><LText text={"Publica uma vaga"} /></Link> <LText text={" para enviar pedidos."} /></p>}
         {feedback && <p role="status" className="mb-6 rounded-xl bg-white p-4 text-sm"><LText text={feedback} /></p>}
         {error && <div role="alert" className="mb-6 rounded-xl bg-red-50 p-4 text-sm text-red-800"><LText text={error} /> <button type="button" onClick={() => company ? setReload(current => current + 1) : setInitializationAttempt(current => current + 1)} className="underline"><LText text={"Tentar novamente"} /></button></div>}
         {loading ? <p role="status"><LText text={"A carregar candidatos…"} /></p> : (
@@ -179,13 +165,13 @@ export default function CompanyTalentDirectory() {
                   <p className="mt-3 text-sm text-slate-600"><LText text={[candidate.desired_area, candidate.location, candidate.seniority, candidate.work_model].filter(Boolean).join(" · ")} /></p>
                   <div className="mt-5">
                     {candidate.profiles ? (
-                      <Link href={`/empresa/candidatos/${candidate.id}${filters.jobId ? `?jobId=${filters.jobId}` : ""}`} className="font-semibold text-[#1683FF] underline"><LText text={"Ver perfil e contacto"} /></Link>
+                      <Link href={`/empresa/candidatos/${candidate.id}`} className="font-semibold text-[#1683FF] underline"><LText text={"Ver perfil e contacto"} /></Link>
                     ) : candidate.contact_request_status ? (
                       <p className="text-sm"><LText text={candidate.contact_request_status === "pending" ? "Pedido enviado. A aguardar resposta." : candidate.contact_request_status === "rejected" ? "O candidato recusou este pedido." : "Contacto indisponível."} /></p>
                     ) : candidate.contact_visibility === "closed" ? (
                       <p className="text-sm"><LText text={"Este candidato não aceita pedidos de contacto."} /></p>
                     ) : (
-                      <button type="button" disabled={!filters.jobId || !!sendingId || loading} onClick={() => requestContact(candidate)}
+                      <button type="button" disabled={!!sendingId || loading} onClick={() => requestContact(candidate)}
                         className="rounded-full bg-[#1683FF] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
                         <LText text={sendingId === candidate.id ? "A enviar…" : "Pedir autorização"} />
                       </button>

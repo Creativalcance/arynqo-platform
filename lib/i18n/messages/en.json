@@ -2691,5 +2691,12 @@
   "Pedir acesso a um perfil": "Request profile access",
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "I can browse without posting a job. To request access, I choose an active job and the candidate decides whether to share their profile with me. The selected job does not change the search results.",
   "Profissão ou área": "Profession or field",
-  "Todas as opções": "All options"
+  "Todas as opções": "All options",
+  "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.": "I can request access to any available candidate’s profile, even without posting a job. The candidate receives the request and decides whether to share their full profile, CV and contact details with me.",
+  "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.": "The request could not be sent. Refresh the list and try again.",
+  "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.": "{0} is requesting permission to view your full profile and contact details.",
+  "O candidato aceitou o pedido de acesso ao perfil.": "The candidate accepted the profile access request.",
+  "O candidato recusou o pedido de acesso ao perfil.": "The candidate declined the profile access request.",
+  "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.": "The company is requesting permission to view my full profile, CV and contact details.",
+  "Pedido de acesso ao meu perfil, CV e contactos.": "Request to access my profile, CV and contact details."
 }

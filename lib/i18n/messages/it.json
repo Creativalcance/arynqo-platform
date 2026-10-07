@@ -2691,5 +2691,12 @@
   "Pedir acesso a um perfil": "Richiedere accesso a un profilo",
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Posso esplorare senza pubblicare un’offerta. Per richiedere l’accesso, scelgo un’offerta attiva e il candidato decide se condividere il profilo con me. L’offerta scelta non modifica i risultati.",
   "Profissão ou área": "Professione o settore",
-  "Todas as opções": "Tutte le opzioni"
+  "Todas as opções": "Tutte le opzioni",
+  "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.": "Posso richiedere l’accesso al profilo di qualsiasi candidato disponibile, anche senza pubblicare un’offerta. Il candidato riceve la richiesta e decide se condividere con me il profilo completo, il CV e i contatti.",
+  "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.": "Non è stato possibile inviare la richiesta. Aggiorna l’elenco e riprova.",
+  "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.": "L’azienda {0} chiede il permesso di consultare il tuo profilo completo e i tuoi contatti.",
+  "O candidato aceitou o pedido de acesso ao perfil.": "Il candidato ha accettato la richiesta di accesso al profilo.",
+  "O candidato recusou o pedido de acesso ao perfil.": "Il candidato ha rifiutato la richiesta di accesso al profilo.",
+  "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.": "L’azienda chiede il permesso di consultare il mio profilo completo, il CV e i contatti.",
+  "Pedido de acesso ao meu perfil, CV e contactos.": "Richiesta di accesso al mio profilo, CV e contatti."
 }
