@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { POST } from "../app/api/auth/confirm/route";
 import { notificationEmailContent, sendNotificationEmail } from "../lib/notification-email";
+import { workAsyncStorage } from "next/dist/server/app-render/work-async-storage.external";
 
 const email = { to: "recipient@example.invalid", name: "<script>name</script>", title: "Candidatura recebida", message: "Teste <img src=x>", relatedUrl: "/dashboard/candidaturas", eventKey: "application:test:created" };
 test("branded notification escapes user content and rejects external destinations", () => {
@@ -24,15 +25,19 @@ test("confirmation rejects malformed input and foreign origins without contactin
  assert.equal((await POST(request({token_hash:"bad"}))).status,400);
  assert.equal((await POST(request({token_hash:"a".repeat(64)},"https://evil.example"))).status,403);
 });
-test("confirmation returns no session and handles expired tokens",async()=>{
+test("confirmation returns no session, schedules welcome only after activation and handles expired tokens",async context=>{
+ const scheduled: unknown[]=[];
+ context.mock.method(workAsyncStorage,'getStore',()=>({afterContext:{after:(task:unknown)=>scheduled.push(task)}} as unknown as ReturnType<typeof workAsyncStorage.getStore>));
  const originalFetch=globalThis.fetch;
  const previousUrl=process.env.NEXT_PUBLIC_SUPABASE_URL,previousKey=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  process.env.NEXT_PUBLIC_SUPABASE_URL="https://auth.example";process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY="synthetic-key";
  const request=()=>new Request("https://arynqo.example/api/auth/confirm",{method:"POST",headers:{origin:"https://arynqo.example","Content-Type":"application/json"},body:JSON.stringify({token_hash:"a".repeat(64),type:"recovery"})});
  try {
   globalThis.fetch=async(_url,init)=>{assert.equal(JSON.parse(String(init?.body)).type,"email");return Response.json({user:{id:"test",email_confirmed_at:"2026-09-30T00:00:00Z"}});};
-  const success=await POST(request());assert.equal(success.status,200);assert.deepEqual(await success.json(),{confirmed:true});assert.equal(success.headers.get("set-cookie"),null);
+  const success=await POST(request());assert.equal(success.status,200);assert.deepEqual(await success.json(),{confirmed:true});assert.equal(success.headers.get("set-cookie"),null);assert.equal(scheduled.length,1);
   globalThis.fetch=async()=>Response.json({msg:"Token has expired",code:"otp_expired"},{status:403});
-  assert.equal((await POST(request())).status,400);
+  assert.equal((await POST(request())).status,400);assert.equal(scheduled.length,1);
+  globalThis.fetch=async()=>Response.json({user:{id:'test',email_confirmed_at:null}});
+  assert.equal((await POST(request())).status,400);assert.equal(scheduled.length,1);
  } finally {globalThis.fetch=originalFetch;if(previousUrl===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_URL;else process.env.NEXT_PUBLIC_SUPABASE_URL=previousUrl;if(previousKey===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY=previousKey;}
 });

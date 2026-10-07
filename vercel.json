@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/welcome-emails",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/generate-academy-post",
       "schedule": "0 9 * * *"
     },

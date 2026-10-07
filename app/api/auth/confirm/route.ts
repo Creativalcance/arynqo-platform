@@ -1,4 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import { scheduleWelcomeEmail } from "@/lib/welcome-email-after";
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const headers = { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" };
@@ -28,6 +31,7 @@ export async function POST(request: Request) {
       return reply({ error: "Este link expirou, já foi utilizado ou é inválido. Se já confirmaste a conta, podes iniciar sessão. Caso contrário, pede um novo email." }, 400);
     }
     if (!data.user?.email_confirmed_at) return reply({ error: "Não foi possível confirmar o email. Tenta novamente." }, 400);
+    scheduleWelcomeEmail(data.user.id);
     return reply({ confirmed: true }, 200);
   } catch {
     return reply({ error: "Não foi possível confirmar agora. Tenta novamente dentro de momentos." }, 503);

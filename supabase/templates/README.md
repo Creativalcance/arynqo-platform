@@ -25,3 +25,15 @@ Para ativar no Supabase hospedado, aplicar o HTML em **Confirm sign up** e **Res
 **Estado:** templates preparados; aplicação/leitura da configuração Auth e receção por idioma por validar. O conector disponível não permite ler/escrever esta configuração. Nenhum email real foi enviado nesta alteração. Notificações da aplicação usam `profiles.locale` e são uma configuração separada.
 
 Gerar novamente com `node scripts/build-auth-email-templates.mjs`, depois de rever os catálogos; não traduzir variáveis Go/URLs/token.
+
+## Boas-vindas após ativação (2026-10-07)
+
+O email Supabase continua dedicado à ativação da conta. Depois de `auth.users.email_confirmed_at` passar de vazio a preenchido, o trigger `account_activated_welcome` guarda um único email de boas-vindas em `welcome_email_deliveries`. Uma conta criada já confirmada também é abrangida; contas antigas não são incluídas retroativamente. Reenvios de ativação, novos logins, recuperação de palavra-passe e alterações de email não criam novas boas-vindas.
+
+O artigo é escolhido na ativação: o mais recente com estado `published` e data de publicação já atingida. Guarda-se título, resumo, slug e tradução aprovada no idioma da conta, ou a versão original se não existir tradução. Sem artigos publicados, as boas-vindas mantêm a ligação para iniciar sessão. O conteúdo é guardado para manter os reenvios idênticos.
+
+O servidor agenda o envio depois da resposta de ativação, sem atrasar a confirmação. A tarefa `/api/cron/welcome-emails` processa pendentes e falhas temporárias a cada cinco minutos. Usa as configurações Resend existentes: `RESEND_API_KEY`, `NOTIFICATION_FROM_EMAIL`, `NEXT_PUBLIC_APP_URL`, `SUPABASE_SERVICE_ROLE_KEY` e `CRON_SECRET`. Não é necessário alterar o template de confirmação no painel Supabase para ativar este fluxo.
+
+Uma chave única por conta, reservas exclusivas e a mesma chave de idempotência Resend evitam duplicados. Tentativas com aceitação incerta deixam de ser repetidas antes de expirar a janela de 24 horas do fornecedor. Destinatários eliminados, suspensos, anónimos ou cujo email mudou são excluídos no processamento. O email é transacional, associado à ativação, e não subscreve o destinatário em notificações futuras da Academy.
+
+Aplicar a migração `account_welcome_email` antes de publicar o código. Verificar com `node --import tsx --test tests/welcome-email.test.ts tests/welcome-email-database.test.mjs tests/email-flows.test.ts`. Os testes não enviam emails reais; `sent` significa que o fornecedor aceitou o envio, sem comprovar entrega na caixa de entrada.

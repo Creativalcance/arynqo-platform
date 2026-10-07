@@ -21,6 +21,14 @@ export default function Footer({ onManageCookies }: { onManageCookies: () => voi
 
           <p className="mt-6 max-w-md leading-relaxed text-blue-100">
             <LText text={"Plataforma inteligente de recrutamento e evolução profissional, desenhada para ligar talento, estudantes e empresas."} /></p>
+          <div className="mt-6 flex flex-wrap gap-4 text-sm text-blue-100">
+            <a href="https://www.facebook.com/profile.php?id=61594632076179" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/20 px-4 py-2 transition hover:border-white hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+              Facebook<span className="sr-only"> <LText text={" (abre num novo separador)"} /></span>
+            </a>
+            <a href="https://www.instagram.com/arynqo/" target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/20 px-4 py-2 transition hover:border-white hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
+              Instagram<span className="sr-only"> <LText text={" (abre num novo separador)"} /></span>
+            </a>
+          </div>
         </div>
 
         <div>
