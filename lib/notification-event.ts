@@ -60,21 +60,21 @@ export async function resolveNotificationEvent(
   if (["candidate_contact_request", "contact_request"].includes(String(input.relatedType))) {
     const contact = await lookup("candidate_contact_requests", relatedId, "id,student_id,job_id,company_id,status");
     const student = await lookup("student_profiles", contact.student_id, "id,user_id");
-    const job = await lookup("jobs", contact.job_id, "id,company_id,title");
+    const job = contact.job_id ? await lookup("jobs", contact.job_id, "id,company_id,title") : null;
     const company = await lookup("company_profiles", contact.company_id, "id,user_id,company_name");
-    if (job.company_id !== company.id) return denied();
+    if (job && job.company_id !== company.id) return denied();
     if (["company", "admin"].includes(actor.role) && actor.id === company.user_id && contact.status === "pending") {
       return event(student.user_id, "Pedido de contacto recebido",
-        `A empresa ${company.company_name} quer contactar-te sobre a vaga "${job.title}".`,
+        job ? `A empresa ${company.company_name} quer contactar-te sobre a vaga "${job.title}".` : `A empresa ${company.company_name || "ARYNQO"} pede autorização para consultar o teu perfil completo e os teus contactos.`,
         "candidate_contact_request", "/dashboard/notificacoes", "Responder ao pedido", "pending");
     }
     if (actor.role === "student" && actor.id === student.user_id &&
         ["accepted", "rejected"].includes(contact.status)) {
       const label = contact.status === "accepted" ? "aceite" : "recusado";
       return event(company.user_id, `Pedido de contacto ${label}`,
-        `O candidato ${label === "aceite" ? "aceitou" : "recusou"} o pedido relativo à vaga "${job.title}".`,
+        job ? `O candidato ${label === "aceite" ? "aceitou" : "recusou"} o pedido relativo à vaga "${job.title}".` : `O candidato ${label === "aceite" ? "aceitou" : "recusou"} o pedido de acesso ao perfil.`,
         "candidate_contact_request",
-        contact.status === "accepted" ? `/empresa/candidatos/${student.id}?jobId=${job.id}` : "/empresa/matches",
+        contact.status === "accepted" ? `/empresa/candidatos/${student.id}${job ? `?jobId=${job.id}` : ""}` : "/empresa/talentos",
         "Ver pedido", contact.status);
     }
     return denied();
