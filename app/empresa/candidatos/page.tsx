@@ -8,7 +8,7 @@ import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
 import { CandidateCVButton } from "@/app/components/CandidateCVButton";
 import Link from "@/lib/i18n/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { decideApplication } from "@/lib/application-decision";
 import { supabase } from "@/lib/supabase";
 
@@ -115,9 +115,6 @@ export default function EmpresaCandidatosPage() {
   const decisionLocks = useRef(new Set<string>());
   const [decidingIds, setDecidingIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadApplications();
-  }, []);
 
   const filteredApplications = useMemo(() => {
     if (selectedStatus === "all") {
@@ -161,8 +158,53 @@ export default function EmpresaCandidatosPage() {
     };
   }, [applications]);
 
-  async function loadApplications() {
-    setIsLoading(true);
+  const loadCandidateSkills = useCallback(async (studentIds: string[]) => {
+    if (studentIds.length === 0) {
+      return {};
+    }
+
+    const { data, error } = await supabase
+      .from("student_skills")
+      .select(
+        `
+        student_id,
+        skills (
+          id,
+          name
+        )
+      `
+      )
+      .in("student_id", studentIds);
+
+    if (error) {
+      console.error(error);
+      return {};
+    }
+
+    const groupedSkills = ((data || []) as StudentSkillRow[]).reduce<
+      Record<string, Skill[]>
+    >((accumulator, row) => {
+      const skill = Array.isArray(row.skills)
+        ? row.skills[0] ?? null
+        : row.skills;
+
+      if (!skill) {
+        return accumulator;
+      }
+
+      if (!accumulator[row.student_id]) {
+        accumulator[row.student_id] = [];
+      }
+
+      accumulator[row.student_id].push(skill);
+
+      return accumulator;
+    }, {});
+
+    return groupedSkills;
+  }, []);
+
+  const readApplications = useCallback(async () => {
 
     const { data: sessionData } = await supabase.auth.getSession();
 
@@ -193,10 +235,7 @@ export default function EmpresaCandidatosPage() {
     const jobIds = jobs?.map((job) => job.id) || [];
 
     if (jobIds.length === 0) {
-      setApplications([]);
-      setCandidateSkills({});
-      setIsLoading(false);
-      return;
+      return { applications: [] as ApplicationWithMatch[], skills: {} as Record<string, Skill[]> };
     }
 
     const { data, error } = await supabase
@@ -226,13 +265,12 @@ export default function EmpresaCandidatosPage() {
 
     if (error) {
       localizedAlert(error.message);
-      setIsLoading(false);
-      return;
+      return null;
     }
 
     let snapshots: Map<string, NonNullable<CandidateApplication["student_profiles"]>>;
     try { snapshots = await candidateSnapshots<NonNullable<CandidateApplication["student_profiles"]>>((data || []).map(application => application.student_id)); }
-    catch { localizedAlert("Não foi possível carregar os candidatos."); setIsLoading(false); return; }
+    catch { localizedAlert("Não foi possível carregar os candidatos."); return null; }
 
     const normalizedApplications = (data || []).map((application) => {
       const normalizedStudentProfile = snapshots.get(application.student_id) || null;
@@ -262,7 +300,7 @@ export default function EmpresaCandidatosPage() {
       )
     );
 
-    const [{ data: matches }, _skillsResult] = await Promise.all([
+    const [{ data: matches }, skills] = await Promise.all([
       supabase
         .from("ai_matches")
         .select(
@@ -317,57 +355,30 @@ export default function EmpresaCandidatosPage() {
         );
       });
 
-    setApplications(applicationsWithMatches);
+    return { applications: applicationsWithMatches, skills };
+  }, [loadCandidateSkills]);
+
+  const applyApplications = useCallback((result: Awaited<ReturnType<typeof readApplications>>) => {
+    if (result) {
+      setApplications(result.applications);
+      setCandidateSkills(result.skills);
+    }
     setIsLoading(false);
+  }, []);
+
+  async function loadApplications() {
+    setIsLoading(true);
+    applyApplications(await readApplications());
   }
 
-  async function loadCandidateSkills(studentIds: string[]) {
-    if (studentIds.length === 0) {
-      setCandidateSkills({});
-      return;
-    }
+  useEffect(() => {
+    let active = true;
+    void readApplications().then(result => {
+      if (active) applyApplications(result);
+    });
+    return () => { active = false; };
+  }, [readApplications, applyApplications]);
 
-    const { data, error } = await supabase
-      .from("student_skills")
-      .select(
-        `
-        student_id,
-        skills (
-          id,
-          name
-        )
-      `
-      )
-      .in("student_id", studentIds);
-
-    if (error) {
-      console.error(error);
-      setCandidateSkills({});
-      return;
-    }
-
-    const groupedSkills = ((data || []) as StudentSkillRow[]).reduce<
-      Record<string, Skill[]>
-    >((accumulator, row) => {
-      const skill = Array.isArray(row.skills)
-        ? row.skills[0] ?? null
-        : row.skills;
-
-      if (!skill) {
-        return accumulator;
-      }
-
-      if (!accumulator[row.student_id]) {
-        accumulator[row.student_id] = [];
-      }
-
-      accumulator[row.student_id].push(skill);
-
-      return accumulator;
-    }, {});
-
-    setCandidateSkills(groupedSkills);
-  }
 
   async function recalculateAllMatches() {
     const jobIds = Array.from(

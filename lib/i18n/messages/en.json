@@ -2666,5 +2666,10 @@
   "A guardar profissão...": "Saving occupation...",
   "Não foi possível adicionar a profissão. Tenta novamente.": "Unable to add the occupation. Try again.",
   "Profissão inválida.": "Invalid occupation.",
-  "Catálogo ESCO e profissões adicionadas pelos utilizadores.": "ESCO catalogue and occupations added by users."
+  "Catálogo ESCO e profissões adicionadas pelos utilizadores.": "ESCO catalogue and occupations added by users.",
+  "Os meus dados": "My details",
+  "Condições da vaga": "Job conditions",
+  "Compatibilidade média das vagas apresentadas": "Average compatibility of displayed jobs",
+  "As minhas candidaturas": "My applications",
+  "Candidaturas recebidas": "Applications received"
 }

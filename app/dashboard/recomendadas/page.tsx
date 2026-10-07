@@ -42,11 +42,10 @@ export default function VagasRecomendadasPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadRecommendations();
-  }, []);
-
-  async function loadRecommendations() {
+    let active = true;
+    async function loadRecommendations() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       window.location.href = browserLocalizedPath("/login");
@@ -60,6 +59,7 @@ export default function VagasRecomendadasPage() {
       .select("id")
       .eq("user_id", userId)
       .single();
+    if (!active) return;
 
     if (!studentProfile) {
       localizedAlert("Apenas estudantes podem ver recomendações.");
@@ -79,6 +79,7 @@ export default function VagasRecomendadasPage() {
         `
         )
         .eq("student_id", studentProfile.id);
+    if (!active) return;
 
     if (studentSkillsError) {
       localizedAlert(studentSkillsError.message);
@@ -125,6 +126,7 @@ export default function VagasRecomendadasPage() {
       `
       )
       .in("skill_id", studentSkillIds);
+    if (!active) return;
 
     if (jobSkillsError) {
       localizedAlert(jobSkillsError.message);
@@ -163,6 +165,11 @@ export default function VagasRecomendadasPage() {
     setRecommendedJobs(recommendations);
     setIsLoading(false);
   }
+
+    void loadRecommendations();
+    return () => { active = false; };
+  }, []);
+
 
   if (isLoading) {
     return (

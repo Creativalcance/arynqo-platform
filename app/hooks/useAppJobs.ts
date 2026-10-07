@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAsyncResource } from "./useAsyncResource";
 import { supabase } from "@/lib/supabase";
 
 export type AppJobCompany = {
@@ -249,14 +249,10 @@ async function getCurrentStudentProfileId() {
   return data?.id || null;
 }
 
-export function useAppJobs(): UseAppJobsResult {
-  const [jobs, setJobs] = useState<AppJobCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+const emptyJobs: AppJobCard[] = [];
 
-  async function loadJobs() {
-    setIsLoading(true);
-    setErrorMessage(null);
+async function loadJobs(): Promise<AppJobCard[]> {
+
 
     const studentId = await getCurrentStudentProfileId();
 
@@ -302,10 +298,7 @@ export function useAppJobs(): UseAppJobsResult {
 
     if (jobsError) {
       console.error(jobsError);
-      setJobs([]);
-      setErrorMessage("Não foi possível carregar as vagas do Supabase.");
-      setIsLoading(false);
-      return;
+      throw new Error("Não foi possível carregar as vagas do Supabase.");
     }
 
     const rawJobs = (jobsData || []) as RawJob[];
@@ -331,18 +324,10 @@ export function useAppJobs(): UseAppJobsResult {
       }
     }
 
-    setJobs(rawJobs.map((job) => mapRawJobToAppJob(job, aiMatchByJobId)));
-    setIsLoading(false);
-  }
+    return rawJobs.map((job) => mapRawJobToAppJob(job, aiMatchByJobId));
+}
 
-  useEffect(() => {
-    loadJobs();
-  }, []);
-
-  return {
-    jobs,
-    isLoading,
-    errorMessage,
-    reloadJobs: loadJobs,
-  };
+export function useAppJobs(): UseAppJobsResult {
+  const { data, isLoading, errorMessage, reload } = useAsyncResource(loadJobs, emptyJobs, "Não foi possível carregar as vagas do Supabase.");
+  return { jobs: data, isLoading, errorMessage, reloadJobs: reload };
 }

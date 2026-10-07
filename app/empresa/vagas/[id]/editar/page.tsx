@@ -71,15 +71,6 @@ type JobAIResponse = {
 };
 
 
-
-
-
-
-
-
-
-
-
 function convertLegacyWorkMode(value: LegacyWorkMode | null) {
   if (value === "remote") {
     return "Remoto";
@@ -146,7 +137,6 @@ export default function EmpresaEditarVagaPage({
   const [isFeatured, setIsFeatured] = useState(false);
 
 
-
   const matchingScore = useMemo(() => {
     const fields = [
       title,
@@ -191,8 +181,12 @@ export default function EmpresaEditarVagaPage({
     aiSummary,
   ]);
 
-  async function loadJob() {
+
+  useEffect(() => {
+    let active = true;
+    async function loadJob() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       window.location.href = browserLocalizedPath("/login");
@@ -206,6 +200,7 @@ export default function EmpresaEditarVagaPage({
       .select("id")
       .eq("user_id", userId)
       .single();
+    if (!active) return;
 
     if (!companyProfile) {
       localizedAlert("Apenas empresas podem editar vagas.");
@@ -250,6 +245,7 @@ export default function EmpresaEditarVagaPage({
       .is("deleted_at", null)
       .eq("company_id", companyProfile.id)
       .single();
+    if (!active) return;
 
     if (error || !data) {
       localizedAlert("Vaga não encontrada.");
@@ -286,11 +282,9 @@ export default function EmpresaEditarVagaPage({
     setIsLoading(false);
   }
 
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(() => { if (active) void loadJob(); });
+    void loadJob();
     return () => { active = false; };
-  }, []);
+  }, [id]);
 
   function normalizeValue(value: string) {
     return value.trim().replace(/\s+/g, " ");
@@ -343,7 +337,6 @@ export default function EmpresaEditarVagaPage({
     event.preventDefault();
     addItem(value, currentItems, setItems, clearInput);
   }
-
 
 
   async function generateJobWithAI() {
@@ -533,7 +526,6 @@ export default function EmpresaEditarVagaPage({
     "mt-2 w-full rounded-2xl border border-[#DDE3EA] bg-white px-4 py-3 text-sm leading-6 text-[#07111F] outline-none transition placeholder:text-slate-400 focus:border-[#1683FF] focus:ring-4 focus:ring-[#1683FF]/10";
 
 
-
   const selectedChipClass =
     "inline-flex items-center gap-2 rounded-full border border-[#1683FF] bg-[#1683FF] px-4 py-2 text-xs font-semibold text-white transition";
 
@@ -706,11 +698,6 @@ export default function EmpresaEditarVagaPage({
                     className={inputClass}
                   />
                 </div>
-
-
-
-
-
 
 
                 <div>

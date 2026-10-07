@@ -5,7 +5,8 @@ import path from "node:path";
 const files = [];
 function walk(directory) { for (const item of fs.readdirSync(directory, { withFileTypes: true })) { const file = path.join(directory, item.name); if (item.isDirectory()) walk(file); else if (/\.tsx?$/.test(file)) files.push(file); } }
 walk("app"); walk("lib");
-const messages = new Set(fs.existsSync("lib/i18n/messages/pt.json") ? Object.keys(JSON.parse(fs.readFileSync("lib/i18n/messages/pt.json", "utf8"))) : []);
+const reviewedPortuguese = fs.existsSync("lib/i18n/messages/pt.json") ? JSON.parse(fs.readFileSync("lib/i18n/messages/pt.json", "utf8")) : {};
+const messages = new Set(Object.keys(reviewedPortuguese));
 const ignored = new Set(["className", "class", "id", "key", "htmlFor", "href", "src", "rel", "target", "type", "name", "value", "role", "method", "action", "dateTime", "autoComplete", "viewBox", "fill", "stroke", "d", "xmlns", "fontFamily", "color", "background"]);
 export function jsxText(text) {
   const lines = text.replace(/\t/g, " ").split(/\r?\n/);
@@ -48,5 +49,5 @@ for (const post of JSON.parse(fs.readFileSync("lib/i18n/academy-source.json", "u
 fs.mkdirSync("lib/i18n/messages", { recursive: true });
 for (const key of Object.keys(JSON.parse(fs.readFileSync("scripts/i18n-overrides.json", "utf8")))) messages.add(key);
 const entries = [...messages].sort();
-fs.writeFileSync("lib/i18n/messages/pt.json", JSON.stringify(Object.fromEntries(entries.map(text => [text, text])), null, 2) + "\n");
+fs.writeFileSync("lib/i18n/messages/pt.json", JSON.stringify(Object.fromEntries(entries.map(text => [text, reviewedPortuguese[text] ?? text])), null, 2) + "\n");
 console.log(`${entries.length} messages; ${entries.reduce((sum, text) => sum + text.length, 0)} source characters`);

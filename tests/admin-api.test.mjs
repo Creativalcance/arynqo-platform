@@ -33,8 +33,8 @@ test('Both administrative APIs reject anonymous and non-admin access before serv
     assert.equal((await fileGET(request('?id=' + actorId))).status, 403);
     assert.equal(calls, 4);
 });
-test('Admin listings require audit success, private caching and reject arbitrary datasets', async (context) => {
-    let auditFail = false, auditCalls = 0;
+test('Admin listings require account status, audit success, private caching and reject arbitrary datasets', async (context) => {
+    let auditFail = false, auditCalls = 0, controlsFail = false;
     context.mock.method(globalThis, 'fetch', async (input) => {
         const url = String(input);
         if (url.includes('/auth/v1/user'))
@@ -45,6 +45,10 @@ test('Admin listings require audit success, private caching and reject arbitrary
             return Response.json(null);
         if (url.includes('/rpc/admin_accounts'))
             return Response.json({ total: 1, rows: [{ id: actorId, name: 'João', email: 'test@example.invalid' }] });
+        if (url.includes('/account_controls?'))
+            return controlsFail
+                ? Response.json({ message: 'read failure', code: 'XX000' }, { status: 400 })
+                : Response.json([{ user_id: actorId, status: 'suspended' }]);
         if (url.includes('/admin_access_log')) {
             auditCalls++;
             return auditFail ? Response.json({ message: 'write failure', code: 'XX000' }, { status: 500 }) : new Response(null, { status: 201 });
@@ -54,7 +58,9 @@ test('Admin listings require audit success, private caching and reject arbitrary
     const response = await GET(request());
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'private, no-store');
-    assert.equal((await response.json()).total, 1);
+    const result = await response.json();
+    assert.equal(result.total, 1);
+    assert.equal(result.rows[0].account_status, 'suspended');
     assert.equal(auditCalls, 1);
     assert.equal((await GET(request('?dataset=auth.users'))).status, 400);
     assert.equal((await GET(request('?format=csv&columns=encrypted_password'))).status, 400);
@@ -62,6 +68,11 @@ test('Admin listings require audit success, private caching and reject arbitrary
     const failed = await GET(request());
     assert.equal(failed.status, 503);
     assert.ok(!(await failed.text()).includes('test@example.invalid'));
+    auditFail = false;
+    controlsFail = true;
+    const missingStatus = await GET(request());
+    assert.equal(missingStatus.status, 503);
+    assert.ok(!(await missingStatus.text()).includes('test@example.invalid'));
 });
 test('Document downloads never accept caller-supplied storage paths', async (context) => {
     context.mock.method(globalThis, 'fetch', async (input) => {

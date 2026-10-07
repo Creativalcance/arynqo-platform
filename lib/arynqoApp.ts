@@ -194,9 +194,9 @@ export function getAppModeConfig(
         "A ARYNQO ajuda a tua empresa a identificar talento com maior compatibilidade técnica, comportamental, cultural e estratégica.",
       scoreLabel: "Score de recrutamento",
       featuredTitle: "Candidatos em destaque",
-      primaryHref: "/empresa/vagas",
+      primaryHref: "/empresa/vagas/nova",
       primaryLabel: "Publicar vaga",
-      secondaryHref: "/app/matches",
+      secondaryHref: "/empresa/matches",
       secondaryLabel: "Ver matches",
     };
   }

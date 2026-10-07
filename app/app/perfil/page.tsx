@@ -183,7 +183,7 @@ export default function AppPerfilPage() {
               <LText text={"ARYNQO"} /></p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              <LText text={"Perfil"} /></h1>
+              <LText text={"O meu perfil"} /></h1>
 
             <p className="mt-3 text-sm leading-6 text-white/58">
               <LText text={"Dados reais do teu perfil na plataforma, ligados ao Supabase e à camada de IA."} /></p>

@@ -321,7 +321,7 @@ is_relevant,
           avatar_url,
           talent_type,
           contact_visibility
-          
+
         )
       `
       )
@@ -656,9 +656,9 @@ is_relevant,
       match.match_category !== "not_relevant" &&
       (match.match_category === "recommended" ||
         match.match_category === "possible") &&
-      !hasAction(match.student_id, match.job_id, "rejected")
+      !actions.some((action) => action.student_id === match.student_id && action.job_id === match.job_id && action.action_type === "rejected")
   );
-}, [matches, actions, selectedJob]);
+}, [matches, actions]);
 
 const otherMatches = useMemo(() => {
   return matches.filter(
@@ -666,9 +666,9 @@ const otherMatches = useMemo(() => {
       match.is_relevant === true &&
       match.match_category === "low_compatibility" &&
       match.match_score < 50 &&
-      !hasAction(match.student_id, match.job_id, "rejected")
+      !actions.some((action) => action.student_id === match.student_id && action.job_id === match.job_id && action.action_type === "rejected")
   );
-}, [matches, actions, selectedJob]);
+}, [matches, actions]);
 
   const activeMatches =
     activeMatchView === "recommended" ? recommendedMatches : otherMatches;

@@ -120,13 +120,10 @@ export default function AppVagaDetailPage() {
   const job = jobs.find((item) => item.id === jobId);
 
   useEffect(() => {
-    loadStudentAndJobStatus();
-  }, [jobId]);
-
-  async function loadStudentAndJobStatus() {
-    setIsLoadingStatus(true);
-
-    const { data: sessionData } = await supabase.auth.getSession();
+    let active = true;
+    async function loadStudentAndJobStatus() {
+const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       setStudentProfile(null);
@@ -143,6 +140,7 @@ export default function AppVagaDetailPage() {
       .select("id")
       .eq("user_id", userId)
       .maybeSingle();
+    if (!active) return;
 
     if (!student) {
       setStudentProfile(null);
@@ -188,11 +186,17 @@ export default function AppVagaDetailPage() {
         .eq("job_id", jobId)
         .maybeSingle(),
     ]);
+    if (!active) return;
 
     setSavedJobId(savedJob?.id || null);
     setAiMatch((match as AIMatch) || null);
     setIsLoadingStatus(false);
   }
+
+    void loadStudentAndJobStatus();
+    return () => { active = false; };
+  }, [jobId]);
+
 
   async function generateMatchForCurrentStudent() {
     if (!studentProfile) {

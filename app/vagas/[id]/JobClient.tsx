@@ -594,7 +594,7 @@ export default function JobPage({
 
         <aside className="space-y-8 lg:sticky lg:top-32 lg:self-start">
           <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-8 shadow-sm">
-            <p className="text-sm font-semibold text-[#1683FF]"><LText text={"Resumo"} /></p>
+            <h2 className="text-sm font-semibold text-[#1683FF]"><LText text={"Condições da vaga"} /></h2>
 
             <div className="mt-6 grid gap-4">
               <SummaryItem label="Área" value={job.area} />

@@ -16,11 +16,10 @@ export default function AdminEntryPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    validateAdminAccess();
-  }, []);
-
-  async function validateAdminAccess() {
+    let active = true;
+    async function validateAdminAccess() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
   window.location.href = browserLocalizedPath("/admin/login");
@@ -32,6 +31,7 @@ export default function AdminEntryPage() {
       .select("role")
       .eq("id", sessionData.session.user.id)
       .single();
+    if (!active) return;
 
     if (error || !profileData) {
       setIsAuthorized(false);
@@ -53,6 +53,11 @@ export default function AdminEntryPage() {
     setIsAuthorized(true);
     setIsLoading(false);
   }
+
+    void validateAdminAccess();
+    return () => { active = false; };
+  }, []);
+
 
   if (isLoading) {
     return (

@@ -85,8 +85,130 @@ export default function EmpresaCandidatoDetalhePage({
   const [isRequestingContact, setIsRequestingContact] = useState(false);
 
   useEffect(() => {
-    loadCandidate();
-  }, []);
+    let active = true;
+    async function loadCandidate() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
+
+    if (!sessionData.session) {
+      window.location.href = browserLocalizedPath("/login");
+      return;
+    }
+
+    const userId = sessionData.session.user.id;
+
+    const { data: companyProfile, error: companyError } = await supabase
+      .from("company_profiles")
+      .select("id, user_id")
+      .eq("user_id", userId)
+      .single();
+    if (!active) return;
+
+    if (companyError || !companyProfile) {
+      localizedAlert("Apenas empresas podem aceder a esta página.");
+      window.location.href = browserLocalizedPath("/dashboard");
+      return;
+    }
+
+    const currentCompany = companyProfile as CompanyProfile;
+    setCompany(currentCompany);
+
+    let data: StudentProfile | undefined;
+    try { data = (await candidateSnapshots<StudentProfile>([id])).get(id); }
+    catch { data = undefined; }
+
+    if (!data) {
+      localizedAlert("Candidato não encontrado.");
+      window.location.href = browserLocalizedPath("/empresa/matches");
+      return;
+    }
+
+    const normalizedProfile = Array.isArray(data.profiles)
+      ? data.profiles[0] ?? null
+      : data.profiles;
+
+    const currentStudent = {
+      ...(data as StudentProfile),
+      profiles: normalizedProfile,
+    };
+
+    setStudent(currentStudent);
+
+    await Promise.all([
+      loadSkills(id),
+      loadApplicationStatus(id),
+      loadContactRequest(currentCompany.id, id),
+    ]);
+
+    setIsLoading(false);
+  }
+
+    async function loadSkills(studentId: string) {
+    const { data, error } = await supabase
+      .from("student_skills")
+      .select(
+        `
+        skills (
+          id,
+          name
+        )
+      `
+      )
+      .eq("student_id", studentId);
+    if (!active) return;
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const normalizedSkills = ((data || []) as StudentSkillRow[])
+      .map((row) =>
+        Array.isArray(row.skills) ? row.skills[0] ?? null : row.skills
+      )
+      .filter((skill): skill is Skill => Boolean(skill));
+
+    setSkills(normalizedSkills);
+  }
+
+    async function loadApplicationStatus(studentId: string) {
+    if (!jobId) {
+      setHasApplication(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("applications")
+      .select("id")
+      .eq("student_id", studentId)
+      .eq("job_id", jobId)
+      .maybeSingle();
+    if (!active) return;
+
+    setHasApplication(Boolean(data?.id));
+  }
+
+    async function loadContactRequest(companyId: string, studentId: string) {
+    if (!jobId) {
+      setContactRequest(null);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("candidate_contact_requests")
+      .select("id, status")
+      .eq("company_id", companyId)
+      .eq("student_id", studentId)
+      .eq("job_id", jobId)
+      .maybeSingle();
+    if (!active) return;
+
+    setContactRequest((data as ContactRequest | null) || null);
+  }
+
+    void loadCandidate();
+    return () => { active = false; };
+  }, [id, jobId]);
 
   const profile = useMemo(() => {
     if (!student?.profiles) {
@@ -142,120 +264,6 @@ export default function EmpresaCandidatoDetalhePage({
     return "Contacto protegido: é necessário pedir autorização ao candidato.";
   }, [profile, student, hasApplication, contactRequest]);
 
-  async function loadCandidate() {
-    const { data: sessionData } = await supabase.auth.getSession();
-
-    if (!sessionData.session) {
-      window.location.href = browserLocalizedPath("/login");
-      return;
-    }
-
-    const userId = sessionData.session.user.id;
-
-    const { data: companyProfile, error: companyError } = await supabase
-      .from("company_profiles")
-      .select("id, user_id")
-      .eq("user_id", userId)
-      .single();
-
-    if (companyError || !companyProfile) {
-      localizedAlert("Apenas empresas podem aceder a esta página.");
-      window.location.href = browserLocalizedPath("/dashboard");
-      return;
-    }
-
-    const currentCompany = companyProfile as CompanyProfile;
-    setCompany(currentCompany);
-
-    let data: StudentProfile | undefined;
-    try { data = (await candidateSnapshots<StudentProfile>([id])).get(id); }
-    catch { data = undefined; }
-
-    if (!data) {
-      localizedAlert("Candidato não encontrado.");
-      window.location.href = browserLocalizedPath("/empresa/matches");
-      return;
-    }
-
-    const normalizedProfile = Array.isArray(data.profiles)
-      ? data.profiles[0] ?? null
-      : data.profiles;
-
-    const currentStudent = {
-      ...(data as StudentProfile),
-      profiles: normalizedProfile,
-    };
-
-    setStudent(currentStudent);
-
-    await Promise.all([
-      loadSkills(id),
-      loadApplicationStatus(id),
-      loadContactRequest(currentCompany.id, id),
-    ]);
-
-    setIsLoading(false);
-  }
-
-  async function loadSkills(studentId: string) {
-    const { data, error } = await supabase
-      .from("student_skills")
-      .select(
-        `
-        skills (
-          id,
-          name
-        )
-      `
-      )
-      .eq("student_id", studentId);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const normalizedSkills = ((data || []) as StudentSkillRow[])
-      .map((row) =>
-        Array.isArray(row.skills) ? row.skills[0] ?? null : row.skills
-      )
-      .filter((skill): skill is Skill => Boolean(skill));
-
-    setSkills(normalizedSkills);
-  }
-
-  async function loadApplicationStatus(studentId: string) {
-    if (!jobId) {
-      setHasApplication(false);
-      return;
-    }
-
-    const { data } = await supabase
-      .from("applications")
-      .select("id")
-      .eq("student_id", studentId)
-      .eq("job_id", jobId)
-      .maybeSingle();
-
-    setHasApplication(Boolean(data?.id));
-  }
-
-  async function loadContactRequest(companyId: string, studentId: string) {
-    if (!jobId) {
-      setContactRequest(null);
-      return;
-    }
-
-    const { data } = await supabase
-      .from("candidate_contact_requests")
-      .select("id, status")
-      .eq("company_id", companyId)
-      .eq("student_id", studentId)
-      .eq("job_id", jobId)
-      .maybeSingle();
-
-    setContactRequest((data as ContactRequest | null) || null);
-  }
 
   async function requestContactAuthorization() {
     if (isRequestingContact) return;

@@ -15,7 +15,7 @@ import { cvStorageLocation } from "@/lib/cv-storage";
 import { hasWritingContent } from "@/lib/profile-writing";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 type StudentProfile = {
@@ -155,7 +155,6 @@ error?: string;
 type ProfileTab = "resumo" | "percurso" | "competencias" | "preferencias" | "ia";
 
 
-
 const availabilityOptions = [
   "Imediata",
   "Até 15 dias",
@@ -163,11 +162,6 @@ const availabilityOptions = [
   "Até 60 dias",
   "A combinar",
 ];
-
-
-
-
-
 
 
 const locationOptions = [
@@ -198,7 +192,7 @@ const locationOptions = [
 const tabs: { id: ProfileTab; label: string; description: string }[] = [
   {
     id: "resumo",
-    label: "Resumo",
+    label: "Os meus dados",
     description: "Identidade, contacto e posicionamento profissional.",
   },
   {
@@ -225,6 +219,51 @@ const tabs: { id: ProfileTab; label: string; description: string }[] = [
 
 function createItemId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeProfessionalExperienceItems(
+  items: ProfessionalExperienceItem[] | null | undefined
+) {
+  return Array.isArray(items)
+    ? items.map((item) => ({
+        id: item.id || createItemId(),
+        role: item.role || "",
+        company: item.company || "",
+        start_date: item.start_date || "",
+        end_date: item.end_date || "",
+        description: item.description || "",
+      }))
+    : [];
+}
+
+function normalizeAcademicEducationItems(
+  items: AcademicEducationItem[] | null | undefined
+) {
+  return Array.isArray(items)
+    ? items.map((item) => ({
+        id: item.id || createItemId(),
+        degree: item.degree || "",
+        institution: item.institution || "",
+        start_date: item.start_date || "",
+        end_date: item.end_date || "",
+        description: item.description || "",
+      }))
+    : [];
+}
+
+function normalizeProfessionalTrainingItems(
+  items: ProfessionalTrainingItem[] | null | undefined
+) {
+  return Array.isArray(items)
+    ? items.map((item) => ({
+        id: item.id || createItemId(),
+        title: item.title || "",
+        entity: item.entity || "",
+        start_date: item.start_date || "",
+        end_date: item.end_date || "",
+        description: item.description || "",
+      }))
+    : [];
 }
 
 export default function PerfilEstudantePage() {
@@ -263,8 +302,8 @@ export default function PerfilEstudantePage() {
   const [expectedSalary, setExpectedSalary] = useState("");
   const [preferredRegions, setPreferredRegions] = useState("");
   const [aiSummary, setAiSummary] = useState("");
-  const [, setRoleTitle] = useState("");
-const [, setRoleFamily] = useState("");
+
+
 const [professionalExperienceItems, setProfessionalExperienceItems] =
   useState<ProfessionalExperienceItem[]>([]);
 
@@ -276,16 +315,7 @@ const [professionalTrainingItems, setProfessionalTrainingItems] = useState<
   ProfessionalTrainingItem[]
 >([]);
 
-const [skillsNormalized, setSkillsNormalized] = useState<string[]>([]);
-const [toolsNormalized, setToolsNormalized] = useState<string[]>([]);
-const [softSkillsNormalized, setSoftSkillsNormalized] = useState<string[]>([]);
 
-const [regions, setRegions] = useState<string[]>([]);
-
-const [salaryMin, setSalaryMin] = useState<number | null>(null);
-const [salaryMax, setSalaryMax] = useState<number | null>(null);
-
-const [aiMatchKeywords, setAiMatchKeywords] = useState<string[]>([]);
   const [aiProfileScore, setAiProfileScore] = useState(0);
   const [aiEmployabilityScore, setAiEmployabilityScore] = useState(0);
   const [pendingLinkedInSkills, setPendingLinkedInSkills] = useState<string[]>([]);
@@ -360,50 +390,7 @@ setProfessionalExperienceItems(
   setAiProfileScore(getNumber(data.ai_profile_score));
   setAiEmployabilityScore(getNumber(data.ai_employability_score));
 
-  setRoleTitle(data.role_title || "");
-  setRoleFamily(data.role_family || "");
 
-  setSkillsNormalized(
-    Array.isArray(data.skills_normalized)
-      ? data.skills_normalized
-      : []
-  );
-
-  setToolsNormalized(
-    Array.isArray(data.tools_normalized)
-      ? data.tools_normalized
-      : []
-  );
-
-  setSoftSkillsNormalized(
-    Array.isArray(data.soft_skills_normalized)
-      ? data.soft_skills_normalized
-      : []
-  );
-
-  setRegions(
-    Array.isArray(data.regions)
-      ? data.regions
-      : []
-  );
-
-  setSalaryMin(
-    typeof data.salary_min === "number"
-      ? data.salary_min
-      : null
-  );
-
-  setSalaryMax(
-    typeof data.salary_max === "number"
-      ? data.salary_max
-      : null
-  );
-
-  setAiMatchKeywords(
-    Array.isArray(data.ai_match_keywords)
-      ? data.ai_match_keywords
-      : []
-  );
 }
 
   function getAIProfileUpdatePayload(data: AIProfileResponse) {
@@ -539,51 +526,6 @@ function uniqueArray(values: string[]) {
   );
 }
 
-
-function normalizeProfessionalExperienceItems(
-  items: ProfessionalExperienceItem[] | null | undefined
-) {
-  return Array.isArray(items)
-    ? items.map((item) => ({
-        id: item.id || createItemId(),
-        role: item.role || "",
-        company: item.company || "",
-        start_date: item.start_date || "",
-        end_date: item.end_date || "",
-        description: item.description || "",
-      }))
-    : [];
-}
-
-function normalizeAcademicEducationItems(
-  items: AcademicEducationItem[] | null | undefined
-) {
-  return Array.isArray(items)
-    ? items.map((item) => ({
-        id: item.id || createItemId(),
-        degree: item.degree || "",
-        institution: item.institution || "",
-        start_date: item.start_date || "",
-        end_date: item.end_date || "",
-        description: item.description || "",
-      }))
-    : [];
-}
-
-function normalizeProfessionalTrainingItems(
-  items: ProfessionalTrainingItem[] | null | undefined
-) {
-  return Array.isArray(items)
-    ? items.map((item) => ({
-        id: item.id || createItemId(),
-        title: item.title || "",
-        entity: item.entity || "",
-        start_date: item.start_date || "",
-        end_date: item.end_date || "",
-        description: item.description || "",
-      }))
-    : [];
-}
 
 function professionalExperienceItemsToText(items: ProfessionalExperienceItem[]) {
   return items
@@ -885,8 +827,39 @@ professional_experience_items: professionalExperienceItems,
   };
 }
 
-  async function loadProfile() {
+  const loadStudentSkills = useCallback(async (studentId: string) => {
+    const { data, error } = await supabase
+      .from("student_skills")
+      .select(
+        `
+        skills (
+          id,
+          name
+        )
+      `
+      )
+      .eq("student_id", studentId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const normalizedSkills = ((data || []) as StudentSkillRow[])
+      .map((row) =>
+        Array.isArray(row.skills) ? row.skills[0] ?? null : row.skills
+      )
+      .filter((skill): skill is Skill => Boolean(skill));
+
+    setSkills(normalizedSkills);
+  }, []);
+
+
+  useEffect(() => {
+    let active = true;
+    async function loadProfile() {
     const { data: sessionData } = await supabase.auth.getSession();
+    if (!active) return;
 
     if (!sessionData.session) {
       window.location.assign(browserLocalizedPath("/login"));
@@ -900,6 +873,7 @@ professional_experience_items: professionalExperienceItems,
       .select("name")
       .eq("id", userId)
       .single();
+    if (!active) return;
 
     if (publicProfile) {
       setName(publicProfile.name || "");
@@ -957,6 +931,7 @@ professional_experience_items,
 )
       .eq("user_id", userId)
       .single();
+    if (!active) return;
 
     if (error || !studentProfile) {
       localizedAlert("Apenas estudantes podem editar este perfil.");
@@ -998,15 +973,8 @@ professional_experience_items,
     setAiSummary(profile.ai_summary || "");
     setAiProfileScore(profile.ai_profile_score || 0);
     setAiEmployabilityScore(profile.ai_employability_score || 0);
-    setRoleTitle(profile.role_title || "");
-setRoleFamily(profile.role_family || "");
-setSkillsNormalized(profile.skills_normalized || []);
-setToolsNormalized(profile.tools_normalized || []);
-setSoftSkillsNormalized(profile.soft_skills_normalized || []);
-setRegions(profile.regions || []);
-setSalaryMin(profile.salary_min || null);
-setSalaryMax(profile.salary_max || null);
-setAiMatchKeywords(profile.ai_match_keywords || []);
+
+
 setAcademicEducationItems(
   normalizeAcademicEducationItems(profile.academic_education_items)
 );
@@ -1023,38 +991,9 @@ setProfessionalExperienceItems(
     setIsLoading(false);
   }
 
-  async function loadStudentSkills(studentId: string) {
-    const { data, error } = await supabase
-      .from("student_skills")
-      .select(
-        `
-        skills (
-          id,
-          name
-        )
-      `
-      )
-      .eq("student_id", studentId);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const normalizedSkills = ((data || []) as StudentSkillRow[])
-      .map((row) =>
-        Array.isArray(row.skills) ? row.skills[0] ?? null : row.skills
-      )
-      .filter((skill): skill is Skill => Boolean(skill));
-
-    setSkills(normalizedSkills);
-  }
-
-  useEffect(() => {
-    let active = true;
-    queueMicrotask(() => { if (active) void loadProfile(); });
+    void loadProfile();
     return () => { active = false; };
-  }, []);
+  }, [loadStudentSkills]);
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
   if (savingProfile || isUploadingCV || isGeneratingAIProfile) return;
@@ -1143,15 +1082,6 @@ professional_experience_items: professionalExperienceItems,
     return;
   }
 
-  setRoleTitle(manualMatchingData.role_title || "");
-  setRoleFamily(manualMatchingData.role_family || "");
-  setSkillsNormalized(manualMatchingData.skills_normalized);
-  setToolsNormalized(manualMatchingData.tools_normalized);
-  setSoftSkillsNormalized(manualMatchingData.soft_skills_normalized);
-  setRegions(manualMatchingData.regions);
-  setSalaryMin(manualMatchingData.salary_min);
-  setSalaryMax(manualMatchingData.salary_max);
-  setAiMatchKeywords(manualMatchingData.ai_match_keywords);
 
   await regenerateMatches(profileId);
 
@@ -1475,24 +1405,6 @@ async function regenerateMatches(studentId: string) {
     setIsGeneratingAIProfile(false);
   }
 
-  function splitProfileItems(value: string) {
-  return value
-    .split(/;|\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function getExperienceItems() {
-  return splitProfileItems(professionalExperience);
-}
-
-function getAcademicItems() {
-  return splitProfileItems(academicEducation);
-}
-
-function getTrainingItems() {
-  return splitProfileItems(professionalTraining);
-}
 
   const completedFields = useMemo(() => {
     return [
@@ -2103,11 +2015,7 @@ function getTrainingItems() {
                     <LText text={"Define aquilo que procuras para melhorar o matching."} /></p>
 
                   <div className="mt-6 grid gap-5 md:grid-cols-2">
-                    
 
-
-
-                    
 
                     <div>
                       <label className="text-sm font-semibold">
@@ -2218,7 +2126,6 @@ function getTrainingItems() {
                 </section>
 
 
-
                 <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
                   <h3 className="text-xl font-semibold tracking-[-0.04em]">
                     <LText text={"Resumo profissional"} /></h3>
@@ -2278,232 +2185,6 @@ function getTrainingItems() {
   );
 }
 
-function ExperienceTimeline({
-  items,
-  empty,
-}: {
-  items: string[];
-  empty: string;
-}) {
-  if (items.length === 0) {
-    return (
-      <section className="rounded-[28px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          <LText text={"Experiência profissional"} /></p>
-
-        <p className="mt-3 text-sm leading-6 text-slate-400"><LText text={empty} /></p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-[28px] border border-[#1683FF]/20 bg-[#1683FF]/5 p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            <LText text={"Experiência profissional"} /></p>
-
-          <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            <LText text={"Cronologia de carreira"} /></h4>
-        </div>
-
-        <span className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#1683FF] shadow-sm">
-          {items.length} <LText text={items.length === 1 ? "experiência" : "experiências"} />
-        </span>
-      </div>
-
-      <div className="relative">
-        <div className="absolute left-[17px] top-2 h-[calc(100%-16px)] w-px bg-[#1683FF]/25" />
-
-        <div className="grid gap-5">
-          {items.map((item, index) => {
-            const parsed = parseCareerLine(item);
-
-            return (
-              <article key={`${item}-${index}`} className="relative pl-12">
-                <div className="absolute left-0 top-1 flex h-9 w-9 items-center justify-center rounded-full bg-[#1683FF] text-xs font-bold text-white shadow-[0_10px_30px_rgba(22,131,255,0.25)]">
-                  {index + 1}
-                </div>
-
-                <div className="rounded-[24px] border border-[#DDE3EA] bg-white p-5 shadow-sm">
-                  <p className="mb-2 inline-flex rounded-full bg-[#07111F] px-3 py-1 text-[11px] font-semibold text-white">
-  <LText text={parsed.period || "Data não indicada"} />
-</p>
-
-                  <h5 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
-                    {parsed.title}
-                  </h5>
-
-                  {parsed.description && (
-                    <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {parsed.description}
-                    </p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function EducationTimeline({
-  title,
-  subtitle,
-  items,
-  empty,
-}: {
-  title: string;
-  subtitle: string;
-  items: string[];
-  empty: string;
-}) {
-  if (items.length === 0) {
-    return (
-      <section className="rounded-[28px] border border-dashed border-[#DDE3EA] bg-[#F7F9FC] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-          <LText text={title} />
-        </p>
-
-        <p className="mt-3 text-sm leading-6 text-slate-400"><LText text={empty} /></p>
-      </section>
-    );
-  }
-
-  return (
-    <section className="rounded-[28px] border border-[#DDE3EA] bg-white p-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
-            <LText text={title} />
-          </p>
-
-          <h4 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#07111F]">
-            <LText text={subtitle} />
-          </h4>
-        </div>
-
-        <span className="rounded-full bg-[#F7F9FC] px-4 py-2 text-xs font-semibold text-[#1683FF]">
-          {items.length} <LText text={items.length === 1 ? "registo" : "registos"} />
-        </span>
-      </div>
-
-      <div className="relative">
-        <div className="absolute left-[17px] top-2 h-[calc(100%-16px)] w-px bg-[#1683FF]/20" />
-
-        <div className="grid gap-5">
-          {items.map((item, index) => {
-            const parsed = parseEducationLine(item);
-
-            return (
-              <article key={`${item}-${index}`} className="relative pl-12">
-                <div className="absolute left-0 top-1 flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-bold text-[#1683FF] shadow-sm ring-1 ring-[#1683FF]/25">
-                  {index + 1}
-                </div>
-
-                <div className="rounded-[24px] border border-[#DDE3EA] bg-[#F7F9FC] p-5">
-                  {parsed.period && (
-                    <p className="mb-2 inline-flex rounded-full bg-[#07111F] px-3 py-1 text-[11px] font-semibold text-white">
-                      <LText text={parsed.period} />
-                    </p>
-                  )}
-
-                  <h5 className="text-lg font-semibold tracking-[-0.03em] text-[#07111F]">
-                    {parsed.title}
-                  </h5>
-
-                  {parsed.institution && (
-                    <p className="mt-2 text-sm font-semibold text-[#1683FF]">
-                      <LText text={parsed.institution} />
-                    </p>
-                  )}
-
-                  {parsed.description && (
-                    <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {parsed.description}
-                    </p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function parseEducationLine(value: string) {
-  const trimmedValue = value.trim();
-
-  const parenthesesPeriodMatch = trimmedValue.match(/\(([^)]+)\)/);
-  const endPeriodMatch = trimmedValue.match(
-    /(.*?)(?:\s[-–—]\s)(\d{4}(?:\s?[-–—]\s?\d{4}| presente| atual)?)$/i
-  );
-  const startPeriodMatch = trimmedValue.match(
-    /^(\d{4}(?:\s?[-–—]\s?\d{4}| presente| atual)?)(?:\s[-–—]\s)(.*)$/i
-  );
-
-  let period = "";
-  let cleanValue = trimmedValue;
-
-  if (parenthesesPeriodMatch) {
-    period = parenthesesPeriodMatch[1];
-    cleanValue = trimmedValue.replace(/\([^)]*\)/, "").trim();
-  } else if (startPeriodMatch) {
-    period = startPeriodMatch[1];
-    cleanValue = startPeriodMatch[2].trim();
-  } else if (endPeriodMatch) {
-    period = endPeriodMatch[2];
-    cleanValue = endPeriodMatch[1].trim();
-  }
-
-  const byInstitution = cleanValue
-    .split(/\spela\s|\spelo\s|\sna\s|\sno\s|\sem\s/i)
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (byInstitution.length >= 2) {
-    return {
-      period,
-      title: byInstitution[0],
-      institution: byInstitution.slice(1).join(" "),
-      description: "",
-    };
-  }
-
-  const parts = cleanValue
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  return {
-    period,
-    title: parts[0] || cleanValue,
-    institution: "",
-    description: parts.slice(1).join(", "),
-  };
-}
-
-function parseCareerLine(value: string) {
-  const periodMatch = value.match(/\(([^)]+)\)/);
-  const period = periodMatch?.[1] || "";
-
-  const cleanValue = value.replace(/\([^)]*\)/, "").trim();
-
-  const parts = cleanValue
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  return {
-    period,
-    title: parts[0] || value,
-    description: parts.slice(1).join(", "),
-  };
-}
 
 function EditableExperienceSection({
   items,

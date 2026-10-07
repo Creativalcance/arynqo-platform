@@ -270,7 +270,7 @@ export default function CandidateMatchesPage() {
 
   const visibleMatches = useMemo(() => {
     return matches.filter(
-      (match) => !hasAction(match.job?.id || "", "ignored")
+      (match) => !actions.some((action) => action.job_id === (match.job?.id || "") && action.action_type === "ignored")
     );
   }, [matches, actions]);
 

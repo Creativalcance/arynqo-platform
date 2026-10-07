@@ -151,7 +151,7 @@ export default function Header() {
         },
         {
           href: "/empresa/candidatos",
-          label: "Candidatos",
+          label: "Candidaturas recebidas",
         },
         {
           href: "/academia",
@@ -176,7 +176,7 @@ export default function Header() {
         },
         {
           href: "/dashboard/candidaturas",
-          label: "Candidaturas",
+          label: "As minhas candidaturas",
         },
         {
           href: "/academia",

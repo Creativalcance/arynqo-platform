@@ -249,15 +249,10 @@ export default function MobileAppShell() {
     return getAppActions(profile?.role ?? null, hasSession);
   }, [hasSession, profile?.role]);
 
-  const featuredJobs = useMemo(() => {
-    const jobsWithMatch = jobs.filter((job) => job.hasAIMatch);
-
-    if (jobsWithMatch.length > 0) {
-      return [...jobsWithMatch].sort((a, b) => b.score - a.score).slice(0, 3);
-    }
-
-    return jobs.slice(0, 3);
-  }, [jobs]);
+  const jobsWithMatch = jobs.filter(job => job.hasAIMatch);
+  const featuredJobs = jobsWithMatch.length
+    ? jobsWithMatch.sort((a, b) => b.score - a.score).slice(0, 3)
+    : jobs.slice(0, 3);
 
   const featuredMatches = useMemo(() => {
     if (!hasSession) {
@@ -269,21 +264,10 @@ export default function MobileAppShell() {
 
   const firstName = getFirstName(profile?.name ?? null, profile?.email ?? null);
 
-  const score = useMemo(() => {
-    if (!hasSession) {
-      return 0;
-    }
-
-    if (
-      appMode === "company" ||
-      appMode === "recruiter" ||
-      appMode === "admin"
-    ) {
-      return getAverageScore(featuredMatches.map((match) => match.score));
-    }
-
-    return getAverageScore(featuredJobs.map((job) => job.score));
-  }, [appMode, featuredJobs, featuredMatches, hasSession]);
+  const score = !hasSession ? 0 : getAverageScore(
+    (appMode === "company" || appMode === "recruiter" || appMode === "admin"
+      ? featuredMatches : featuredJobs).map(item => item.score),
+  );
 
   const showMatchesAsFeatured =
     hasSession &&
@@ -347,7 +331,7 @@ export default function MobileAppShell() {
         <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-cyan-950/40 backdrop-blur">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm text-white/60"><LText text={config.scoreLabel} /></p>
+              <p className="text-sm text-white/60"><LText text="Compatibilidade média das vagas apresentadas" /></p>
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">
