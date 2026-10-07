@@ -2661,5 +2661,10 @@
   "← Voltar à Academy": "← Back to the Academy",
   "← Voltar às notificações": "← Back to notifications",
   "← Voltar às vagas": "← Back to vacancies",
-  "✨ Preencher automaticamente com IA": "的 Automatically fill in with AI"
+  "✨ Preencher automaticamente com IA": "的 Automatically fill in with AI",
+  "Adicionar profissão": "Add occupation",
+  "A guardar profissão...": "Saving occupation...",
+  "Não foi possível adicionar a profissão. Tenta novamente.": "Unable to add the occupation. Try again.",
+  "Profissão inválida.": "Invalid occupation.",
+  "Catálogo ESCO e profissões adicionadas pelos utilizadores.": "ESCO catalogue and occupations added by users."
 }

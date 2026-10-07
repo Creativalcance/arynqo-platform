@@ -7,7 +7,10 @@ const path=process.argv[2],threshold=Number(process.argv[3]);
 if(!path||!Number.isFinite(threshold)||threshold<0||threshold>100)throw Error('Usage: npx tsx scripts/evaluate-five-field-matching.ts labelled-cases.json threshold-0-to-100');
 const cases=JSON.parse(readFileSync(path,'utf8'));
 if(!Array.isArray(cases)||!cases.length)throw Error('Expected a non-empty array of independently labelled cases');
-const ids=new Set(occupations.map(o=>o.id));let tp=0,fp=0,fn=0,tn=0,incomplete=0;
+// Optional export of community {id,label} rows for an offline, independently labelled pilot.
+const custom=process.argv[4]?JSON.parse(readFileSync(process.argv[4],'utf8')):[];
+if(!Array.isArray(custom)||custom.some(o=>typeof o.id!=='string'||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(o.id)))throw Error('Invalid custom catalogue');
+const ids=new Set([...occupations,...custom].map(o=>o.id));let tp=0,fp=0,fn=0,tn=0,incomplete=0;
 for(const row of cases){
  if(!validPreferences(row.candidate,'candidate',id=>ids.has(id))||!validPreferences(row.job,'job',id=>ids.has(id))||typeof row.suitable!=='boolean')throw Error('Invalid labelled case');
  const result=calculateFiveFieldMatch(row.candidate,row.job);

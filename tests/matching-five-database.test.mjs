@@ -5,7 +5,7 @@ import {PGlite} from '@electric-sql/pglite';
 test('server guards enforce confirmation, validated IDs, revisions, drafts and ownership',async()=>{
  const db=new PGlite();
  try{
- await db.exec(`create role anon;create role authenticated;create role service_role;
+ await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;
  create table student_profiles(id uuid primary key,user_id uuid,role_title text,role_family text,seniority text,work_model text,main_role text,desired_area text,skills_normalized text[]);
  create table jobs(id uuid primary key,user_id uuid,is_active boolean,role_title text,role_family text,seniority text,work_model text,area text,required_skills text[]);
  create table ai_matches(id uuid primary key);
@@ -16,8 +16,15 @@ test('server guards enforce confirmation, validated IDs, revisions, drafts and o
  insert into jobs(id,is_active) values('00000000-0000-0000-0000-000000000010',true);`);
  await db.exec(await readFile('supabase/migrations/20261006231557_matching_five_fields.sql','utf8'));
  await db.exec(await readFile('supabase/migrations/20261006234449_matching_area_all.sql','utf8'));
+ await db.exec(await readFile('supabase/migrations/20261007001210_custom_occupations.sql','utf8'));
+ await db.exec('set role service_role');
+ const custom=(await db.query("select * from ensure_custom_occupation('Gestor de Carreiras','gestor de carreiras','pt')")).rows[0];
+ const duplicate=(await db.query("select * from ensure_custom_occupation('GESTOR DE CARREIRAS','gestor de carreiras','en')")).rows[0];
+ assert.equal(custom.id,duplicate.id);assert.equal(custom.label,duplicate.label);
+ await assert.rejects(db.query("select * from ensure_custom_occupation('<script>','script','pt')"),/Invalid occupation/);
+ await db.exec('reset role');
  assert.equal((await db.query('select matching_preferences from jobs')).rows[0].matching_preferences,null);
- const id=(await db.query('select id from matching_occupations limit 1')).rows[0].id;
+ const id=custom.id;
  const prefs={profession:id,area:'Todas',levels:['senior'],models:['remote'],skills:['SQL'],confirmed:true};
  await db.exec(`set role authenticated;set test.uid='00000000-0000-0000-0000-000000000001';`);
  await assert.rejects(db.query(`insert into jobs(id,user_id,is_active) values('00000000-0000-0000-0000-000000000020',current_setting('test.uid')::uuid,true)`),/cinco campos/);
@@ -30,7 +37,8 @@ test('server guards enforce confirmation, validated IDs, revisions, drafts and o
  await db.query(`insert into student_profiles(id,user_id,matching_preferences) values('00000000-0000-0000-0000-000000000030',current_setting('test.uid')::uuid,$1)`,[JSON.stringify(prefs)]);
  assert.deepEqual((await db.query('select skills_normalized from student_profiles')).rows[0].skills_normalized,['SQL']);
  await db.exec(`set test.uid='00000000-0000-0000-0000-000000000002';`);assert.equal((await db.query('select * from student_profiles')).rows.length,0);assert.equal((await db.query('update jobs set is_active=false returning id')).rows.length,0);
- await assert.rejects(db.query(`insert into matching_occupations values('00000000-0000-0000-0000-000000000099','fake')`),/permission denied/);
+ await assert.rejects(db.query("select * from ensure_custom_occupation('Unauthorized','unauthorized','en')"),/permission denied/);
+ await assert.rejects(db.query(`insert into matching_occupations(id,label) values('00000000-0000-0000-0000-000000000099','fake')`),/permission denied/);
  await db.exec('reset role;set role anon;');await assert.rejects(db.query('select * from matching_occupations'),/permission denied/);
  }finally{await db.close();}
 });

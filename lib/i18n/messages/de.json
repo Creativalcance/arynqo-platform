@@ -2661,5 +2661,10 @@
   "← Voltar à Academy": "← Zurück in die Akademie",
   "← Voltar às notificações": "← Zurück zu Benachrichtigungen",
   "← Voltar às vagas": "← Zurück zu den offenen Stellen",
-  "✨ Preencher automaticamente com IA": "Automatisches Ausfüllen mit AI"
+  "✨ Preencher automaticamente com IA": "Automatisches Ausfüllen mit AI",
+  "Adicionar profissão": "Beruf hinzufügen",
+  "A guardar profissão...": "Beruf wird gespeichert…",
+  "Não foi possível adicionar a profissão. Tenta novamente.": "Der Beruf konnte nicht hinzugefügt werden. Versuche es erneut.",
+  "Profissão inválida.": "Ungültiger Beruf.",
+  "Catálogo ESCO e profissões adicionadas pelos utilizadores.": "ESCO-Katalog und von Nutzern hinzugefügte Berufe."
 }
