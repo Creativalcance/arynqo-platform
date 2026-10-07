@@ -23,7 +23,7 @@ async function fixture() {
       ('${id(102)}','Draft','Draft summary','draft','pt','draft',now()),
       ('${id(103)}','Future','Future summary','future','pt','published',now()+interval '1 day');
     insert into academy_post_translations values('${id(101)}','en','Latest in English','English summary',true),('${id(101)}','fr','Unapproved French','French summary',false);`);
-  await db.exec(await readFile(new URL('../supabase/migrations/20261007114000_account_welcome_email.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/20261007114451_account_welcome_email.sql', import.meta.url), 'utf8'));
   return db;
 }
 const activate = (db,n) => db.exec(`reset role;set role supabase_auth_admin;update auth.users set email_confirmed_at=now() where id='${id(n)}';reset role;set role service_role;`);
