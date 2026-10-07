@@ -2,7 +2,6 @@
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
 
-
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import Link from "@/lib/i18n/link";
@@ -38,7 +37,6 @@ type AIMatch = {
 type ApplicationInsertResponse = {
   id: string;
 };
-
 
 function ScoreItem({
   label,
@@ -527,17 +525,6 @@ export default function AppVagaDetailPage() {
 
             <p className="mt-3 whitespace-pre-line text-sm leading-6 text-white/65">
               <LText text={job.candidatePitch} />
-            </p>
-          </section>
-        )}
-
-        {aiMatch?.ai_reason && (
-          <section className="mt-5 rounded-3xl border border-cyan-300/15 bg-cyan-300/[0.06] p-4">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-100/60">
-              <LText text={"Leitura IA"} /></p>
-
-            <p className="mt-3 text-sm leading-6 text-white/65">
-              <LText text={aiMatch.ai_reason} />
             </p>
           </section>
         )}

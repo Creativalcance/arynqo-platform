@@ -3,7 +3,6 @@ import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
 
-
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { candidateSnapshots } from "@/lib/candidate-snapshots";
@@ -663,12 +662,6 @@ export default function EmpresaCandidatosPage() {
                             value={match.opportunity_type_score}
                           />
                         </div>
-
-                        {match.ai_reason && (
-                          <p className="mt-6 text-sm leading-6 text-slate-600">
-                            <LText text={match.ai_reason} />
-                          </p>
-                        )}
 
                         <div className="mt-6 grid gap-5 lg:grid-cols-2">
                           <MatchBlock

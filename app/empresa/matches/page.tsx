@@ -3,7 +3,6 @@ import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
 
-
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import { createNotification } from "@/lib/create-notification";
@@ -1196,9 +1195,6 @@ function CandidateDetail({
 
           {activeDetailTab === "resumo" && (
             <div className="space-y-6">
-              <InfoPanel title="Justificação IA">
-                <p><LText text={match.ai_reason} /></p>
-              </InfoPanel>
 
               {student.ai_summary && (
                 <InfoPanel title="Resumo profissional">

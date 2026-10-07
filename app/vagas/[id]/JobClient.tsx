@@ -3,7 +3,6 @@ import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
-
 import Image from "@/lib/i18n/image";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
@@ -51,7 +50,6 @@ export type Job = {
 type StudentProfile = {
   id: string;
 };
-
 
 type AIMatch = {
   match_score: number;
@@ -482,12 +480,6 @@ export default function JobPage({
                       />
                     </div>
                   </div>
-
-                  {aiMatch.ai_reason && (
-                    <p className="mt-6 rounded-3xl bg-[#F7F9FC] p-5 text-sm leading-6 text-slate-600">
-                      <LText text={aiMatch.ai_reason} />
-                    </p>
-                  )}
 
                   <div className="mt-6 grid gap-4 md:grid-cols-2">
                     <ScoreItem label="Skills" value={aiMatch.skills_score} />

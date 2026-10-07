@@ -3,7 +3,6 @@ import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText } from "@/lib/i18n/client";
 
-
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import Link from "@/lib/i18n/link";
@@ -409,15 +408,6 @@ export default function CandidateMatchesPage() {
                           className="rounded-full border border-[#DDE3EA] px-5 py-3 text-sm font-semibold transition hover:border-[#1683FF] hover:text-[#1683FF]"
                         >
                           <LText text={"Ver vaga"} /></Link>
-                      </div>
-
-                      <div className="mt-8 rounded-[24px] bg-[#F7F9FC] p-5">
-                        <p className="text-sm font-semibold text-[#07111F]">
-                          <LText text={"Justificação IA"} /></p>
-
-                        <p className="mt-2 text-sm leading-6 text-slate-600">
-                          <LText text={match.ai_reason} />
-                        </p>
                       </div>
 
                       <div className="mt-6 grid gap-6 md:grid-cols-2">

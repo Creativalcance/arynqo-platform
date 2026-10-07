@@ -1,7 +1,6 @@
 "use client";
 import { LText } from "@/lib/i18n/client";
 
-
 import Link from "@/lib/i18n/link";
 import { useParams } from "next/navigation";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
@@ -201,15 +200,6 @@ export default function AppMatchDetailPage() {
               <LText text={"Categoria: "} /><LText text={match.matchCategory} />
             </p>
           )}
-        </section>
-
-        <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-            <LText text={"Porque aparece"} /></p>
-
-          <p className="mt-3 text-sm leading-6 text-white/65">
-            <LText text={match.reason} />
-          </p>
         </section>
 
         <section className="mt-5 grid gap-3">

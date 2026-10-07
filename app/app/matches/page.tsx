@@ -1,7 +1,6 @@
 "use client";
 import { LText } from "@/lib/i18n/client";
 
-
 import { useMemo, useState } from "react";
 import Link from "@/lib/i18n/link";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
@@ -443,10 +442,6 @@ export default function AppMatchesPage() {
                     </div>
                   </div>
 
-                  <p className="mt-5 line-clamp-5 text-sm leading-6 text-white/64">
-                    <LText text={currentMatch.reason} />
-                  </p>
-
                   {currentMatch.matchingSkills.length > 0 && (
                     <div className="mt-5">
                       <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
@@ -669,14 +664,6 @@ export default function AppMatchesPage() {
 
                 {isExpanded && (
                   <div className="mt-5 space-y-4 border-t border-white/10 pt-4">
-                    <div className="rounded-2xl bg-white/[0.04] p-4">
-                      <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/35">
-                        <LText text={"Porque aparece"} /></p>
-
-                      <p className="mt-2 text-sm leading-6 text-white/60">
-                        <LText text={match.reason} />
-                      </p>
-                    </div>
 
                     <Link
                       href={`/app/matches/${match.id}`}
