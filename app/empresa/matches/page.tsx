@@ -122,7 +122,6 @@ type ContactRequest = {
   status: "pending" | "accepted" | "rejected";
 };
 
-type DetailTab = "resumo" | "skills" | "gaps" | "acoes";
 type MatchView = "recommended" | "others";
 
 const freeVisibleLimit = 5;
@@ -150,7 +149,6 @@ export default function CompanyMatchesPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
   const [selectedMatchId, setSelectedMatchId] = useState("");
-  const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>("resumo");
   const [activeMatchView, setActiveMatchView] =
     useState<MatchView>("recommended");
   const [matches, setMatches] = useState<Match[]>([]);
@@ -379,7 +377,6 @@ is_relevant,
 
     setMatches(normalizedMatches);
     setSelectedMatchId("");
-    setActiveDetailTab("resumo");
     setIsLoadingMatches(false);
   }
 
@@ -798,7 +795,6 @@ const otherMatches = useMemo(() => {
                 onClick={() => {
                   setActiveMatchView("recommended");
                   setSelectedMatchId("");
-                  setActiveDetailTab("resumo");
                 }}
               />
 
@@ -808,7 +804,6 @@ const otherMatches = useMemo(() => {
                 onClick={() => {
                   setActiveMatchView("others");
                   setSelectedMatchId("");
-                  setActiveDetailTab("resumo");
                 }}
               />
             </section>
@@ -882,7 +877,6 @@ const otherMatches = useMemo(() => {
                             }
 
                             setSelectedMatchId(match.id);
-                            setActiveDetailTab("resumo");
                           }}
                           className={`w-full rounded-[24px] border p-4 text-left transition ${
                             isLocked
@@ -1009,8 +1003,6 @@ const otherMatches = useMemo(() => {
                       match={selectedMatch}
                       hasAction={hasAction}
                       handleAction={handleAction}
-                      activeDetailTab={activeDetailTab}
-                      setActiveDetailTab={setActiveDetailTab}
                       isPremium={isPremium}
                       handleUpgradeClick={handleUpgradeClick}
                       canContactDirectly={canContactDirectly}
@@ -1045,8 +1037,6 @@ function CandidateDetail({
   match,
   hasAction,
   handleAction,
-  activeDetailTab,
-  setActiveDetailTab,
   isPremium,
   handleUpgradeClick,
   canContactDirectly,
@@ -1060,8 +1050,6 @@ function CandidateDetail({
     jobId: string,
     actionType: string
   ) => Promise<void>;
-  activeDetailTab: DetailTab;
-  setActiveDetailTab: (tab: DetailTab) => void;
   isPremium: boolean;
   handleUpgradeClick: () => void;
   canContactDirectly: (match: Match) => boolean;
@@ -1170,42 +1158,12 @@ function CandidateDetail({
       </div>
 
       <div className="grid min-w-0 grid-cols-1 gap-0 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0 p-4 sm:p-8">
-          <div className="mb-6 flex flex-wrap gap-2">
-            {[
-              { id: "resumo", label: "Resumo IA" },
-              { id: "skills", label: "Skills" },
-              { id: "gaps", label: "Gaps" },
-              { id: "acoes", label: "Ações" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveDetailTab(tab.id as DetailTab)}
-                className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                  activeDetailTab === tab.id
-                    ? "bg-[#07111F] text-white"
-                    : "bg-[#F7F9FC] text-slate-500 hover:text-[#07111F]"
-                }`}
-              >
-                <LText text={tab.label} />
-              </button>
-            ))}
-          </div>
-
-          {activeDetailTab === "resumo" && (
-            <div className="space-y-6">
-
-              {student.ai_summary && (
-                <InfoPanel title="Resumo profissional">
-                  <p>{student.ai_summary}</p>
-                </InfoPanel>
-              )}
-
-            </div>
+        <div className="min-w-0 p-4 sm:p-8 space-y-6">
+          {student.ai_summary && (
+            <InfoPanel title="Resumo profissional">
+              <p>{student.ai_summary}</p>
+            </InfoPanel>
           )}
-
-          {activeDetailTab === "skills" && (
             <div className="grid gap-6 md:grid-cols-2">
               <InfoPanel title="Skills em comum">
                 <ChipList
@@ -1223,9 +1181,6 @@ function CandidateDetail({
                 />
               </InfoPanel>
             </div>
-          )}
-
-          {activeDetailTab === "gaps" && (
             <div className="grid gap-6 md:grid-cols-2">
               <InfoPanel title="Pontos fortes">
                 <ul className="space-y-2">
@@ -1247,9 +1202,6 @@ function CandidateDetail({
                 </ul>
               </InfoPanel>
             </div>
-          )}
-
-          {activeDetailTab === "acoes" && (
             <div className="rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-6">
               <h3 className="text-xl font-semibold tracking-[-0.04em]">
                 <LText text={"Decisão de recrutamento"} /></h3>
@@ -1310,7 +1262,6 @@ function CandidateDetail({
                 )}
               </div>
             </div>
-          )}
         </div>
 
         <aside className="min-w-0 border-t border-[#DDE3EA] p-4 sm:p-8 xl:border-l xl:border-t-0">
@@ -1391,7 +1342,7 @@ function InfoPanel({
 }) {
   return (
     <div className="min-w-0 rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-4 text-sm leading-6 text-slate-600 [overflow-wrap:anywhere] sm:p-6">
-      <p className="mb-3 text-sm font-semibold text-[#07111F]"><LText text={title} /></p>
+      <h3 className="mb-3 text-sm font-semibold text-[#07111F]"><LText text={title} /></h3>
       {children}
     </div>
   );
