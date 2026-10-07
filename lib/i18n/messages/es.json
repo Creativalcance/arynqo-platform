@@ -2692,11 +2692,5 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Puedo explorar sin publicar una oferta. Para solicitar acceso, elijo una oferta activa y el candidato decide si comparte su perfil conmigo. La oferta elegida no cambia los resultados.",
   "Profissão ou área": "Profesión o área",
   "Todas as opções": "Todas las opciones",
-  "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.": "Puedo solicitar acceso al perfil de cualquier candidato disponible, incluso sin publicar una oferta. El candidato recibe la solicitud y decide si comparte conmigo su perfil completo, CV y datos de contacto.",
-  "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.": "No se ha podido enviar la solicitud. Actualiza la lista e inténtalo de nuevo.",
-  "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.": "La empresa {0} solicita tu autorización para consultar tu perfil completo y tus datos de contacto.",
-  "O candidato aceitou o pedido de acesso ao perfil.": "El candidato ha aceptado la solicitud de acceso al perfil.",
-  "O candidato recusou o pedido de acesso ao perfil.": "El candidato ha rechazado la solicitud de acceso al perfil.",
-  "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.": "La empresa solicita permiso para consultar mi perfil completo, CV y datos de contacto.",
-  "Pedido de acesso ao meu perfil, CV e contactos.": "Solicitud de acceso a mi perfil, CV y datos de contacto."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Para solicitar acceso al perfil y a los datos de contacto de un candidato, selecciono una de mis ofertas activas. El candidato recibe la solicitud y decide si la acepta."
 }

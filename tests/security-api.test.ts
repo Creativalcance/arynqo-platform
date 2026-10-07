@@ -11,7 +11,7 @@ const otherId = "20000000-0000-0000-0000-000000000001";
 const jobId = "30000000-0000-0000-0000-000000000001";
 const companyId = "40000000-0000-0000-0000-000000000001";
 const applicationId = "50000000-0000-0000-0000-000000000001";
-type Row = Record<string, string | null>;
+type Row = Record<string, string>;
 
 function database(tables: Record<string, Row[]>): SupabaseClient {
   return {
@@ -107,25 +107,4 @@ test("all privileged POST routes reject unauthenticated requests", async () => {
   assert.equal((await notifications.POST(new NextRequest("https://test.invalid", { method: "POST", body: "{}" }))).status, 401);
   const legacy = await import("../app/api/matching/calculate/route");
   assert.equal((await legacy.GET()).status, 410);
-});
-
-
-test("direct profile request notifications do not require a vacancy and preserve recipient ownership", async () => {
- const tables = {
-  candidate_contact_requests: [{ id: applicationId, student_id: candidateId, company_id: companyId, job_id: null, status: "pending" }],
-  student_profiles: [{ id: candidateId, user_id: candidateId }],
-  company_profiles: [{ id: companyId, user_id: companyId, company_name: "Empresa de teste" }],
- };
- const db=database(tables);const input={relatedType:"candidate_contact_request",relatedId:applicationId};
- const pending=await resolveNotificationEvent(actor("company",companyId),db,input);
- assert.equal(pending.userId,candidateId);assert.ok(pending.message.includes('perfil completo'));assert.ok(!pending.message.includes('vaga'));
- await assert.rejects(resolveNotificationEvent(actor("company",otherId),db,input),status(403));
- tables.candidate_contact_requests[0].status='accepted';
- const accepted=await resolveNotificationEvent(actor("student",candidateId),db,input);
- assert.equal(accepted.userId,companyId);assert.equal(accepted.relatedUrl,`/empresa/candidatos/${candidateId}`);
- assert.equal(accepted.message,'O candidato aceitou o pedido de acesso ao perfil.');
- tables.candidate_contact_requests[0].status='rejected';
- const rejected=await resolveNotificationEvent(actor("student",candidateId),db,input);
- assert.equal(rejected.relatedUrl,'/empresa/talentos');assert.ok(rejected.message.includes('recusou'));
- await assert.rejects(resolveNotificationEvent(actor("student",otherId),db,input),status(403));
 });

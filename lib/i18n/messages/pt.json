@@ -2692,11 +2692,5 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.",
   "Profissão ou área": "Profissão ou área",
   "Todas as opções": "Todas as opções",
-  "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.": "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.",
-  "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.": "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.",
-  "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.": "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.",
-  "O candidato aceitou o pedido de acesso ao perfil.": "O candidato aceitou o pedido de acesso ao perfil.",
-  "O candidato recusou o pedido de acesso ao perfil.": "O candidato recusou o pedido de acesso ao perfil.",
-  "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.": "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.",
-  "Pedido de acesso ao meu perfil, CV e contactos.": "Pedido de acesso ao meu perfil, CV e contactos."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita."
 }

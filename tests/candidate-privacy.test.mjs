@@ -221,42 +221,15 @@ test('candidate consent, company isolation, CV and logo policies', async () => {
   await login(1);assert.equal((await search()).total,29,'active paid plan can use directory after launch');
   await db.exec(`reset role;update profiles set subscription_status='canceled' where id='${id(1)}';`);
   await login(1);await assert.rejects(search(),/plan required/);
-  // Profile consent works for a company with no active vacancies.
-  await db.exec('reset role;update private.candidate_directory_access set launch_free=true;');
-  const directMigration=(await readdir('supabase/migrations')).find(name=>name.endsWith('_company_profile_access_requests.sql'));
-  await db.exec(await readFile(`supabase/migrations/${directMigration}`,'utf8'));
-  await login(2);
-  await db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(12)}','${id(31)}',null,'pending')`);
-  const directId=(await db.query(`select id from candidate_contact_requests where company_id='${id(12)}' and job_id is null`)).rows[0].id;
-  assert.equal((await search({skill:'PLC'})).items[0].contact_request_status,'pending');
-  assert.equal((await search({skill:'PLC'})).items[0].profiles,null);
-  const requestNotice=(await db.query('select message,related_url from notifications where related_id=$1',[directId])).rows[0];
-  assert.ok(requestNotice.message.includes('perfil completo'));assert.ok(!requestNotice.message.includes('vaga'));
-  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(12)}','${id(31)}',null,'pending')`),/duplicate key/);
-  await assert.rejects(db.exec(`update candidate_contact_requests set status='accepted' where id='${directId}'`),/Only the candidate/);
-  await login(1);await assert.rejects(db.query("select respond_candidate_contact_request($1,'accepted')",[directId]),/not authorized/);
-  await login(3);
-  await db.query("select respond_candidate_contact_request($1,'accepted')",[directId]);
-  await login(2);
-  assert.equal((await search({skill:'PLC'})).items[0].profiles.email,'private@example.invalid');
-  assert.equal((await db.query("select * from storage.objects where bucket_id='student-cvs'")).rows.length,1,'CV follows direct candidate consent');
-  const answerNotice=(await db.query("select message,related_url from notifications where related_id=$1 and user_id=$2",[directId,id(2)])).rows[0];
-  assert.equal(answerNotice.related_url,`/empresa/candidatos/${id(31)}`);assert.ok(answerNotice.message.includes('acesso ao perfil'));
-  await login(1);assert.equal((await search({skill:'PLC'})).items[0].profiles,null,'other companies gain no access');
-  await db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}',null,'pending')`);
-  const refusedId=(await db.query(`select id from candidate_contact_requests where company_id='${id(11)}' and job_id is null`)).rows[0].id;
-  await login(3);await db.query("select respond_candidate_contact_request($1,'rejected')",[refusedId]);
-  await login(1);assert.equal((await search({skill:'PLC'})).items[0].profiles,null);
-  assert.equal((await search({skill:'PLC'})).items[0].contact_request_status,'rejected');
-  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}',null,'pending')`),/duplicate key/);
-  await login(3);await db.exec("update student_profiles set contact_visibility='closed' where id='"+id(31)+"'");
-  await login(2);assert.equal((await db.query("select * from storage.objects where bucket_id='student-cvs'")).rows.length,0,'closed visibility revokes direct CV access');
-  assert.equal((await db.query(`select company_candidate_snapshots(array['${id(31)}'::uuid]) snapshot`)).rows[0].snapshot.profiles,null);
-  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(12)}','${id(32)}',null,'pending')`),/unavailable/);
-  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(12)}','${id(1100)}',null,'pending')`),/unavailable/);
-  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(1103)}',null,'pending')`),/not authorized/);
-  await db.exec('reset role;update private.candidate_directory_access set launch_free=false;');
-  await login(2);await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(12)}','${id(1103)}',null,'pending')`),/plan required/);
+  // Restore the original vacancy requirement after the mistaken direct-request migration.
+  await db.exec('reset role');
+  for (const suffix of ['_company_profile_access_requests.sql','_restore_vacancy_contact_requests.sql']) {
+   const name=(await readdir('supabase/migrations')).find(file=>file.endsWith(suffix));
+   await db.exec(await readFile(`supabase/migrations/${name}`,'utf8'));
+  }
+  assert.equal((await db.query("select is_nullable from information_schema.columns where table_name='candidate_contact_requests' and column_name='job_id'")).rows[0].is_nullable,'NO');
+  await login(1);
+  await assert.rejects(db.exec(`insert into candidate_contact_requests(company_id,student_id,job_id,status) values('${id(11)}','${id(31)}',null,'pending')`),/not authorized/);
   await db.exec('reset role;set role anon');
   await assert.rejects(db.query("select company_candidate_directory(null,'',1)"),/permission denied/);
   await assert.rejects(db.query('select company_candidate_search()'),/permission denied/);

@@ -59,7 +59,7 @@ type ContactRequestRow = {
   id: string;
   company_id: string;
   student_id: string;
-  job_id: string | null;
+  job_id: string;
   status: RequestStatus;
   message: string | null;
   created_at: string;
@@ -71,7 +71,7 @@ type ContactRequest = {
   id: string;
   company_id: string;
   student_id: string;
-  job_id: string | null;
+  job_id: string;
   status: RequestStatus;
   message: string | null;
   created_at: string;
@@ -632,7 +632,7 @@ function ContactRequestCard({
 
             <p className="mt-2 text-sm leading-6 text-slate-600">
               <LText text={request.message ||
-                "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos."} />
+                "A empresa pretende ver o teu perfil completo para uma vaga compatível."} />
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
@@ -706,7 +706,8 @@ function ResolvedContactRequestCard({
           </div>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-            {request.job ? <><LText text="Pedido de contacto para a vaga" /> <strong>{request.job.title}</strong>.</> : <LText text="Pedido de acesso ao meu perfil, CV e contactos." />}
+            <LText text={"Pedido de contacto para a vaga"} /><LText text={" "} />
+            <strong><LText text={request.job?.title || "vaga"} /></strong>.
           </p>
 
           <p className="mt-4 text-xs font-medium text-slate-400">

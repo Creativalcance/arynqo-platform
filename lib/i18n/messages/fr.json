@@ -2692,11 +2692,5 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Je peux explorer sans publier d’offre. Pour demander l’accès, je choisis une offre active et le candidat décide de partager ou non son profil avec moi. L’offre choisie ne modifie pas les résultats.",
   "Profissão ou área": "Profession ou domaine",
   "Todas as opções": "Toutes les options",
-  "Posso pedir acesso ao perfil de qualquer candidato disponível, mesmo sem publicar uma vaga. O candidato recebe o pedido e decide se partilha comigo o perfil completo, o CV e os contactos.": "Je peux demander l’accès au profil de tout candidat disponible, même sans publier d’offre. Le candidat reçoit la demande et décide de partager ou non son profil complet, son CV et ses coordonnées avec moi.",
-  "Não foi possível enviar o pedido. Atualiza a lista e tenta novamente.": "Impossible d’envoyer la demande. Actualise la liste et réessaie.",
-  "A empresa {0} pede autorização para consultar o teu perfil completo e os teus contactos.": "L’entreprise {0} demande ton autorisation pour consulter ton profil complet et tes coordonnées.",
-  "O candidato aceitou o pedido de acesso ao perfil.": "Le candidat a accepté la demande d’accès à son profil.",
-  "O candidato recusou o pedido de acesso ao perfil.": "Le candidat a refusé la demande d’accès à son profil.",
-  "A empresa pede autorização para consultar o meu perfil completo, o CV e os contactos.": "L’entreprise demande l’autorisation de consulter mon profil complet, mon CV et mes coordonnées.",
-  "Pedido de acesso ao meu perfil, CV e contactos.": "Demande d’accès à mon profil, mon CV et mes coordonnées."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Pour demander l’accès au profil et aux coordonnées d’un candidat, je sélectionne l’une de mes offres actives. Le candidat reçoit la demande et décide de l’accepter ou non."
 }
