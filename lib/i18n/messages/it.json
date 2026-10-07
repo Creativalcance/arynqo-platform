@@ -2671,5 +2671,16 @@
   "Condições da vaga": "Condizioni dell’offerta",
   "Compatibilidade média das vagas apresentadas": "Compatibilità media delle offerte mostrate",
   "As minhas candidaturas": "Le mie candidature",
-  "Candidaturas recebidas": "Candidature ricevute"
+  "Candidaturas recebidas": "Candidature ricevute",
+  "Gerir vagas": "Gestisci offerte",
+  "Consulta as vagas de todas as empresas e elimina as que precisas de retirar. As operações ficam registadas no histórico administrativo.": "Consulta le offerte di tutte le aziende ed elimina quelle che devi rimuovere. Le operazioni vengono registrate nella cronologia amministrativa.",
+  "A vaga deixa de estar publicada e sai da gestão da empresa. As candidaturas e os registos associados ficam guardados. Esta ação não pode ser desfeita.": "L’offerta non sarà più pubblicata né visibile nell’area di gestione dell’azienda. Le candidature e i dati associati vengono conservati. Questa azione non può essere annullata.",
+  "Escreve o título da vaga para confirmar.": "Scrivi il titolo dell’offerta per confermare.",
+  "O título não corresponde à vaga. Atualiza a lista e confirma novamente.": "Il titolo non corrisponde all’offerta. Aggiorna l’elenco e conferma di nuovo.",
+  "Não foi possível eliminar a vaga. Tenta novamente.": "Non è stato possibile eliminare l’offerta. Riprova.",
+  "Confirmar eliminação": "Conferma eliminazione",
+  "Vaga eliminada": "Offerta eliminata",
+  "Vaga eliminada.": "Offerta eliminata.",
+  "Arquivada em": "Archiviata il",
+  "Eliminada em": "Eliminata il"
 }

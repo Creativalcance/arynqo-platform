@@ -10,6 +10,10 @@ test('Administrative controls are absent from the initial HTML',async()=>{
  const html=renderToStaticMarkup(React.createElement(Page));
  assert.match(html,/A verificar acesso/);
  assert.doesNotMatch(html,/Exportar|Contas e dados|Pesquisar contas|Escolher colunas/);
+ const {default:JobsPage}=await import('../app/admin/vagas/page.tsx');
+ const jobsHtml=renderToStaticMarkup(React.createElement(JobsPage));
+ assert.match(jobsHtml,/A verificar acesso/);
+ assert.doesNotMatch(jobsHtml,/Eliminar vaga|Pesquisar vagas|Gerir vagas/);
 });
 test('Access gate checks the protected server role, not browser metadata',async context=>{
  const {GET}=await import('../app/api/admin/acesso/route.ts');

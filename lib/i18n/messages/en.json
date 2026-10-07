@@ -2671,5 +2671,16 @@
   "Condições da vaga": "Job conditions",
   "Compatibilidade média das vagas apresentadas": "Average compatibility of displayed jobs",
   "As minhas candidaturas": "My applications",
-  "Candidaturas recebidas": "Applications received"
+  "Candidaturas recebidas": "Applications received",
+  "Gerir vagas": "Manage vacancies",
+  "Consulta as vagas de todas as empresas e elimina as que precisas de retirar. As operações ficam registadas no histórico administrativo.": "View vacancies from all companies and delete those you need to remove. Actions are recorded in the administrative history.",
+  "A vaga deixa de estar publicada e sai da gestão da empresa. As candidaturas e os registos associados ficam guardados. Esta ação não pode ser desfeita.": "The vacancy will no longer be published or appear in the company’s management area. Applications and related records are kept. This action cannot be undone.",
+  "Escreve o título da vaga para confirmar.": "Type the vacancy title to confirm.",
+  "O título não corresponde à vaga. Atualiza a lista e confirma novamente.": "The title does not match the vacancy. Refresh the list and confirm again.",
+  "Não foi possível eliminar a vaga. Tenta novamente.": "Could not delete the vacancy. Try again.",
+  "Confirmar eliminação": "Confirm deletion",
+  "Vaga eliminada": "Vacancy deleted",
+  "Vaga eliminada.": "Vacancy deleted.",
+  "Arquivada em": "Archived on",
+  "Eliminada em": "Deleted on"
 }
