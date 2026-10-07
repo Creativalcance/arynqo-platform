@@ -239,6 +239,13 @@ try {
             />
 
             <DashboardCard
+              eyebrow="Candidatos"
+              title="Explorar candidatos"
+              text="Encontro candidatos em toda a plataforma, para além dos matches das minhas vagas, e peço autorização para consultar o perfil."
+              href="/empresa/talentos"
+            />
+
+            <DashboardCard
               eyebrow="Publicação"
               title="Publicar vaga"
               text="Crie uma nova oportunidade e defina requisitos, área, localização e modelo de trabalho."

@@ -2682,5 +2682,14 @@
   "Vaga eliminada": "Stelle gelöscht",
   "Vaga eliminada.": "Stelle gelöscht.",
   "Arquivada em": "Archiviert am",
-  "Eliminada em": "Gelöscht am"
+  "Eliminada em": "Gelöscht am",
+  "A minha pesquisa": "Meine Suche",
+  "Encontro candidatos de toda a plataforma, mesmo sem match com as minhas vagas. A identidade e os contactos continuam protegidos até existir autorização ou uma candidatura à minha empresa.": "Ich finde Kandidaten auf der gesamten Plattform, auch ohne Übereinstimmung mit meinen Stellen. Identität und Kontaktdaten bleiben geschützt, bis eine Zustimmung oder Bewerbung bei meinem Unternehmen vorliegt.",
+  "Encontro candidatos em toda a plataforma, para além dos matches das minhas vagas, e peço autorização para consultar o perfil.": "Ich finde Kandidaten auf der gesamten Plattform, über die Treffer meiner Stellen hinaus, und frage die Erlaubnis zur Profilansicht an.",
+  "Escolher uma vaga para pedir autorização": "Stelle für die Zugriffsanfrage wählen",
+  "O meu plano não inclui a pesquisa de candidatos.": "Mein Tarif umfasst keine Kandidatensuche.",
+  "Pedir acesso a um perfil": "Profilzugriff anfragen",
+  "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Ich kann Kandidaten ohne eigene Stellenanzeige suchen. Für eine Zugriffsanfrage wähle ich eine aktive Stelle aus. Der Kandidat entscheidet, ob er sein Profil mit mir teilt. Die gewählte Stelle ändert die Suchergebnisse nicht.",
+  "Profissão ou área": "Beruf oder Bereich",
+  "Todas as opções": "Alle Optionen"
 }
