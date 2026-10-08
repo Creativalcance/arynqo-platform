@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/external-jobs",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/social-radar",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
