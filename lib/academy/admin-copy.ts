@@ -1,5 +1,26 @@
 import { type Locale, locales } from "../i18n/config";
+import { ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  attempts: ["Tentativas", "Attempts", "Tentatives", "Intentos", "Versuche", "Tentativi"],
+  metadataTooLong: [
+    "Não consegui concluir esta versão porque o título, o resumo ou os textos SEO ultrapassaram o limite de caracteres. Podes repetir as versões em falta; as versões concluídas ficam guardadas.",
+    "I could not finish this version because the title, summary or SEO text exceeded the character limit. You can retry missing versions; completed versions are saved.",
+    "Je n’ai pas pu terminer cette version : le titre, le résumé ou le texte SEO dépasse la limite de caractères. Tu peux relancer les versions manquantes ; les versions terminées sont conservées.",
+    "No he podido completar esta versión porque el título, el resumen o el texto SEO supera el límite de caracteres. Puedes reintentar las versiones pendientes; las completadas se conservan.",
+    "Ich konnte diese Version nicht abschließen, da Titel, Zusammenfassung oder SEO-Text das Zeichenlimit überschritten haben. Du kannst fehlende Versionen erneut erstellen; fertige Versionen bleiben gespeichert.",
+    "Non ho potuto completare questa versione perché il titolo, il riepilogo o il testo SEO supera il limite di caratteri. Puoi riprovare le versioni mancanti; quelle completate restano salvate.",
+  ],
+  metadataFieldTooLong: [
+    "Não consegui concluir esta versão: o campo «{field}» ultrapassou o limite de {limit} caracteres. Podes repetir as versões em falta.",
+    "I could not finish this version: “{field}” exceeded the {limit}-character limit. You can retry missing versions.",
+    "Je n’ai pas pu terminer cette version : « {field} » dépasse la limite de {limit} caractères. Tu peux relancer les versions manquantes.",
+    "No he podido completar esta versión: «{field}» supera el límite de {limit} caracteres. Puedes reintentar las versiones pendientes.",
+    "Ich konnte diese Version nicht abschließen: „{field}“ überschreitet das Limit von {limit} Zeichen. Du kannst fehlende Versionen erneut erstellen.",
+    "Non ho potuto completare questa versione: «{field}» supera il limite di {limit} caratteri. Puoi riprovare le versioni mancanti.",
+  ],
+  monthlyLimit: ["Atingi o limite mensal de pedidos de IA. Podes ajustar o limite acima ou aguardar pelo próximo mês.", "I reached the monthly AI request limit. You can adjust it above or wait until next month.", "J’ai atteint la limite mensuelle de requêtes IA. Tu peux l’ajuster ci-dessus ou attendre le mois prochain.", "He alcanzado el límite mensual de solicitudes de IA. Puedes ajustarlo arriba o esperar al próximo mes.", "Ich habe das monatliche KI-Anfragelimit erreicht. Du kannst es oben anpassen oder bis zum nächsten Monat warten.", "Ho raggiunto il limite mensile di richieste IA. Puoi modificarlo sopra o aspettare il prossimo mese."],
+  alreadyRunning: ["Já estou a gerar um artigo. Aguarda um momento e atualiza o painel.", "I am already generating an article. Wait a moment and refresh the panel.", "Je génère déjà un article. Patiente un instant et actualise le panneau.", "Ya estoy generando un artículo. Espera un momento y actualiza el panel.", "Ich erstelle bereits einen Artikel. Warte kurz und aktualisiere den Bereich.", "Sto già generando un articolo. Attendi un momento e aggiorna il pannello."],
+  notRetryable: ["Não consigo repetir esta execução no estado atual. Atualiza o painel para veres o resultado mais recente.", "I cannot retry this run in its current state. Refresh the panel for the latest result.", "Je ne peux pas relancer cette exécution dans son état actuel. Actualise le panneau pour voir le dernier résultat.", "No puedo repetir esta ejecución en su estado actual. Actualiza el panel para ver el último resultado.", "Ich kann diesen Lauf im aktuellen Zustand nicht wiederholen. Aktualisiere den Bereich für das neueste Ergebnis.", "Non posso ripetere questa esecuzione nello stato attuale. Aggiorna il pannello per vedere l’ultimo risultato."],
   approvalRequired: [
     "Todos os artigos ficam em rascunho até serem aprovados por um administrador. O administrador recebe um email quando o artigo está pronto para revisão.",
     "Every article remains a draft until an administrator approves it. The administrator receives an email when it is ready for review.",
@@ -359,4 +380,23 @@ const copy = {
 export type AcademyCopyKey = keyof typeof copy;
 export function academyCopy(locale: Locale, key: AcademyCopyKey) {
   return copy[key][locales.indexOf(locale)];
+}
+
+export function academyRunMessage(locale: Locale, code: string) {
+  const messages: Record<string, AcademyCopyKey> = {
+    invalid_metadata: "metadataTooLong",
+    monthly_limit: "monthlyLimit",
+    already_running: "alreadyRunning",
+    not_retryable: "notRetryable",
+  };
+  if (messages[code]) return academyCopy(locale, messages[code]);
+  for (const [field, limit] of Object.entries(ARTICLE_METADATA_LIMITS)) {
+    if (code === `invalid_metadata_${field}`) {
+      const label = field === "title" ? "titleField" : field as AcademyCopyKey;
+      return academyCopy(locale, "metadataFieldTooLong")
+        .replace("{field}", academyCopy(locale, label))
+        .replace("{limit}", String(limit));
+    }
+  }
+  return code;
 }

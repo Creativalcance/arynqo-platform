@@ -21,6 +21,7 @@ test("automation claims are exclusive, publication atomic, budget bounded and pr
         "utf8",
       ),
     );
+    await db.exec(await readFile(new URL("../supabase/migrations/20261011224500_academy_manual_retry.sql", import.meta.url), "utf8"));
     await db.exec("set role anon");
     await assert.rejects(
       db.query("select academy_claim_run()"),
@@ -217,6 +218,32 @@ test("automation claims are exclusive, publication atomic, budget bounded and pr
       ).rows[0].title,
       "Reviewed English version",
     );
+    await db.exec("reset role; set role service_role; update academy_automation_settings set monthly_request_limit=60");
+    let exhausted = (await db.query("select academy_claim_run(null,true) as claim")).rows[0].claim;
+    await db.query("select academy_stage_translation($1,$2,'pt',$3::jsonb)", [exhausted.id, exhausted.lease_token, JSON.stringify({ ...payload, slug: "recoverable-article" })]);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      assert.equal(exhausted.attempts, attempt);
+      await db.query("select academy_fail_run($1,$2,'invalid_metadata')", [exhausted.id, exhausted.lease_token]);
+      if (attempt < 3) exhausted = (await db.query("select academy_claim_run($1) as claim", [exhausted.id])).rows[0].claim;
+    }
+    assert.equal((await db.query("select academy_claim_run($1) as claim", [exhausted.id])).rows[0].claim.reason, "not_retryable");
+    assert.equal((await db.query("select academy_claim_run() as claim")).rows[0].claim.reason, "not_due");
+    const preview = (await db.query("select academy_claim_run(null,true) as claim")).rows[0].claim;
+    assert.notEqual(preview.id, exhausted.id, "preview must not implicitly retry exhausted runs");
+    await db.query("select academy_fail_run($1,$2,'invalid_metadata')", [preview.id, preview.lease_token]);
+    const usageBefore = (await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests;
+    const recovered = (await db.query("select academy_claim_run($1,true) as claim", [exhausted.id])).rows[0].claim;
+    assert.equal(recovered.id, exhausted.id);
+    assert.equal(recovered.attempts, 4, "manual recovery must preserve attempt history");
+    assert.equal(recovered.preview_only, true);
+    assert.notEqual(recovered.lease_token, exhausted.lease_token);
+    assert.equal((await db.query("select academy_claim_run($1,true) as claim", [exhausted.id])).rows[0].claim.reason, "already_running");
+    assert.equal((await db.query("select count(*)::int n from academy_post_translations where post_id=$1", [recovered.post_id])).rows[0].n, 1);
+    assert.equal((await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests, usageBefore + 6);
+    await db.query("select academy_fail_run($1,$2,'invalid_metadata')", [recovered.id, recovered.lease_token]);
+    await db.query("update academy_automation_settings set monthly_request_limit=$1", [usageBefore + 6]);
+    assert.equal((await db.query("select academy_claim_run($1,true) as claim", [recovered.id])).rows[0].claim.reason, "monthly_limit");
+    assert.equal((await db.query("select attempts from academy_generation_runs where id=$1", [recovered.id])).rows[0].attempts, 4);
   } finally {
     await db.close();
   }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
-import { academyCopy, type AcademyCopyKey } from "@/lib/academy/admin-copy";
+import { academyCopy, academyRunMessage, type AcademyCopyKey } from "@/lib/academy/admin-copy";
 import { type ArticleDraft } from "@/lib/academy/quality";
 import TopicCalendar, { type CalendarTopic } from "./TopicCalendar";
 type Version = ArticleDraft & { quality_passed: boolean; updated_at: string };
@@ -111,10 +111,13 @@ export default function AutomationPanel({
         },
       );
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || c("error"));
+      if (!response.ok) {
+        await load();
+        throw new Error(academyRunMessage(locale, result.error || c("error")));
+      }
       setMessage(
         result.skipped
-          ? String(result.reason)
+          ? academyRunMessage(locale, String(result.reason))
           : result.status === "review"
             ? c("held")
             : c("done"),
@@ -311,11 +314,11 @@ export default function AutomationPanel({
             </summary>
             <p className="my-3 text-xs text-slate-500">
               {new Date(run.created_at).toLocaleString(locale)} ·{" "}
-              {run.input_tokens + run.output_tokens} tokens · {run.attempts}/3
+              {run.input_tokens + run.output_tokens} tokens · {c("attempts")}: {run.attempts}
             </p>
             {run.error_code && (
               <p className="break-words text-sm text-red-700">
-                {run.error_code}
+                {academyRunMessage(locale, run.error_code)}
               </p>
             )}
             <div className="my-3 flex flex-wrap gap-2">
@@ -355,7 +358,7 @@ export default function AutomationPanel({
                 </li>
               ))}
             </ul>
-            {run.status === "failed" && run.attempts < 3 && (
+            {run.status === "failed" && (
               <button
                 disabled={busy}
                 className={button}

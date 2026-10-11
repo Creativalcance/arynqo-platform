@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { academyRunMessage } from "../lib/academy/admin-copy";
+import { locales } from "../lib/i18n/config";
 import {
   validateArticle,
   safeSourceURL,
@@ -80,4 +82,22 @@ test("wrong-language text and recycled content are blocked", () => {
     ]),
     false,
   );
+});
+
+
+test("metadata boundaries match the schema and identify the rejected field without truncation", () => {
+  for (const [field, limit] of Object.entries({ title: 160, excerpt: 600, seo_title: 100, seo_description: 200 })) {
+    const text = "é".repeat(limit - 1) + "🌍";
+    assert.equal(validateArticle({ ...draft, [field]: text }, "pt")[field as keyof typeof draft], text);
+    assert.throws(() => validateArticle({ ...draft, [field]: text + "a" }, "pt"), new RegExp(`invalid_metadata_${field}$`));
+    for (const locale of locales) {
+      const message = academyRunMessage(locale, `invalid_metadata_${field}`);
+      assert.ok(message.includes(String(limit)));
+      assert.ok(!message.includes("invalid_metadata") && !/[{}]/.test(message));
+    }
+  }
+  for (const locale of locales) {
+    for (const code of ["invalid_metadata", "monthly_limit", "already_running", "not_retryable"])
+      assert.notEqual(academyRunMessage(locale, code), code);
+  }
 });

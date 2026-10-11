@@ -11,7 +11,7 @@ A automação começa **pausada**. O calendário inicial contém 24 temas que n�
 1. Reivindicar uma execução numa transação, com lease de dez minutos e exclusão de concorrência.
 2. Reservar seis pedidos no limite mensal, também em tentativas que falhem. Não reembolsar reservas após timeout, porque não é possível saber se o fornecedor processou o pedido.
 3. Ler até duas fontes oficiais, com limites de tamanho, tempo e hosts. Redirecionamentos não são seguidos.
-4. Gerar o original português e traduzir para os restantes idiomas, com concorrência máxima de dois pedidos e sem retries implícitos do SDK. O fornecedor recebe um JSON Schema estrito; o servidor calcula o tempo de leitura a partir do texto, sem depender de um campo gerado pela IA.
+4. Gerar o original português e traduzir para os restantes idiomas, com concorrência máxima de dois pedidos e sem retries implícitos do SDK. O fornecedor recebe um JSON Schema estrito, com os mesmos limites de caracteres da validação (título 160, resumo 600, título SEO 100, descrição SEO 200); o servidor calcula o tempo de leitura a partir do texto, sem depender de um campo gerado pela IA.
 5. Validar campos, estrutura, extensão, indícios de idioma errado, repetição e conteúdo que exige revisão. HTML e links externos inesperados bloqueiam a geração. Citações, datas e percentagens ficam em rascunho para revisão editorial, sem publicação automática. Guardar cada versão numa transação; contabilizar tokens também em respostas rejeitadas.
 6. Concluir sempre em revisão, após seis versões completas, e avisar os administradores por email. A publicação exige aprovação humana, registando o administrador e a data. A aprovação publica o artigo e regista os emails para as contas ativas na mesma transação.
 
@@ -36,7 +36,7 @@ No admin → Academy:
 4. Ativar calendário; definir limite mensal. A publicação automática está bloqueada na base de dados. O valor inicial é 120 pedidos. Este limite é de pedidos, **não um orçamento em euros**. Os custos dependem dos tokens e preços do fornecedor. O editor antigo tem o seu limite de utilização separado.
 5. Confirmar uma execução efetiva do cron e as seis páginas públicas.
 
-Pausar o calendário impede novas execuções automáticas e faz uma execução já iniciada terminar em revisão, sem publicação. Falhas podem ser repetidas até três tentativas por tema; as versões completas são reutilizadas. Leases expiradas são recuperadas na próxima chamada. Ao atingir três falhas é necessária intervenção técnica/editorial; o tema não é reutilizado automaticamente.
+Pausar o calendário impede novas execuções automáticas e faz uma execução já iniciada terminar em revisão, sem publicação. A repetição automática está limitada a três tentativas por tema. Depois de corrigir a causa, o admin pode usar «Repetir versões em falta», mesmo após esse limite. Só uma repetição explícita com o ID da execução permite ultrapassar as três tentativas; gerar uma pré-visualização não o permite. O histórico de tentativas e tokens é preservado, cada tentativa mantém a reserva de seis pedidos e o limite mensal continua obrigatório. As versões completas são reutilizadas. Leases expiradas são recuperadas na próxima chamada. Aplicar a migração `academy_manual_retry` antes de publicar esta recuperação.
 
 ## Segurança e publicação
 

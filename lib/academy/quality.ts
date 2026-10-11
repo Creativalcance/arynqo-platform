@@ -1,4 +1,11 @@
 import { isLocale, type Locale } from "../i18n/config";
+// Shared by the provider schema and server validation (Unicode characters).
+export const ARTICLE_METADATA_LIMITS = {
+  title: 160,
+  excerpt: 600,
+  seo_title: 100,
+  seo_description: 200,
+} as const;
 export type ArticleDraft = {
   locale: Locale;
   title: string;
@@ -41,13 +48,10 @@ export function validateArticle(
   const words = draft.content.split(/\s+/u).length;
   if (words < 600 || words > 1500 || draft.content.length > 18000)
     throw new Error("invalid_length");
-  if (
-    draft.title.length > 160 ||
-    draft.excerpt.length > 600 ||
-    draft.seo_title.length > 100 ||
-    draft.seo_description.length > 200
-  )
-    throw new Error("invalid_metadata");
+  for (const [field, limit] of Object.entries(ARTICLE_METADATA_LIMITS)) {
+    if (Array.from(draft[field as keyof typeof ARTICLE_METADATA_LIMITS]).length > limit)
+      throw new Error(`invalid_metadata_${field}`);
+  }
   if (
     (draft.content.match(/^## /gm) || []).length < 3 ||
     !/^\- /m.test(draft.content)
