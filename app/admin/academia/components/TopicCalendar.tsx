@@ -1,8 +1,7 @@
 export type CalendarTopic = {
   id: string;
   title: string;
-  // UNIQUE(topic_id) makes the reverse PostgREST relation one-to-one.
-  // Accept arrays as well for compatibility with an older cached response.
+  // Regeneration allows multiple runs per topic; accept the former one-to-one shape too.
   academy_generation_runs: { id: string } | { id: string }[] | null;
 };
 

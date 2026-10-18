@@ -4,6 +4,7 @@ import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
 import { academyCopy, academyRunMessage, type AcademyCopyKey } from "@/lib/academy/admin-copy";
+import ArticleGenerationButton from "./ArticleGenerationButton";
 import TopicCalendar, { type CalendarTopic } from "./TopicCalendar";
 type Version = { locale: Locale; quality_passed: boolean };
 type Run = {
@@ -42,11 +43,13 @@ type Data = {
 export default function AutomationPanel({
   onChanged,
   onReview,
+  onGenerated,
   revision,
 }: {
   onChanged: () => Promise<void>;
   onReview: (postId: string, language?: Locale) => void;
   revision: number;
+  onGenerated: (postId?: string) => Promise<void>;
 }) {
   const { locale } = useI18n();
   const c = useCallback(
@@ -362,6 +365,11 @@ export default function AutomationPanel({
               >
                 {c("retry")}
               </button>
+            )}
+            {["failed", "review", "published"].includes(run.status) && (
+              <div className="mt-3">
+                <ArticleGenerationButton runId={run.id} disabled={busy || !data.ready.provider} onCompleted={onGenerated} />
+              </div>
             )}
             {run.status === "review" && (
               <div className="mt-3 space-y-3">

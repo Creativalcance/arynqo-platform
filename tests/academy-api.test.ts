@@ -130,7 +130,7 @@ test("admin can read full draft versions by post ID without relying on the lates
     }
     assert.equal(url.searchParams.get("post_id"), `eq.${postId}`);
     if (url.pathname === "/rest/v1/academy_post_translations") return Response.json(versions);
-    if (url.pathname === "/rest/v1/academy_generation_runs") return Response.json([{ status: "review", sources: [{ url: "https://europass.europa.eu/en", checked_at: "2026-10-18" }] }]);
+    if (url.pathname === "/rest/v1/academy_generation_runs") return Response.json([{ id: postId, status: "review", sources: [{ url: "https://europass.europa.eu/en", checked_at: "2026-10-18" }] }]);
     throw new Error("unexpected_generation_or_publication_call");
   });
   const request = (id: string) => new NextRequest(`https://test.invalid/api/admin/academy-automation?post_id=${id}`, {
@@ -144,9 +144,32 @@ test("admin can read full draft versions by post ID without relying on the lates
   assert.deepEqual(result.versions, versions);
   assert.equal(result.sources.length, 1);
   assert.equal(result.editing_locked, false);
+  assert.deepEqual(result.run, { id: postId, status: "review" });
   assert.equal(databaseCalls, 3);
   assert.equal((await GET(request("invalid"))).status, 400);
   assert.equal(databaseCalls, 3);
   missing = true;
   assert.equal((await GET(request(postId))).status, 404);
+});
+
+
+test("regeneration rejects a missing request ID before AI or database generation", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url.includes("/auth/v1/user")) return Response.json({ id: "10000000-0000-0000-0000-000000000001", is_anonymous: false });
+    if (url.includes("/rest/v1/profiles")) return Response.json({ role: "admin", locale: "pt" });
+    if (url.includes("/rpc/consume_api_limit")) {
+      assert.equal(JSON.parse(String(init?.body)).p_operation, "academy_admin");
+      return new Response(null, { status: 204 });
+    }
+    throw new Error("unexpected_generation_call");
+  });
+  const response = await POST(new NextRequest("https://test.invalid/api/admin/academy-automation", {
+    method: "POST", headers: { authorization: "Bearer test-token" },
+    body: JSON.stringify({ action: "regenerate", run_id: "10000000-0000-0000-0000-000000000002" }),
+  }));
+  assert.equal(response.status, 400);
 });
