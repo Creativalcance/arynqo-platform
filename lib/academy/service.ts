@@ -2,7 +2,10 @@ import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { locales, localeNames, type Locale } from "../i18n/config";
 import {
+  ARTICLE_CONTENT_SCHEMA,
   ARTICLE_METADATA_LIMITS,
+  ArticleLengthError,
+  articleLength,
   articleSlug,
   duplicateArticle,
   plainSource,
@@ -160,10 +163,7 @@ export async function runAcademyAutomation(retryId?: string, preview = false) {
                   locale: { type: "string", enum: [locale] },
                   title: { type: "string", minLength: 1, maxLength: ARTICLE_METADATA_LIMITS.title },
                   excerpt: { type: "string", minLength: 1, maxLength: ARTICLE_METADATA_LIMITS.excerpt },
-                  content: {
-                    type: "string",
-                    description: "Artigo completo com 800–1100 palavras, pelo menos cinco secções ## e uma lista. Não resumir.",
-                  },
+                  content: ARTICLE_CONTENT_SCHEMA,
                   seo_title: { type: "string", minLength: 1, maxLength: ARTICLE_METADATA_LIMITS.seo_title },
                   seo_description: { type: "string", minLength: 1, maxLength: ARTICLE_METADATA_LIMITS.seo_description },
                   review_required: { type: "boolean" },
@@ -199,7 +199,7 @@ export async function runAcademyAutomation(retryId?: string, preview = false) {
       // Reading time is derived from the actual article, never delegated to the model.
       // Keep validation responsible for rejecting missing/invalid article content.
       const wordCount = typeof generated?.content === "string"
-        ? generated.content.trim().split(/\s+/u).length
+        ? articleLength(generated.content).words
         : 0;
       const draft = validateArticle(
         { ...generated, reading_time: `${Math.max(1, Math.ceil(wordCount / 200))} min` },
@@ -225,13 +225,19 @@ export async function runAcademyAutomation(retryId?: string, preview = false) {
     }
     await generate("pt");
     // Bounded concurrency; wait for all running requests before failure/releasing the lease.
+    // A translation length failure must not prevent the remaining languages from being saved.
+    let lengthError: ArticleLengthError | undefined;
     for (let i = 1; i < locales.length; i += 2) {
       const results = await Promise.allSettled(
         locales.slice(i, i + 2).map(generate),
       );
-      const failed = results.find((result) => result.status === "rejected");
-      if (failed?.status === "rejected") throw failed.reason;
+      for (const result of results) {
+        if (result.status !== "rejected") continue;
+        if (!(result.reason instanceof ArticleLengthError)) throw result.reason;
+        lengthError ??= result.reason;
+      }
     }
+    if (lengthError) throw lengthError;
     const result = checked(
       await db.rpc("academy_finish_run", { run_id: runId, token: lease }),
     );

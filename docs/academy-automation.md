@@ -62,6 +62,10 @@ Para validar a IA em produção, confirmar primeiro a configuração e gerar um 
 
 Os testes de geração interceptam todas as chamadas externas: verificam a gravação das seis versões sem um tempo de leitura fornecido pelo modelo e a rejeição de conteúdo inválido antes de qualquer publicação. O teste real de 2 de outubro de 2026 revelou `missing_reading_time` na resposta livre do fornecedor; o schema estrito e o cálculo no servidor corrigem essa dependência.
 
+A falha de 18 de outubro de 2026 (`invalid_length`) deixou PT e FR guardados, com a versão inglesa em falta. A extensão do corpo era apenas uma instrução ao modelo e só era validada depois da resposta. O JSON Schema passa a impor o intervalo de 600–1500 palavras separadas por espaços em branco, através de `pattern`, e o máximo de 18 000 caracteres Unicode através de `maxLength`. A validação local mantém os mesmos limites e as verificações de conteúdo. Não há preenchimento artificial, truncagem nem pedidos adicionais de IA.
+
+Novas falhas de extensão guardam o idioma e as contagens no código `invalid_length_<idioma>_<palavras>_<caracteres>`, sem guardar a resposta rejeitada. O painel apresenta a explicação nos seis idiomas, incluindo para os códigos antigos sem contagens. Uma falha de extensão numa tradução deixa as restantes traduções prosseguir dentro dos seis pedidos já reservados; a execução só conclui quando todas as versões forem válidas. Falhas do fornecedor ou da base de dados continuam a interromper a execução. Uma repetição reutiliza todas as versões válidas já guardadas.
+
 ## Emails de aprovação e publicação
 
 - Um rascunho simples avisa os administradores na criação. A geração multilingue avisa quando as seis versões estão prontas para revisão. O email abre a gestão da Academy; nunca aprova através de um link GET.

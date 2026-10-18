@@ -3,6 +3,9 @@ import { test } from "node:test";
 import { academyRunMessage } from "../lib/academy/admin-copy";
 import { locales } from "../lib/i18n/config";
 import {
+  ARTICLE_CONTENT_SCHEMA,
+  ArticleLengthError,
+  articleLength,
   validateArticle,
   safeSourceURL,
   plainSource,
@@ -46,6 +49,36 @@ test("complete structured draft validates but malformed/unsafe/incomplete output
       true,
       "claims and quotations must be inspectable drafts, never auto-published",
     );
+  }
+});
+
+test("generation constraints and validation agree at content boundaries in every language", () => {
+  const pattern = new RegExp(ARTICLE_CONTENT_SCHEMA.pattern, "u");
+  const text = (words: number) => `## Um\n## Dois\n## Três\n- ${Array(words - 7).fill("para").join(" ")}`;
+  for (const words of [599, 600, 1500, 1501]) {
+    const content = text(words);
+    const valid = words >= 600 && words <= 1500;
+    assert.equal(articleLength(content).words, words);
+    assert.equal(pattern.test(content), valid);
+    if (valid) assert.equal(validateArticle({ ...draft, content }, "pt").content, content);
+    else assert.throws(() => validateArticle({ ...draft, content }, "pt"), ArticleLengthError);
+  }
+  const atLimit = text(600) + "a".repeat(18000 - articleLength(text(600)).characters);
+  assert.equal(ARTICLE_CONTENT_SCHEMA.maxLength, 18000);
+  assert.equal(validateArticle({ ...draft, content: atLimit }, "pt").content, atLimit);
+  assert.throws(() => validateArticle({ ...draft, content: atLimit + "🌍" }, "pt"), /invalid_length_pt_600_18001/);
+  const spaced = ` \n${text(600).replace(/ /g, "\u00a0\t")}\r\n`;
+  assert.equal(pattern.test(spaced), true);
+  assert.equal(articleLength(spaced).words, 600);
+  for (const language of locales) {
+    const words = Array(599).fill("word").join(" ");
+    assert.throws(() => validateArticle({ ...draft, locale: language, content: words }, language), new RegExp(`invalid_length_${language}_599_2994$`));
+    for (const locale of locales) {
+      const message = academyRunMessage(locale, `invalid_length_${language}_599_2994`);
+      assert.ok(message.includes("599") && message.includes("2994") && message.includes("600") && message.includes("1500") && message.includes("18000"));
+      assert.ok(!message.includes("invalid_length") && !/[{}]/.test(message));
+    }
+    assert.notEqual(academyRunMessage(language, "invalid_length"), "invalid_length");
   }
 });
 test("sources restricted to exact approved HTTPS hosts and markup removed", () => {
