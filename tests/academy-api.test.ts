@@ -10,7 +10,7 @@ test("automation admin endpoints deny anonymous requests before any network call
   assert.equal(
     (
       await GET(
-        new NextRequest("https://test.invalid/api/admin/academy-automation"),
+        new NextRequest("https://test.invalid/api/admin/academy-automation?post_id=10000000-0000-0000-0000-000000000002"),
       )
     ).status,
     401,
@@ -53,7 +53,11 @@ test("candidate cannot claim admin privileges or start an AI generation", async 
     },
   );
   assert.equal((await POST(request)).status, 403);
-  assert.equal(calls.length, 2);
+  assert.equal((await GET(new NextRequest(
+    "https://test.invalid/api/admin/academy-automation?post_id=10000000-0000-0000-0000-000000000002",
+    { headers: { authorization: "Bearer test-token" } },
+  ))).status, 403);
+  assert.equal(calls.length, 4);
 });
 test("cron fails closed without secret and denies the wrong token without generation", async (context) => {
   context.mock.method(globalThis, "fetch", async () => {
@@ -99,4 +103,50 @@ test("administrator can pause the schedule through the supported quota operation
  saved=false;
  const automatic=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:true,monthly_request_limit:120})});
  assert.equal((await POST(automatic)).status,400);assert.equal(saved,false);
+});
+
+
+test("admin can read full draft versions by post ID without relying on the latest 30 runs", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const postId = "10000000-0000-0000-0000-000000000002";
+  const versions = ["pt", "en", "fr", "es", "de", "it"].map(locale => ({
+    locale, title: `Draft ${locale}`, content: `Private complete article ${locale}`,
+    excerpt: "Introduction", seo_title: "SEO title", seo_description: "SEO description",
+    quality_passed: true, review_required: true, reading_time: "5 min",
+  }));
+  let missing = false;
+  let databaseCalls = 0;
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/auth/v1/user") return Response.json({ id: postId, is_anonymous: false });
+    if (url.pathname === "/rest/v1/profiles") return Response.json({ role: "admin", locale: "pt" });
+    databaseCalls++;
+    assert.equal(url.searchParams.has("limit"), false);
+    if (url.pathname === "/rest/v1/academy_posts") {
+      assert.equal(url.searchParams.get("id"), `eq.${postId}`);
+      return Response.json(missing ? [] : [{ id: postId, title: "Draft", status: "draft" }]);
+    }
+    assert.equal(url.searchParams.get("post_id"), `eq.${postId}`);
+    if (url.pathname === "/rest/v1/academy_post_translations") return Response.json(versions);
+    if (url.pathname === "/rest/v1/academy_generation_runs") return Response.json([{ status: "review", sources: [{ url: "https://europass.europa.eu/en", checked_at: "2026-10-18" }] }]);
+    throw new Error("unexpected_generation_or_publication_call");
+  });
+  const request = (id: string) => new NextRequest(`https://test.invalid/api/admin/academy-automation?post_id=${id}`, {
+    headers: { authorization: "Bearer test-token" },
+  });
+  const response = await GET(request(postId));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+  const result = await response.json();
+  assert.equal(result.post.status, "draft");
+  assert.deepEqual(result.versions, versions);
+  assert.equal(result.sources.length, 1);
+  assert.equal(result.editing_locked, false);
+  assert.equal(databaseCalls, 3);
+  assert.equal((await GET(request("invalid"))).status, 400);
+  assert.equal(databaseCalls, 3);
+  missing = true;
+  assert.equal((await GET(request(postId))).status, 404);
 });

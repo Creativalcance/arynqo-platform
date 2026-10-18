@@ -31,7 +31,7 @@ No projeto Vercel da ARYNQO, verificar:
 No admin → Academy:
 
 1. Gerar seis rascunhos para validação e aguardar o email de revisão.
-2. Confirmar o conteúdo, fontes, idioma e metadados das seis versões.
+2. Abrir «Ler versão» no histórico, ou selecionar o artigo na lista e usar «Ler e rever versões». Confirmar o texto completo, fontes, idioma e metadados de cada versão. O link do email abre diretamente esta leitura para artigos multilingues.
 3. Publicar após revisão se forem adequadas.
 4. Ativar calendário; definir limite mensal. A publicação automática está bloqueada na base de dados. O valor inicial é 120 pedidos. Este limite é de pedidos, **não um orçamento em euros**. Os custos dependem dos tokens e preços do fornecedor. O editor antigo tem o seu limite de utilização separado.
 5. Confirmar uma execução efetiva do cron e as seis páginas públicas.
@@ -76,3 +76,9 @@ Novas falhas de extensão guardam o idioma e as contagens no código `invalid_le
 - Cada envio guarda o conteúdo e uma chave de idempotência estável. Leases impedem dois workers de processar a mesma linha. Erros transitórios repetem com espera crescente, até oito tentativas. Após 23 horas desde a primeira tentativa, um resultado ambíguo fica `uncertain`, sem novo envio automático fora da janela de deduplicação de 24 horas do fornecedor.
 - `sent` significa aceite pelo fornecedor, não prova de entrega na caixa de entrada. O admin mostra pendentes, aceites e casos que exigem atenção (`failed`/`uncertain`). Antes de qualquer intervenção nestes últimos, consultar o fornecedor pelo ID/chave de idempotência; não apagar o histórico nem gerar uma nova chave para repetir um resultado desconhecido.
 - Verificação adicional: `node --import tsx tests/academy-email.test.ts` e `node tests/academy-email-database.test.mjs`. Os testes isolam rede e base de dados; não enviam emails reais.
+
+## Revisão privada das versões
+
+Os artigos em revisão e as execuções falhadas aparecem expandidos no histórico. Cada idioma disponível tem um botão «Ler versão»; os idiomas em falta são identificados e não impedem a leitura dos textos já guardados. A janela permite alternar idiomas, ler o conteúdo com a mesma formatação da Academy e editar uma versão. Guardar uma edição não publica o artigo e limpa a confirmação de revisão no painel.
+
+A lista de artigos e os links `?post=<id>` dos emails abrem a mesma janela. A leitura usa `GET /api/admin/academy-automation?post_id=<id>`, com autorização de administrador verificada antes de consultar dados e `Cache-Control: private, no-store`. A consulta por ID permite ler também artigos fora das últimas 30 execuções. Os rascunhos continuam excluídos da API e das páginas públicas. A aprovação mantém a exigência de seis versões completas e da confirmação editorial.

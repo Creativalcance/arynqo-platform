@@ -1,12 +1,11 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
 import { academyCopy, academyRunMessage, type AcademyCopyKey } from "@/lib/academy/admin-copy";
-import { type ArticleDraft } from "@/lib/academy/quality";
 import TopicCalendar, { type CalendarTopic } from "./TopicCalendar";
-type Version = ArticleDraft & { quality_passed: boolean; updated_at: string };
+type Version = { locale: Locale; quality_passed: boolean };
 type Run = {
   id: string;
   post_id: string | null;
@@ -42,8 +41,12 @@ type Data = {
 };
 export default function AutomationPanel({
   onChanged,
+  onReview,
+  revision,
 }: {
   onChanged: () => Promise<void>;
+  onReview: (postId: string, language?: Locale) => void;
+  revision: number;
 }) {
   const { locale } = useI18n();
   const c = useCallback(
@@ -60,15 +63,7 @@ export default function AutomationPanel({
     [sources, setSources] = useState(
       "https://europass.europa.eu/en/create-europass-cv",
     );
-  const [reviewed, setReviewed] = useState<Record<string, boolean>>({}),
-    [edit, setEdit] = useState<{ post_id: string; article: Version } | null>(
-      null,
-    );
-  const dialog = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    if (edit && dialog.current && !dialog.current.open)
-      dialog.current.showModal();
-  }, [edit]);
+  const [reviewed, setReviewed] = useState<Record<string, boolean>>({});
   const load = useCallback(async () => {
     const response = await authenticatedFetch("/api/admin/academy-automation");
     const json = await response.json();
@@ -87,6 +82,7 @@ export default function AutomationPanel({
       .then((json) => {
         if (active) {
           setData(json);
+          setReviewed({});
           setEnabled(json.settings.enabled);
           setCap(json.settings.monthly_request_limit);
         }
@@ -97,7 +93,7 @@ export default function AutomationPanel({
     return () => {
       active = false;
     };
-  }, [c]);
+  }, [c, revision]);
   async function action(body: Record<string, unknown>) {
     setBusy(true);
     setMessage("");
@@ -122,7 +118,6 @@ export default function AutomationPanel({
             ? c("held")
             : c("done"),
       );
-      if (body.action === "translation") setEdit(null);
       await load();
       await onChanged();
     } catch (error) {
@@ -303,7 +298,7 @@ export default function AutomationPanel({
       {!data.runs.length && <p className="mt-3 text-sm">{c("empty")}</p>}
       <div className="mt-4 space-y-4">
         {data.runs.map((run) => (
-          <details key={run.id} className="min-w-0 rounded-2xl border p-4">
+          <details key={run.id} open={run.status === "review" || run.status === "failed"} className="min-w-0 rounded-2xl border p-4">
             <summary className="cursor-pointer break-words font-semibold">
               {run.academy_topics.title} ·{" "}
               {c(
@@ -321,6 +316,7 @@ export default function AutomationPanel({
                 {academyRunMessage(locale, run.error_code)}
               </p>
             )}
+            <p className="mt-3 text-sm text-slate-600">{c("reviewInstructions")}</p>
             <div className="my-3 flex flex-wrap gap-2">
               {locales.map((language) => {
                 const version =
@@ -331,14 +327,14 @@ export default function AutomationPanel({
                   <button
                     key={language}
                     className={button}
-                    disabled={!version || busy}
+                    disabled={!version || !run.post_id || busy}
                     onClick={() =>
                       version &&
                       run.post_id &&
-                      setEdit({ post_id: run.post_id, article: version })
+                      onReview(run.post_id, language)
                     }
                   >
-                    {localeNames[language]} {version ? "✓" : "…"}
+                    {version ? c("readVersion") : c("versionMissing")} · {localeNames[language]}
                   </button>
                 );
               })}
@@ -381,7 +377,7 @@ export default function AutomationPanel({
                   {c("review")}
                 </label>
                 <button
-                  disabled={busy || !reviewed[run.id]}
+                  disabled={busy || !reviewed[run.id] || !locales.every(language => run.academy_posts?.academy_post_translations.some(version => version.locale === language && version.quality_passed))}
                   className={button}
                   onClick={() =>
                     action({ action: "publish", post_id: run.post_id })
@@ -394,89 +390,6 @@ export default function AutomationPanel({
           </details>
         ))}
       </div>
-      {edit && (
-        <dialog
-          ref={dialog}
-          onCancel={(event) => {
-            if (busy) event.preventDefault();
-            else setEdit(null);
-          }}
-          aria-label={c("edit")}
-          className="fixed inset-0 z-50 mx-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-2xl p-0 backdrop:bg-slate-950/70"
-        >
-          <div className="mx-auto max-w-3xl rounded-2xl bg-white p-5">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">
-                {c("edit")} · {localeNames[edit.article.locale as Locale]}
-              </h3>
-              <button
-                className={button}
-                onClick={() => setEdit(null)}
-                disabled={busy}
-              >
-                {c("close")}
-              </button>
-            </div>
-            {(
-              [
-                "title",
-                "excerpt",
-                "seo_title",
-                "seo_description",
-                "content",
-              ] as const
-            ).map((field) => (
-              <label key={field} className="mt-4 block text-sm">
-                {c(field === "title" ? "titleField" : field)}
-                <textarea
-                  className={input}
-                  rows={field === "content" ? 16 : 2}
-                  value={edit.article[field]}
-                  onChange={(e) =>
-                    setEdit({
-                      ...edit,
-                      article: { ...edit.article, [field]: e.target.value },
-                    })
-                  }
-                />
-              </label>
-            ))}
-            <label className="my-4 flex gap-3 text-sm">
-              <input
-                type="checkbox"
-                checked={edit.article.review_required}
-                onChange={(e) =>
-                  setEdit({
-                    ...edit,
-                    article: {
-                      ...edit.article,
-                      review_required: e.target.checked,
-                    },
-                  })
-                }
-              />
-              {c("sensitive")}
-            </label>
-            <button
-              disabled={busy}
-              className={button}
-              onClick={() =>
-                action({
-                  action: "translation",
-                  post_id: edit.post_id,
-                  locale: edit.article.locale,
-                  article: edit.article,
-                })
-              }
-            >
-              {c("save")}
-            </button>
-            <p role="status" className="mt-3 text-sm">
-              {busy ? "…" : message}
-            </p>
-          </div>
-        </dialog>
-      )}
     </section>
   );
 }

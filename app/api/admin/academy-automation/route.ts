@@ -28,12 +28,32 @@ export async function GET(request: NextRequest) {
   try {
     await requireActor(request, ["admin"]);
     const db = academyAdminClient();
+    const postId = request.nextUrl.searchParams.get("post_id");
+    if (postId !== null) {
+      if (!uuid(postId)) throw new ApiError(400, "Artigo inválido.");
+      const [post, versions, run] = await Promise.all([
+        db.from("academy_posts").select("id,title,status").eq("id", postId).maybeSingle(),
+        db.from("academy_post_translations")
+          .select("locale,title,excerpt,content,seo_title,seo_description,reading_time,quality_passed,review_required,updated_at")
+          .eq("post_id", postId).order("locale"),
+        db.from("academy_generation_runs").select("status,sources").eq("post_id", postId).maybeSingle(),
+      ]);
+      const article = check(post);
+      if (!article) throw new ApiError(404, "Artigo não encontrado.");
+      const generation = check(run);
+      return NextResponse.json({
+        post: article,
+        versions: check(versions),
+        sources: generation?.sources ?? [],
+        editing_locked: generation?.status === "running",
+      }, { headers: { "Cache-Control": "private, no-store" } });
+    }
     const [settings, runs, topics, usage, emailPending, emailSent, emailAttention] = await Promise.all([
       db.from("academy_automation_settings").select("*").single(),
       db
         .from("academy_generation_runs")
         .select(
-          "*,academy_topics(title),academy_posts(title,slug,academy_post_translations(locale,title,excerpt,content,seo_title,seo_description,reading_time,quality_passed,review_required,updated_at))",
+          "*,academy_topics(title),academy_posts(title,slug,academy_post_translations(locale,quality_passed))",
         )
         .order("created_at", { ascending: false })
         .limit(30),
