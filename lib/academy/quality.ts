@@ -6,6 +6,32 @@ export const ARTICLE_METADATA_LIMITS = {
   seo_title: 100,
   seo_description: 200,
 } as const;
+export const ARTICLE_CONTENT_LIMITS = {
+  minWords: 600,
+  maxWords: 1500,
+  maxCharacters: 18000,
+} as const;
+// Use the same whitespace-delimited word rule in the provider schema and locally.
+export const ARTICLE_CONTENT_SCHEMA = {
+  type: "string",
+  pattern: String.raw`^\s*\S+(?:\s+\S+){${ARTICLE_CONTENT_LIMITS.minWords - 1},${ARTICLE_CONTENT_LIMITS.maxWords - 1}}\s*$`,
+  maxLength: ARTICLE_CONTENT_LIMITS.maxCharacters,
+  description: "Artigo completo com 800–1100 palavras, pelo menos cinco secções ## e uma lista. Não resumir.",
+} as const;
+export function articleLength(content: string) {
+  const text = content.trim();
+  return {
+    words: text ? text.split(/\s+/u).length : 0,
+    characters: Array.from(text).length,
+  };
+}
+export class ArticleLengthError extends Error {
+  constructor(locale: Locale, words: number, characters: number) {
+    // Persist diagnostic counts, never the rejected article or provider response.
+    super(`invalid_length_${locale}_${words}_${characters}`);
+    this.name = "ArticleLengthError";
+  }
+}
 export type ArticleDraft = {
   locale: Locale;
   title: string;
@@ -45,9 +71,13 @@ export function validateArticle(
     reading_time: String(v.reading_time).trim(),
     review_required: v.review_required !== false,
   };
-  const words = draft.content.split(/\s+/u).length;
-  if (words < 600 || words > 1500 || draft.content.length > 18000)
-    throw new Error("invalid_length");
+  const { words, characters } = articleLength(draft.content);
+  if (
+    words < ARTICLE_CONTENT_LIMITS.minWords ||
+    words > ARTICLE_CONTENT_LIMITS.maxWords ||
+    characters > ARTICLE_CONTENT_LIMITS.maxCharacters
+  )
+    throw new ArticleLengthError(expected, words, characters);
   for (const [field, limit] of Object.entries(ARTICLE_METADATA_LIMITS)) {
     if (Array.from(draft[field as keyof typeof ARTICLE_METADATA_LIMITS]).length > limit)
       throw new Error(`invalid_metadata_${field}`);

@@ -1,6 +1,22 @@
-import { type Locale, locales } from "../i18n/config";
-import { ARTICLE_METADATA_LIMITS } from "./quality";
+import { type Locale, locales, isLocale } from "../i18n/config";
+import { ARTICLE_CONTENT_LIMITS, ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  invalidLength: [
+    "Não consegui concluir uma das versões porque o texto não cumpriu os limites de extensão. Podes repetir as versões em falta; as versões concluídas ficam guardadas.",
+    "I could not complete one version because the text did not meet the length limits. You can retry missing versions; completed versions are saved.",
+    "Je n’ai pas pu terminer une version car le texte ne respecte pas les limites de longueur. Tu peux relancer les versions manquantes ; les versions terminées sont conservées.",
+    "No he podido completar una versión porque el texto no cumple los límites de extensión. Puedes reintentar las versiones pendientes; las completadas se conservan.",
+    "Ich konnte eine Version nicht abschließen, weil der Text die Längenvorgaben nicht erfüllt. Du kannst fehlende Versionen erneut erstellen; fertige Versionen bleiben gespeichert.",
+    "Non ho potuto completare una versione perché il testo non rispetta i limiti di lunghezza. Puoi riprovare le versioni mancanti; quelle completate restano salvate.",
+  ],
+  invalidLengthDetail: [
+    "Não consegui concluir a versão em {language}: recebi {words} palavras e {characters} caracteres. O texto deve ter entre {minWords} e {maxWords} palavras e, no máximo, {maxCharacters} caracteres. Podes repetir as versões em falta.",
+    "I could not complete the {language} version: I received {words} words and {characters} characters. The text must have between {minWords} and {maxWords} words and at most {maxCharacters} characters. You can retry missing versions.",
+    "Je n’ai pas pu terminer la version en {language} : j’ai reçu {words} mots et {characters} caractères. Le texte doit contenir entre {minWords} et {maxWords} mots et au maximum {maxCharacters} caractères. Tu peux relancer les versions manquantes.",
+    "No he podido completar la versión en {language}: he recibido {words} palabras y {characters} caracteres. El texto debe tener entre {minWords} y {maxWords} palabras y un máximo de {maxCharacters} caracteres. Puedes reintentar las versiones pendientes.",
+    "Ich konnte die Version in {language} nicht abschließen: Ich habe {words} Wörter und {characters} Zeichen erhalten. Der Text muss zwischen {minWords} und {maxWords} Wörter und höchstens {maxCharacters} Zeichen enthalten. Du kannst fehlende Versionen erneut erstellen.",
+    "Non ho potuto completare la versione in {language}: ho ricevuto {words} parole e {characters} caratteri. Il testo deve contenere tra {minWords} e {maxWords} parole e al massimo {maxCharacters} caratteri. Puoi riprovare le versioni mancanti.",
+  ],
   attempts: ["Tentativas", "Attempts", "Tentatives", "Intentos", "Versuche", "Tentativi"],
   metadataTooLong: [
     "Não consegui concluir esta versão porque o título, o resumo ou os textos SEO ultrapassaram o limite de caracteres. Podes repetir as versões em falta; as versões concluídas ficam guardadas.",
@@ -384,12 +400,25 @@ export function academyCopy(locale: Locale, key: AcademyCopyKey) {
 
 export function academyRunMessage(locale: Locale, code: string) {
   const messages: Record<string, AcademyCopyKey> = {
+    invalid_length: "invalidLength",
     invalid_metadata: "metadataTooLong",
     monthly_limit: "monthlyLimit",
     already_running: "alreadyRunning",
     not_retryable: "notRetryable",
   };
   if (messages[code]) return academyCopy(locale, messages[code]);
+  const length = /^invalid_length_([a-z]{2})_(\d+)_(\d+)$/.exec(code);
+  if (length && isLocale(length[1])) {
+    const values: Record<string, string> = {
+      language: new Intl.DisplayNames([locale], { type: "language" }).of(length[1]) || length[1],
+      words: length[2],
+      characters: length[3],
+      minWords: String(ARTICLE_CONTENT_LIMITS.minWords),
+      maxWords: String(ARTICLE_CONTENT_LIMITS.maxWords),
+      maxCharacters: String(ARTICLE_CONTENT_LIMITS.maxCharacters),
+    };
+    return academyCopy(locale, "invalidLengthDetail").replace(/\{(\w+)\}/g, (_, key: string) => values[key]);
+  }
   for (const [field, limit] of Object.entries(ARTICLE_METADATA_LIMITS)) {
     if (code === `invalid_metadata_${field}`) {
       const label = field === "title" ? "titleField" : field as AcademyCopyKey;
