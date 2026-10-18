@@ -69,18 +69,20 @@ async function fetchSource(url: string): Promise<Source> {
   if (text.length < 500) throw new Error("source_empty");
   return { url, text, checked_at: new Date().toISOString() };
 }
-export async function runAcademyAutomation(retryId?: string, preview = false) {
+export async function runAcademyAutomation(retryId?: string, preview = false, regeneration?: { sourceRunId: string; requestId: string }) {
   if (!process.env.OPENAI_API_KEY) throw new Error("academy_provider_missing");
   const deadline = AbortSignal.timeout(210000);
   const db = academyAdminClient(deadline);
   const claim = checked(
-    await db.rpc("academy_claim_run", {
-      retry_id: retryId || null,
-      manual: preview || Boolean(retryId),
-    }),
+    regeneration
+      ? await db.rpc("academy_claim_regeneration", { source_run: regeneration.sourceRunId, regeneration_id: regeneration.requestId })
+      : await db.rpc("academy_claim_run", {
+          retry_id: retryId || null,
+          manual: preview || Boolean(retryId),
+        }),
   );
   if (!claim?.id)
-    return { success: true, skipped: true, reason: claim?.reason || "not_due" };
+    return { success: true, skipped: true, reason: claim?.reason || "not_due", post_id: claim?.post_id, run_id: claim?.existing_run_id };
   const runId: string = claim.id,
     lease: string = claim.lease_token;
   const client = new OpenAI({

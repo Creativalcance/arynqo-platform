@@ -1,4 +1,5 @@
 "use client";
+import ArticleGenerationButton from "./ArticleGenerationButton";
 import { useEffect, useId, useRef, useState } from "react";
 import AcademyContent from "@/app/components/arynqo/AcademyContent";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
@@ -13,15 +14,17 @@ type ReviewData = {
   versions: Version[];
   sources: { url: string; checked_at: string }[];
   editing_locked: boolean;
+  run: { id: string; status: string } | null;
 };
 const button = "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-blue-600 disabled:opacity-50";
 const fields = ["title", "excerpt", "seo_title", "seo_description", "content"] as const;
 
-export default function ArticleReviewDialog({ postId, initialLanguage, onClose, onSaved }: {
+export default function ArticleReviewDialog({ postId, initialLanguage, onClose, onSaved, onGenerated }: {
   postId: string;
   initialLanguage?: Locale;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  onGenerated: (postId?: string) => Promise<void>;
 }) {
   const { locale } = useI18n();
   const c = (key: AcademyCopyKey) => academyCopy(locale, key);
@@ -100,6 +103,13 @@ export default function ArticleReviewDialog({ postId, initialLanguage, onClose, 
         ) : (
           <>
             <p className="text-sm text-slate-600">{c("reviewInstructions")}</p>
+            {data.run && ["failed", "review", "published"].includes(data.run.status) && !edit && (
+              <div className="flex flex-wrap gap-3 rounded-2xl bg-slate-50 p-4">
+                <p className="w-full text-sm text-slate-600">{c("regenerateHelp")}</p>
+                <ArticleGenerationButton runId={data.run.id} disabled={busy} onBusyChange={setBusy} onCompleted={onGenerated} />
+                {data.run.status === "failed" && <ArticleGenerationButton action="retry" runId={data.run.id} disabled={busy} onBusyChange={setBusy} onCompleted={onGenerated} />}
+              </div>
+            )}
             <div className="flex flex-wrap gap-2" role="group" aria-label={c("readVersions")}>
               {locales.map(code => {
                 const available = data.versions.some(item => item.locale === code);

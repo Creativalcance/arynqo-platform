@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         db.from("academy_post_translations")
           .select("locale,title,excerpt,content,seo_title,seo_description,reading_time,quality_passed,review_required,updated_at")
           .eq("post_id", postId).order("locale"),
-        db.from("academy_generation_runs").select("status,sources").eq("post_id", postId).maybeSingle(),
+        db.from("academy_generation_runs").select("id,status,sources").eq("post_id", postId).maybeSingle(),
       ]);
       const article = check(post);
       if (!article) throw new ApiError(404, "Artigo não encontrado.");
@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         post: article,
         versions: check(versions),
         sources: generation?.sources ?? [],
+        run: generation ? { id: generation.id, status: generation.status } : null,
         editing_locked: generation?.status === "running",
       }, { headers: { "Cache-Control": "private, no-store" } });
     }
@@ -130,13 +131,16 @@ export async function POST(request: NextRequest) {
           })
           .eq("id", true),
       );
-    } else if (body.action === "preview" || body.action === "retry") {
-      if (body.action === "retry" && !uuid(body.run_id))
+    } else if (body.action === "preview" || body.action === "retry" || body.action === "regenerate") {
+      if (body.action !== "preview" && !uuid(body.run_id))
         throw new ApiError(400, "Execução inválida.");
+      if (body.action === "regenerate" && !uuid(body.request_id))
+        throw new ApiError(400, "Pedido de geração inválido.");
       await enforceApiLimit(actor, "ai", 10);
       const result = await runAcademyAutomation(
         body.action === "retry" ? body.run_id : undefined,
         body.action === "preview",
+        body.action === "regenerate" ? { sourceRunId: body.run_id, requestId: body.request_id } : undefined,
       );
       scheduleAcademyEmails();
       return NextResponse.json(result, { status: result.success ? 200 : 502 });

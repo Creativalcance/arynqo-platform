@@ -82,3 +82,9 @@ Novas falhas de extensão guardam o idioma e as contagens no código `invalid_le
 Os artigos em revisão e as execuções falhadas aparecem expandidos no histórico. Cada idioma disponível tem um botão «Ler versão»; os idiomas em falta são identificados e não impedem a leitura dos textos já guardados. A janela permite alternar idiomas, ler o conteúdo com a mesma formatação da Academy e editar uma versão. Guardar uma edição não publica o artigo e limpa a confirmação de revisão no painel.
 
 A lista de artigos e os links `?post=<id>` dos emails abrem a mesma janela. A leitura usa `GET /api/admin/academy-automation?post_id=<id>`, com autorização de administrador verificada antes de consultar dados e `Cache-Control: private, no-store`. A consulta por ID permite ler também artigos fora das últimas 30 execuções. Os rascunhos continuam excluídos da API e das páginas públicas. A aprovação mantém a exigência de seis versões completas e da confirmação editorial.
+
+## Gerar novamente um artigo
+
+«Gerar novamente» está disponível no histórico e na janela de revisão para execuções falhadas, em revisão ou publicadas. Depois da confirmação, cria um novo rascunho do mesmo tema nos seis idiomas. A geração original, os textos e o estado de publicação são preservados. «Repetir versões em falta» continua disponível para completar uma execução falhada sem refazer as traduções válidas.
+
+A migração `academy_regenerate_draft` permite várias execuções por tema e regista `regenerated_from`. A RPC `academy_claim_regeneration` é exclusiva do servidor, usa o bloqueio e a reserva de pedidos de `academy_claim_run` e não altera a próxima data do calendário. Um identificador por pedido impede uma segunda geração após uma resposta de rede perdida. O artigo novo segue o fluxo habitual: revisão humana obrigatória e notificação de revisão apenas quando as seis versões estão completas. A geração não publica nem envia uma campanha aos utilizadores.

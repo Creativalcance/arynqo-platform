@@ -54,7 +54,7 @@ const audiences: Array<"Candidatos" | "Empresas" | "Todos"> = [
 
 export default function AdminAcademiaPage() {
   const {locale}=useI18n();
-  const [reviewTarget, setReviewTarget] = useState<{ postId: string; language?: Locale } | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<{ postId: string; language?: Locale; refresh?: number } | null>(null);
   const [reviewRevision, setReviewRevision] = useState(0);
   const [posts, setPosts] = useState<AcademyPost[]>([]);
   const [selectedPostId, setSelectedPostId] = useState("");
@@ -180,6 +180,12 @@ const { data: sessionData } = await supabase.auth.getSession();
     return () => { active = false; };
   }, [loadPosts]);
 
+
+  async function generationCompleted(postId?: string) {
+    setReviewRevision(value => value + 1);
+    await loadPosts();
+    if (postId) setReviewTarget(current => ({ postId, refresh: (current?.refresh ?? 0) + 1 }));
+  }
 
   async function generatePost(generateFromTrend: boolean) {
     setIsGenerating(true);
@@ -381,15 +387,17 @@ const { data: sessionData } = await supabase.auth.getSession();
       <div className="mx-auto max-w-7xl">
         <AutomationPanel
           onChanged={loadPosts}
+          onGenerated={generationCompleted}
           revision={reviewRevision}
           onReview={(postId, language) => setReviewTarget({ postId, language })}
         />
         {reviewTarget && (
           <ArticleReviewDialog
-            key={reviewTarget.postId}
+            key={`${reviewTarget.postId}:${reviewTarget.refresh ?? 0}`}
             postId={reviewTarget.postId}
             initialLanguage={reviewTarget.language}
             onClose={() => setReviewTarget(null)}
+            onGenerated={generationCompleted}
             onSaved={async () => {
               setReviewRevision(value => value + 1);
               await loadPosts();

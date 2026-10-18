@@ -112,3 +112,56 @@ test('multilingual generation waits for six versions and always requests human a
     assert.equal((await db.query("select content_locale from academy_email_deliveries where kind='published' and user_id=$1",[id(3)])).rows[0].content_locale,'en');
   } finally { await db.close(); }
 });
+
+test('regeneration keeps the original, reserves once, resumes partial drafts and always waits for approval', async () => {
+  const db=await fixture();
+  try {
+    await db.exec('reset role');
+    for (const migration of ['20261011224500_academy_manual_retry.sql','20261018215739_academy_regenerate_draft.sql']) {
+      await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`,import.meta.url),'utf8'));
+    }
+    await db.exec('set role service_role; update academy_automation_settings set monthly_request_limit=12');
+    const original=(await db.query('select academy_claim_run(null,true) as run')).rows[0].run;
+    const draft={title:'Original article',slug:'original-regeneration-test',excerpt:'Excerpt',content:'Original content '.repeat(650),category:'Carreira',audience:'Todos',reading_time:'5 min',seo_title:'Title',seo_description:'Description',review_required:false};
+    const languages=['pt','en','fr','es','de','it'];
+    for (const locale of languages) await db.query('select academy_stage_translation($1,$2,$3,$4)',[original.id,original.lease_token,locale,JSON.stringify({...draft,locale})]);
+    const first=(await db.query('select academy_finish_run($1,$2) as result',[original.id,original.lease_token])).rows[0].result;
+    await db.query('select academy_publish_reviewed($1,$2)',[first.post_id,id(1)]);
+    const oldPost=(await db.query('select * from academy_posts where id=$1',[first.post_id])).rows[0];
+    const oldVersions=(await db.query('select * from academy_post_translations where post_id=$1 order by locale',[first.post_id])).rows;
+    const nextDue=(await db.query('select next_due_at from academy_automation_settings')).rows[0].next_due_at;
+    const regenerate = async request => (await db.query('select academy_claim_regeneration($1,$2) as run',[original.id,request])).rows[0].run;
+    const run=await regenerate(id(201));
+    assert.equal(run.id,id(201)); assert.equal(run.topic_id,original.topic_id); assert.equal(run.post_id,null);
+    assert.equal(run.regenerated_from,original.id); assert.equal(run.preview_only,true); assert.equal(run.status,'running');
+    assert.equal((await regenerate(id(201))).reason,'already_running');
+    assert.equal((await regenerate(id(202))).reason,'already_running');
+    assert.equal((await db.query('select count(*)::int as n from academy_generation_runs')).rows[0].n,2);
+    assert.equal((await db.query('select reserved_requests from academy_monthly_usage')).rows[0].reserved_requests,12);
+    const replacement={...draft,title:'New draft',slug:'replacement-regeneration-test',content:'New draft content '.repeat(650)};
+    await db.query("select academy_stage_translation($1,$2,'pt',$3)",[run.id,run.lease_token,JSON.stringify({...replacement,locale:'pt'})]);
+    await db.query("select academy_fail_run($1,$2,'provider_or_generation_failed')",[run.id,run.lease_token]);
+    assert.equal((await regenerate(id(201))).reason,'regeneration_exists');
+    assert.equal((await regenerate(id(202))).reason,'monthly_limit');
+    assert.equal((await db.query('select count(*)::int as n from academy_generation_runs')).rows[0].n,2);
+    assert.deepEqual((await db.query('select next_due_at from academy_automation_settings')).rows[0].next_due_at,nextDue);
+    assert.deepEqual((await db.query('select * from academy_posts where id=$1',[first.post_id])).rows[0],oldPost);
+    assert.deepEqual((await db.query('select * from academy_post_translations where post_id=$1 order by locale',[first.post_id])).rows,oldVersions);
+    await db.exec('update academy_automation_settings set monthly_request_limit=24');
+    const retry=(await db.query('select academy_claim_run($1,true) as run',[run.id])).rows[0].run;
+    assert.equal(retry.attempts,2); assert.notEqual(retry.post_id,first.post_id);
+    for (const locale of languages.slice(1)) await db.query('select academy_stage_translation($1,$2,$3,$4)',[retry.id,retry.lease_token,locale,JSON.stringify({...replacement,locale})]);
+    const completed=(await db.query('select academy_finish_run($1,$2) as result',[retry.id,retry.lease_token])).rows[0].result;
+    assert.equal(completed.status,'review');
+    assert.equal((await db.query('select status from academy_posts where id=$1',[completed.post_id])).rows[0].status,'draft');
+    assert.equal((await db.query("select count(*)::int as n from academy_email_deliveries where kind='published'")).rows[0].n,3);
+    assert.equal((await db.query("select count(*)::int as n from academy_email_deliveries where kind='review'")).rows[0].n,2);
+    assert.equal((await regenerate(id(201))).post_id,completed.post_id);
+    assert.equal((await db.query('select reserved_requests from academy_monthly_usage')).rows[0].reserved_requests,18);
+    await db.exec('reset role;set role anon');
+    await assert.rejects(regenerate(id(203)),/permission denied/);
+    assert.equal((await db.query('select * from academy_post_translations where post_id=$1',[completed.post_id])).rows.length,0);
+    await db.exec('reset role;set role authenticated');
+    await assert.rejects(regenerate(id(203)),/permission denied/);
+  } finally { await db.close(); }
+});

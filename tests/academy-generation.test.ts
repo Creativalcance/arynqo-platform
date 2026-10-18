@@ -12,7 +12,7 @@ const sentences: Record<Locale, string> = {
   it: "Descrivi le tue competenze per il lavoro e gli esempi della tua esperienza.",
 };
 
-for (const scenario of ["complete", "invalid_length", "invalid_metadata_seo_description", "resume", "resume_fr", "short_english", "incomplete_translation"] as const) {
+for (const scenario of ["complete", "regenerate", "invalid_length", "invalid_metadata_seo_description", "resume", "resume_fr", "short_english", "incomplete_translation"] as const) {
   test(`Academy generation: ${scenario}`, async (context) => {
     const resuming = ["resume", "resume_fr", "short_english", "incomplete_translation"].includes(scenario);
     const savedLocales: Locale[] = resuming ? (scenario === "resume" ? ["pt", "en"] : ["pt", "fr"]) : [];
@@ -24,7 +24,14 @@ for (const scenario of ["complete", "invalid_length", "invalid_metadata_seo_desc
     context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(input instanceof Request ? input.url : String(input));
       const body = init?.body ? JSON.parse(String(init.body)) : {};
+      if (url.pathname.endsWith("/academy_claim_regeneration")) {
+        assert.equal(scenario, "regenerate");
+        assert.equal(body.source_run, "original-run");
+        assert.equal(body.regeneration_id, "run-test");
+        return Response.json({ id: "run-test", lease_token: "lease-test", topic_id: "topic-test", post_id: null });
+      }
       if (url.pathname.endsWith("/academy_claim_run")) {
+        assert.notEqual(scenario, "regenerate");
         assert.equal(body.manual, true);
         assert.equal(body.retry_id, resuming ? "run-test" : null);
         return Response.json({ id: "run-test", lease_token: "lease-test", topic_id: "topic-test", post_id: resuming ? "post-test" : null });
@@ -67,7 +74,7 @@ for (const scenario of ["complete", "invalid_length", "invalid_metadata_seo_desc
       if (url.pathname.endsWith("/academy_fail_run")) { failure = body.error_code; return new Response(null, { status: 204 }); }
       throw new Error(`Unexpected fixture request: ${url.pathname}`);
     });
-    const result = await runAcademyAutomation(resuming ? "run-test" : undefined, !resuming);
+    const result = await runAcademyAutomation(resuming ? "run-test" : undefined, !resuming, scenario === "regenerate" ? { sourceRunId: "original-run", requestId: "run-test" } : undefined);
     if (scenario.startsWith("invalid_")) {
       assert.equal(result.success, false);
       assert.equal(failure, scenario === "invalid_length" ? "invalid_length_pt_2_9" : scenario);
