@@ -1,6 +1,22 @@
 import { type Locale, locales, isLocale } from "../i18n/config";
 import { ARTICLE_CONTENT_LIMITS, ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  translationLength: [
+    "Não consegui validar a extensão da versão em {language}. Recebi {words} palavras e {characters} caracteres. Confere o texto com o original ou repete a versão em falta.",
+    "I could not validate the length of the {language} version. I received {words} words and {characters} characters. Check the text against the original or retry the missing version.",
+    "Je n’ai pas pu valider la longueur de la version en {language}. J’ai reçu {words} mots et {characters} caractères. Compare le texte à l’original ou relance la version manquante.",
+    "No he podido validar la extensión de la versión en {language}. He recibido {words} palabras y {characters} caracteres. Compara el texto con el original o reintenta la versión pendiente.",
+    "Ich konnte die Länge der Version auf {language} nicht bestätigen. Ich habe {words} Wörter und {characters} Zeichen erhalten. Vergleiche den Text mit dem Original oder erstelle die fehlende Version erneut.",
+    "Non ho potuto convalidare la lunghezza della versione in {language}. Ho ricevuto {words} parole e {characters} caratteri. Confronta il testo con l’originale o riprova la versione mancante.",
+  ],
+  translationStructure: [
+    "Não consegui validar todas as secções, listas e exemplos da tradução. Podes repetir a versão em falta; as restantes ficam guardadas.",
+    "I could not validate all sections, lists and examples in the translation. You can retry the missing version; the others are saved.",
+    "Je n’ai pas pu valider toutes les sections, listes et exemples de la traduction. Tu peux relancer la version manquante ; les autres sont conservées.",
+    "No he podido validar todas las secciones, listas y ejemplos de la traducción. Puedes reintentar la versión pendiente; las demás se conservan.",
+    "Ich konnte nicht alle Abschnitte, Listen und Beispiele der Übersetzung bestätigen. Du kannst die fehlende Version erneut erstellen; die anderen bleiben gespeichert.",
+    "Non ho potuto convalidare tutte le sezioni, gli elenchi e gli esempi della traduzione. Puoi riprovare la versione mancante; le altre restano salvate.",
+  ],
   providerIncomplete: [
     "Não recebi uma resposta completa para esta versão. Guardei as versões concluídas; podes repetir apenas as que faltam.",
     "I did not receive a complete response for this version. I saved completed versions; you can retry only the missing ones.",
@@ -453,6 +469,11 @@ export function academyRunMessage(locale: Locale, code: string) {
     worker_timeout: "generationConnectionError",
   };
   if (messages[code]) return academyCopy(locale, messages[code]);
+  const translationLength = /^invalid_translation_length_([a-z]{2})_(\d+)_(\d+)_\d+_\d+$/.exec(code);
+  if (translationLength && isLocale(translationLength[1])) return academyCopy(locale, "translationLength")
+    .replace("{language}", new Intl.DisplayNames([locale], { type: "language" }).of(translationLength[1]) || translationLength[1])
+    .replace("{words}", translationLength[2]).replace("{characters}", translationLength[3]);
+  if (/^missing_translation_structure_[a-z]{2}$/.test(code)) return academyCopy(locale, "translationStructure");
   const provider = /^provider_output_(incomplete|length|empty|invalid_json|refused|filtered)(?:_([a-z]{2}))?$/.exec(code);
   if (provider) {
     const message = academyCopy(locale, provider[1] === "empty" ? "providerEmpty"

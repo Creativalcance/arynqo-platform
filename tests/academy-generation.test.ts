@@ -14,7 +14,7 @@ const sentences: Record<Locale, string> = {
 type Failure = "length" | "empty" | "no_choices" | "invalid_json" | "short" | "metadata" | "refused" | "filtered" | "database";
 type Scenario = {
   name: string; saved?: Locale[]; regenerate?: boolean;
-  failures?: Partial<Record<Locale, Failure>>; transient?: boolean; nearDeadline?: boolean;
+  failures?: Partial<Record<Locale, Failure>>; transient?: boolean; nearDeadline?: boolean; compactGerman?: boolean;
   expectedError?: string; expectedRequests: number; expectedStaged: Locale[];
 };
 const remaining: Locale[] = ["es", "de", "it"];
@@ -30,9 +30,10 @@ const scenarios: Scenario[] = [
   { name: "two repairs stay within six reservations", saved: resumed, failures: { en: "empty", es: "length" }, transient: true, expectedRequests: 6, expectedStaged: ["en", ...remaining] },
   { name: "database failure stops before spending on later languages", saved: resumed, failures: { en: "database" }, expectedError: "academy_database_error", expectedRequests: 1, expectedStaged: [] },
   { name: "no repair starts near the worker deadline", saved: resumed, failures: { en: "length" }, nearDeadline: true, expectedError: "provider_output_length_en", expectedRequests: 4, expectedStaged: remaining },
+  { name: "compact German completes the existing five-language draft", saved: ["pt", "en", "fr", "es", "it"], compactGerman: true, expectedRequests: 1, expectedStaged: ["de"] },
 ];
 for (const failure of ["length", "empty", "no_choices", "invalid_json", "short", "metadata", "refused", "filtered"] as const) {
-  const error = failure === "short" ? "invalid_length_en_2_9" : failure === "metadata" ? "invalid_metadata_seo_description" : `provider_output_${failure === "no_choices" ? "empty" : failure}_en`;
+  const error = failure === "short" ? "invalid_translation_length_en_2_9_350_2000" : failure === "metadata" ? "invalid_metadata_seo_description" : `provider_output_${failure === "no_choices" ? "empty" : failure}_en`;
   const repairable = failure !== "refused" && failure !== "filtered";
   scenarios.push({ name: `persistent ${failure}`, saved: resumed, failures: { en: failure }, expectedError: error, expectedRequests: repairable ? 5 : 4, expectedStaged: remaining });
   if (repairable) scenarios.push({ name: `recover ${failure}`, saved: resumed, failures: { en: failure }, transient: true, expectedRequests: 5, expectedStaged: ["en", ...remaining] });
@@ -44,7 +45,7 @@ for (const scenario of scenarios) {
     process.env.SUPABASE_SERVICE_ROLE_KEY = "fixture-service-key";
     process.env.OPENAI_API_KEY = "fixture-provider-key";
     const saved = scenario.saved ?? [];
-    const staged: { language: Locale; payload: { content: string; reading_time: string } }[] = [];
+    const staged: { language: Locale; payload: { content: string; reading_time: string; review_required: boolean } }[] = [];
     const calls = new Map<Locale, number>();
     let usage = 0, finished = 0, failure: string | undefined;
     let clock = Date.now();
@@ -68,7 +69,7 @@ for (const scenario of scenarios) {
         return Response.json({ id: "run-test", lease_token: "lease-test", topic_id: "topic-test", post_id: saved.length ? "post-test" : null });
       }
       if (url.pathname.endsWith("/academy_post_translations"))
-        return Response.json(saved.map(locale => ({ locale, quality_passed: true, title: "Saved original", content: "Saved complete article", id: "private-row-id" })));
+        return Response.json(saved.map(locale => ({ locale, quality_passed: true, title: "Saved original", content: scenario.compactGerman ? `## One\n${sentences.pt.repeat(57)}\n## Two\n- Checklist\n## Three\nExamples.` : "Saved complete article", id: "private-row-id" })));
       if (url.pathname.endsWith("/academy_topics"))
         return Response.json({ title: "Experience", category: "Skills", audience: "Todos", source_urls: ["https://europass.europa.eu/en/create-europass-cv"] });
       if (url.pathname.endsWith("/academy_posts")) return Response.json([]);
@@ -104,7 +105,7 @@ for (const scenario of scenarios) {
           assert.ok(remaining.every(language => calls.has(language)), "give every missing language a first attempt before repairs");
         }
         const issue = count > 1 && scenario.transient ? undefined : scenario.failures?.[locale];
-        const content = issue === "short" ? "Too short" : `## One\n${sentences[locale].repeat(65)}\n## Two\n- Checklist\n## Three\nExamples.`;
+        const content = issue === "short" ? "Too short" : `## One\n${sentences[locale].repeat(scenario.compactGerman ? 46 : 65)}\n## Two\n- Checklist\n## Three\nExamples.`;
         const message = {
           refusal: issue === "refused" ? "Provider refusal" : null,
           content: issue === "empty" ? "" : issue === "invalid_json" ? '{"content":' : JSON.stringify({ locale, title: "Experience", excerpt: "Practical examples", content, seo_title: "Experience", seo_description: issue === "metadata" ? "a".repeat(201) : "Practical examples", review_required: false }),
@@ -129,5 +130,6 @@ for (const scenario of scenarios) {
     assert.deepEqual(staged.map(row => row.language).sort(), [...scenario.expectedStaged].sort());
     assert.equal(result.post_id, saved.length || staged.length ? "post-test" : undefined, "partial draft remains accessible after failure");
     for (const row of staged) assert.equal(row.payload.reading_time, `${Math.ceil(row.payload.content.split(/\s+/u).length / 200)} min`);
+    if (scenario.compactGerman) assert.equal(staged[0].payload.review_required, true);
   });
 }

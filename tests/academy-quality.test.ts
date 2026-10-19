@@ -7,6 +7,7 @@ import {
   ArticleLengthError,
   articleLength,
   validateArticle,
+  translationLengthLimits,
   safeSourceURL,
   plainSource,
   duplicateArticle,
@@ -49,6 +50,28 @@ test("complete structured draft validates but malformed/unsafe/incomplete output
       true,
       "claims and quotations must be inspectable drafts, never auto-published",
     );
+  }
+});
+
+test("compact translations remain reviewable while missing sections and severe shortening are rejected", () => {
+  const makeContent = (words: number, vocabulary: string[]) => `## One\n## Two\n## Three\n- ${Array.from({ length: words - 7 }, (_, index) => vocabulary[index % vocabulary.length]).join(" ")}`;
+  const original = makeContent(635, ["Para", "o", "teu", "trabalho", "e", "competências", "relevantes"]);
+  const content = makeContent(526, ["Die", "beruflichen", "Erfahrungen", "und", "Ihre", "Fähigkeiten", "helfen", "mit", "Beispielen"]);
+  const german = { ...draft, locale: "de", content };
+  assert.equal(articleLength(content).words, 526);
+  assert.equal(validateArticle(german, "de", original).review_required, true);
+  assert.throws(() => validateArticle(german, "de"), ArticleLengthError, "without a reference, retain the original editorial minimum");
+  assert.throws(() => validateArticle({ ...german, content: content.replace("## Three", "Three") }, "de", original), /missing_translation_structure_de/);
+  assert.throws(() => validateArticle({ ...german, content: makeContent(350, ["die"]) }, "de", original), /invalid_translation_length_de/);
+  const longerOriginal = makeContent(1400, ["para", "o", "teu", "trabalho"]);
+  assert.throws(() => validateArticle(german, "de", longerOriginal), /invalid_translation_length_de/);
+  const limits = translationLengthLimits(original);
+  assert.equal(limits.minWords, 381);
+  assert.ok(limits.minCharacters >= 2000);
+  for (const locale of locales) {
+    const message = academyRunMessage(locale, `invalid_translation_length_de_350_1400_${limits.minWords}_${limits.minCharacters}`);
+    assert.ok(message.includes("350") && message.includes("1400") && !message.includes("invalid_translation"));
+    assert.notEqual(academyRunMessage(locale, "missing_translation_structure_de"), "missing_translation_structure_de");
   }
 });
 

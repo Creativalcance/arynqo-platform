@@ -33,6 +33,19 @@ export class ArticleLengthError extends Error {
     this.name = "ArticleLengthError";
   }
 }
+export function translationLengthLimits(originalContent: string) {
+  const original = articleLength(originalContent);
+  // Editorial screening, not proof of semantic fidelity: translations may use
+  // fewer words than Portuguese. Reject drastic shortening and retain human review.
+  return {
+    minWords: Math.max(350, Math.ceil(original.words * 0.6)),
+    minCharacters: Math.max(2000, Math.ceil(original.characters * 0.65)),
+  };
+}
+function structureCounts(content: string) {
+  return [/^## /gm, /^### /gm, /^[-*+] /gm, /^\d+[.)] /gm, /^> /gm]
+    .map(pattern => (content.match(pattern) || []).length);
+}
 export type ArticleDraft = {
   locale: Locale;
   title: string;
@@ -46,6 +59,7 @@ export type ArticleDraft = {
 export function validateArticle(
   value: unknown,
   expected: Locale,
+  originalContent?: string,
 ): ArticleDraft {
   if (!value || typeof value !== "object") throw new Error("invalid_json");
   const v = value as Record<string, unknown>;
@@ -73,12 +87,22 @@ export function validateArticle(
     review_required: v.review_required !== false,
   };
   const { words, characters } = articleLength(draft.content);
+  const translation = expected !== "pt" && originalContent
+    ? translationLengthLimits(originalContent) : null;
   if (
-    words < ARTICLE_CONTENT_LIMITS.minWords ||
+    words < (translation?.minWords ?? ARTICLE_CONTENT_LIMITS.minWords) ||
+    (translation && characters < translation.minCharacters) ||
     words > ARTICLE_CONTENT_LIMITS.maxWords ||
     characters > ARTICLE_CONTENT_LIMITS.maxCharacters
-  )
+  ) {
+    if (translation) throw new Error(`invalid_translation_length_${expected}_${words}_${characters}_${translation.minWords}_${translation.minCharacters}`);
     throw new ArticleLengthError(expected, words, characters);
+  }
+  if (translation && originalContent) {
+    const actual = structureCounts(draft.content);
+    if (structureCounts(originalContent).some((count, index) => actual[index] < count))
+      throw new Error(`missing_translation_structure_${expected}`);
+  }
   for (const [field, limit] of Object.entries(ARTICLE_METADATA_LIMITS)) {
     if (Array.from(draft[field as keyof typeof ARTICLE_METADATA_LIMITS]).length > limit)
       throw new Error(`invalid_metadata_${field}`);
@@ -120,7 +144,8 @@ export function validateArticle(
     /\b(legisla[çc]|lei laboral|direito laboral|legal advice|employment law|labour law|labor law|droit du travail|arbeitsrecht|derecho laboral|diritto del lavoro|discrimina|medical|médic|medicin|garanti|guarantee|garantiz)/iu.test(
       draft.title + " " + draft.content,
     );
-  draft.review_required = v.review_required !== false || risky || claimsNeedReview;
+  draft.review_required = v.review_required !== false || risky || claimsNeedReview ||
+    Boolean(translation && words < ARTICLE_CONTENT_LIMITS.minWords);
   return draft;
 }
 export function articleSlug(title: string) {
