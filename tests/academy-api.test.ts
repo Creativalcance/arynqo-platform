@@ -130,7 +130,7 @@ test("admin can read full draft versions by post ID without relying on the lates
     }
     assert.equal(url.searchParams.get("post_id"), `eq.${postId}`);
     if (url.pathname === "/rest/v1/academy_post_translations") return Response.json(versions);
-    if (url.pathname === "/rest/v1/academy_generation_runs") return Response.json([{ id: postId, status: "review", sources: [{ url: "https://europass.europa.eu/en", checked_at: "2026-10-18" }] }]);
+    if (url.pathname === "/rest/v1/academy_generation_runs") return Response.json([{ id: postId, status: "failed", error_code: "provider_output_empty_en", sources: [{ url: "https://europass.europa.eu/en", checked_at: "2026-10-18" }] }]);
     throw new Error("unexpected_generation_or_publication_call");
   });
   const request = (id: string) => new NextRequest(`https://test.invalid/api/admin/academy-automation?post_id=${id}`, {
@@ -144,7 +144,7 @@ test("admin can read full draft versions by post ID without relying on the lates
   assert.deepEqual(result.versions, versions);
   assert.equal(result.sources.length, 1);
   assert.equal(result.editing_locked, false);
-  assert.deepEqual(result.run, { id: postId, status: "review" });
+  assert.deepEqual(result.run, { id: postId, status: "failed", error_code: "provider_output_empty_en" });
   assert.equal(databaseCalls, 3);
   assert.equal((await GET(request("invalid"))).status, 400);
   assert.equal(databaseCalls, 3);

@@ -52,14 +52,13 @@ test("complete structured draft validates but malformed/unsafe/incomplete output
   }
 });
 
-test("generation constraints and validation agree at content boundaries in every language", () => {
-  const pattern = new RegExp(ARTICLE_CONTENT_SCHEMA.pattern, "u");
+test("server validates prose word counts without constraining decoding with a large regex", () => {
+  assert.equal("pattern" in ARTICLE_CONTENT_SCHEMA, false);
   const text = (words: number) => `## Um\n## Dois\n## Três\n- ${Array(words - 7).fill("para").join(" ")}`;
   for (const words of [599, 600, 1500, 1501]) {
     const content = text(words);
     const valid = words >= 600 && words <= 1500;
     assert.equal(articleLength(content).words, words);
-    assert.equal(pattern.test(content), valid);
     if (valid) assert.equal(validateArticle({ ...draft, content }, "pt").content, content);
     else assert.throws(() => validateArticle({ ...draft, content }, "pt"), ArticleLengthError);
   }
@@ -68,7 +67,6 @@ test("generation constraints and validation agree at content boundaries in every
   assert.equal(validateArticle({ ...draft, content: atLimit }, "pt").content, atLimit);
   assert.throws(() => validateArticle({ ...draft, content: atLimit + "🌍" }, "pt"), /invalid_length_pt_600_18001/);
   const spaced = ` \n${text(600).replace(/ /g, "\u00a0\t")}\r\n`;
-  assert.equal(pattern.test(spaced), true);
   assert.equal(articleLength(spaced).words, 600);
   for (const language of locales) {
     const words = Array(599).fill("word").join(" ");
@@ -132,5 +130,21 @@ test("metadata boundaries match the schema and identify the rejected field witho
   for (const locale of locales) {
     for (const code of ["invalid_metadata", "monthly_limit", "already_running", "not_retryable"])
       assert.notEqual(academyRunMessage(locale, code), code);
+  }
+});
+
+
+test("provider failures explain the affected language without exposing raw codes", () => {
+  for (const locale of locales) {
+    for (const reason of ["incomplete", "length", "empty", "invalid_json", "refused", "filtered"]) {
+      for (const language of locales) {
+        const code = `provider_output_${reason}_${language}`;
+        const message = academyRunMessage(locale, code);
+        assert.ok(!message.includes("provider_output") && !/[{}]/.test(message));
+        assert.ok(message.includes(new Intl.DisplayNames([locale], { type: "language" }).of(language)!));
+      }
+      const legacy = `provider_output_${reason}`;
+      assert.notEqual(academyRunMessage(locale, legacy), legacy);
+    }
   }
 });
