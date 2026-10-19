@@ -11,10 +11,11 @@ export const ARTICLE_CONTENT_LIMITS = {
   maxWords: 1500,
   maxCharacters: 18000,
 } as const;
-// Use the same whitespace-delimited word rule in the provider schema and locally.
+// Keep prose out of a large word-count regex in constrained decoding. Enforce
+// word counts after generation; the schema only bounds the size of the string.
 export const ARTICLE_CONTENT_SCHEMA = {
   type: "string",
-  pattern: String.raw`^\s*\S+(?:\s+\S+){${ARTICLE_CONTENT_LIMITS.minWords - 1},${ARTICLE_CONTENT_LIMITS.maxWords - 1}}\s*$`,
+  minLength: 1,
   maxLength: ARTICLE_CONTENT_LIMITS.maxCharacters,
   description: "Artigo completo com 800–1100 palavras, pelo menos cinco secções ## e uma lista. Não resumir.",
 } as const;

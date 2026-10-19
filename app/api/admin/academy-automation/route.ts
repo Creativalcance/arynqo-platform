@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         db.from("academy_post_translations")
           .select("locale,title,excerpt,content,seo_title,seo_description,reading_time,quality_passed,review_required,updated_at")
           .eq("post_id", postId).order("locale"),
-        db.from("academy_generation_runs").select("id,status,sources").eq("post_id", postId).maybeSingle(),
+        db.from("academy_generation_runs").select("id,status,sources,error_code").eq("post_id", postId).maybeSingle(),
       ]);
       const article = check(post);
       if (!article) throw new ApiError(404, "Artigo não encontrado.");
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         post: article,
         versions: check(versions),
         sources: generation?.sources ?? [],
-        run: generation ? { id: generation.id, status: generation.status } : null,
+        run: generation ? { id: generation.id, status: generation.status, error_code: generation.error_code } : null,
         editing_locked: generation?.status === "running",
       }, { headers: { "Cache-Control": "private, no-store" } });
     }

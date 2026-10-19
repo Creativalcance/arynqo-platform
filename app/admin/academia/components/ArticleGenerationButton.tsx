@@ -38,7 +38,7 @@ export default function ArticleGenerationButton({ runId, action = "regenerate", 
         : result.skipped
           ? academyRunMessage(locale, result.reason)
           : academyCopy(locale, "held"));
-      await onCompleted(response.ok ? result.post_id : undefined);
+      await onCompleted(result.post_id);
     } catch {
       setMessage(academyCopy(locale, "generationConnectionError"));
     } finally {

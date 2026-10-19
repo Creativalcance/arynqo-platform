@@ -1,6 +1,31 @@
 import { type Locale, locales, isLocale } from "../i18n/config";
 import { ARTICLE_CONTENT_LIMITS, ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  providerIncomplete: [
+    "Não recebi uma resposta completa para esta versão. Guardei as versões concluídas; podes repetir apenas as que faltam.",
+    "I did not receive a complete response for this version. I saved completed versions; you can retry only the missing ones.",
+    "Je n’ai pas reçu de réponse complète pour cette version. J’ai conservé les versions terminées ; tu peux relancer uniquement celles qui manquent.",
+    "No he recibido una respuesta completa para esta versión. He guardado las versiones terminadas; puedes reintentar solo las pendientes.",
+    "Ich habe für diese Version keine vollständige Antwort erhalten. Fertige Versionen habe ich gespeichert; du kannst nur die fehlenden erneut erstellen.",
+    "Non ho ricevuto una risposta completa per questa versione. Ho salvato le versioni completate; puoi riprovare solo quelle mancanti.",
+  ],
+  providerEmpty: [
+    "Não recebi texto para esta versão. Guardei as versões concluídas; podes repetir apenas as que faltam.",
+    "I received no text for this version. I saved completed versions; you can retry only the missing ones.",
+    "Je n’ai reçu aucun texte pour cette version. J’ai conservé les versions terminées ; tu peux relancer uniquement celles qui manquent.",
+    "No he recibido texto para esta versión. He guardado las versiones terminadas; puedes reintentar solo las pendientes.",
+    "Ich habe für diese Version keinen Text erhalten. Fertige Versionen habe ich gespeichert; du kannst nur die fehlenden erneut erstellen.",
+    "Non ho ricevuto testo per questa versione. Ho salvato le versioni completate; puoi riprovare solo quelle mancanti.",
+  ],
+  providerBlocked: [
+    "Não consegui gerar esta versão porque o serviço de IA bloqueou a resposta. Guardei as versões concluídas. Revê o tema e as fontes antes de voltares a gerar.",
+    "I could not generate this version because the AI service blocked the response. I saved completed versions. Review the topic and sources before generating again.",
+    "Je n’ai pas pu générer cette version car le service d’IA a bloqué la réponse. J’ai conservé les versions terminées. Relis le sujet et les sources avant de relancer.",
+    "No he podido generar esta versión porque el servicio de IA ha bloqueado la respuesta. He guardado las versiones terminadas. Revisa el tema y las fuentes antes de generar de nuevo.",
+    "Ich konnte diese Version nicht erstellen, da der KI-Dienst die Antwort blockiert hat. Fertige Versionen habe ich gespeichert. Prüfe Thema und Quellen vor einem neuen Versuch.",
+    "Non ho potuto generare questa versione perché il servizio IA ha bloccato la risposta. Ho salvato le versioni completate. Rivedi il tema e le fonti prima di riprovare.",
+  ],
+  providerLanguage: ["Versão em {language}: {message}", "{language} version: {message}", "Version en {language} : {message}", "Versión en {language}: {message}", "Version auf {language}: {message}", "Versione in {language}: {message}"],
   invalidLength: [
     "Não consegui concluir uma das versões porque o texto não cumpriu os limites de extensão. Podes repetir as versões em falta; as versões concluídas ficam guardadas.",
     "I could not complete one version because the text did not meet the length limits. You can retry missing versions; completed versions are saved.",
@@ -424,8 +449,18 @@ export function academyRunMessage(locale: Locale, code: string) {
     not_retryable: "notRetryable",
     not_regeneratable: "notRetryable",
     regeneration_exists: "regenerationExists",
+    provider_or_generation_failed: "generationConnectionError",
+    worker_timeout: "generationConnectionError",
   };
   if (messages[code]) return academyCopy(locale, messages[code]);
+  const provider = /^provider_output_(incomplete|length|empty|invalid_json|refused|filtered)(?:_([a-z]{2}))?$/.exec(code);
+  if (provider) {
+    const message = academyCopy(locale, provider[1] === "empty" ? "providerEmpty"
+      : ["refused", "filtered"].includes(provider[1]) ? "providerBlocked" : "providerIncomplete");
+    return isLocale(provider[2]) ? academyCopy(locale, "providerLanguage")
+      .replace("{language}", new Intl.DisplayNames([locale], { type: "language" }).of(provider[2]) || provider[2])
+      .replace("{message}", message) : message;
+  }
   const length = /^invalid_length_([a-z]{2})_(\d+)_(\d+)$/.exec(code);
   if (length && isLocale(length[1])) {
     const values: Record<string, string> = {
