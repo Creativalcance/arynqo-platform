@@ -103,7 +103,7 @@ export default function ArticleReviewDialog({ postId, initialLanguage, onClose, 
         ) : (
           <>
             <p className="text-sm text-slate-600">{c("reviewInstructions")}</p>
-            {data.run?.error_code && <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950">{academyRunMessage(locale, data.run.error_code)}</p>}
+            {!busy && data.run?.error_code && <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950">{academyRunMessage(locale, data.run.error_code)}</p>}
             {data.run && ["failed", "review", "published"].includes(data.run.status) && !edit && (
               <div className="flex flex-wrap gap-3 rounded-2xl bg-slate-50 p-4">
                 <p className="w-full text-sm text-slate-600">{c("regenerateHelp")}</p>

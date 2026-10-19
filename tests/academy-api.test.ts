@@ -173,3 +173,37 @@ test("regeneration rejects a missing request ID before AI or database generation
   }));
   assert.equal(response.status, 400);
 });
+
+test("admin can edit a compact translation using the saved Portuguese reference", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const postId = "10000000-0000-0000-0000-000000000002";
+  const original = `## One\n${"Para o teu trabalho, descreve uma experiência e as competências relevantes. ".repeat(57)}\n## Two\n- Checklist\n## Three\nExamples.`;
+  const content = `## One\n${"Beschreiben Sie die Erfahrung und Ihre Fähigkeiten mit Beispielen für Ihren Beruf. ".repeat(43)}\n## Two\n- Checklist\n## Three\nExamples.`;
+  let edits = 0;
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/auth/v1/user") return Response.json({ id: postId, is_anonymous: false });
+    if (url.pathname === "/rest/v1/profiles") return Response.json({ role: "admin", locale: "pt" });
+    if (url.pathname.endsWith("/consume_api_limit")) return new Response(null, { status: 204 });
+    if (url.pathname.endsWith("/academy_post_translations")) {
+      assert.equal(url.searchParams.get("post_id"), `eq.${postId}`);
+      assert.equal(url.searchParams.get("locale"), "eq.pt");
+      return Response.json({ content: original });
+    }
+    if (url.pathname.endsWith("/academy_edit_translation")) {
+      const body = JSON.parse(String(init?.body));
+      assert.equal(body.payload.content, content);
+      assert.equal(body.payload.review_required, true);
+      edits++; return new Response(null, { status: 204 });
+    }
+    throw new Error("unexpected_generation_or_publication_call");
+  });
+  const response = await POST(new NextRequest("https://test.invalid/api/admin/academy-automation", {
+    method: "POST", headers: { authorization: "Bearer test-token" },
+    body: JSON.stringify({ action: "translation", post_id: postId, locale: "de", article: { title: "Feedback", excerpt: "Hinweise", content, seo_title: "Feedback", seo_description: "Hinweise", reading_time: "3 min", review_required: false } }),
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(edits, 1);
+});

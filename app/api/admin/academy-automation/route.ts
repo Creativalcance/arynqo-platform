@@ -175,11 +175,15 @@ export async function POST(request: NextRequest) {
     } else if (body.action === "translation") {
       if (!uuid(body.post_id) || !isLocale(body.locale))
         throw new ApiError(400, "Versão inválida.");
+      const original = body.locale === "pt" ? null : check(await db
+        .from("academy_post_translations").select("content")
+        .eq("post_id", body.post_id).eq("locale", "pt").single());
       let draft;
       try {
         draft = validateArticle(
           { ...body.article, locale: body.locale },
           body.locale,
+          original?.content,
         );
       } catch {
         throw new ApiError(
