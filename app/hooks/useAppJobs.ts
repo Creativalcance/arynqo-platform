@@ -229,7 +229,7 @@ function mapRawJobToAppJob(
     educationRequirements: job.education_requirements,
     experienceRequirements: job.experience_requirements,
     createdAt: job.created_at,
-    hasAIMatch: Boolean(match),
+    hasAIMatch: typeof match?.match_score === "number",
   };
 }
 

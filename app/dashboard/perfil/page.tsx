@@ -1083,10 +1083,10 @@ professional_experience_items: professionalExperienceItems,
   }
 
 
-  await regenerateMatches(profileId);
+  const recalculated = await regenerateMatches(profileId);
 
   setPendingLinkedInSkills([]);
-  localizedAlert("Perfil atualizado e matches recalculados com sucesso.");
+  localizedAlert(recalculated ? "Perfil atualizado e matches recalculados com sucesso." : "Guardei o perfil, mas não consegui recalcular os matches. Posso tentar novamente na página de matches.");
   } catch { localizedAlert("Não foi possível guardar o perfil. Tenta novamente."); }
   finally { setSavingProfile(false); }
 }
@@ -1341,17 +1341,13 @@ professional_experience_items: professionalExperienceItems,
 
 async function regenerateMatches(studentId: string) {
   try {
-    await authenticatedFetch("/api/ai/generate-matches", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        studentId,
-      }),
+    const response = await authenticatedFetch("/api/ai/generate-matches", {
+      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({studentId}),
     });
+    return response.ok;
   } catch (error) {
     console.error("Erro ao gerar matches:", error);
+    return false;
   }
 }
   const canImproveWriting = hasWritingContent({ headline, bio, career_goals: careerGoals, ai_summary: aiSummary });
@@ -1861,7 +1857,7 @@ async function regenerateMatches(studentId: string) {
                     <LText text={"Skills técnicas"} /></h3>
 
                   <p className="mt-2 text-sm leading-6 text-slate-500">
-                    <LText text={"Competências usadas no matching com vagas e empresas."} /></p>
+                    <LText text={"Competências adicionais do meu perfil. Escolho as competências usadas no match em Preferências profissionais, no início desta página."} /></p>
 
                   <TagPicker value={uniqueArray([...skills.map(skill => skill.name), ...pendingLinkedInSkills])} onChange={async values => {
                     setPendingLinkedInSkills(current => current.filter(value => values.includes(value)));

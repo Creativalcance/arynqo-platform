@@ -1,4 +1,6 @@
 "use client";
+import type { MatchMetricsSource } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 
 import { useAsyncResource } from "./useAsyncResource";
 import { supabase } from "@/lib/supabase";
@@ -10,7 +12,8 @@ export type AppMatchItem = {
   title: string;
   company: string;
   description: string;
-  score: number;
+  score: number | null;
+  criteria: MatchMetricsSource;
   reason: string;
   strengths: string[];
   gaps: string[];
@@ -48,6 +51,7 @@ type RawAIMatch = {
   student_id: string;
   job_id: string;
   match_score: number | null;
+  matching_details?: MatchingDetails | null;
   skills_score: number | null;
   role_score: number | null;
   seniority_score: number | null;
@@ -102,12 +106,12 @@ function normalizeCompany(
   return companyProfiles ?? null;
 }
 
-function normalizeScore(value: number | null | undefined): number {
+function normalizeScore(value: number | null | undefined): number | null {
   if (typeof value === "number" && Number.isFinite(value)) {
     return Math.min(100, Math.max(0, Math.round(value)));
   }
 
-  return 0;
+  return null;
 }
 
 function mapRawMatchToAppMatch(match: RawAIMatch): AppMatchItem {
@@ -124,6 +128,7 @@ function mapRawMatchToAppMatch(match: RawAIMatch): AppMatchItem {
       job?.description ||
       "Compatibilidade calculada com base no perfil profissional e nos requisitos da vaga.",
     score: normalizeScore(match.match_score),
+    criteria: match,
     reason:
       match.ai_reason ||
       "A compatibilidade foi calculada pela ARYNQO com base nos dados reais do perfil e da vaga.",
@@ -182,6 +187,7 @@ async function loadMatches(): Promise<AppMatchItem[]> {
         student_id,
         job_id,
         match_score,
+        matching_details,
         skills_score,
         role_score,
         seniority_score,
@@ -198,7 +204,7 @@ async function loadMatches(): Promise<AppMatchItem[]> {
         missing_skills,
         ai_recommendations,
         ai_reason,
-        jobs (
+        jobs!inner (
           id,
           title,
           description,
@@ -210,7 +216,11 @@ async function loadMatches(): Promise<AppMatchItem[]> {
       `,
       )
       .eq("student_id", studentId)
-      .order("match_score", { ascending: false })
+      .eq("jobs.is_active", true)
+      .is("jobs.archived_at", null)
+      .is("jobs.deleted_at", null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`, { referencedTable: "jobs" })
+      .order("match_score", { ascending: false, nullsFirst: false })
       .limit(30);
 
     if (error) {

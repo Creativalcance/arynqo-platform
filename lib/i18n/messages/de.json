@@ -584,7 +584,7 @@
   "Competências de candidatos": "Kompetenzen der Bewerber",
   "Competências de vagas": "Kompetenzen der offenen Stellen",
   "Competências do teu perfil mencionadas no anúncio": "In der Anzeige erwähnte Fähigkeiten aus deinem Profil",
-  "Competências essenciais": "Wesentliche Kompetenzen",
+  "Competências essenciais": "Erforderliche Kompetenzen",
   "Competências exigidas": "Erforderliche Kompetenz",
   "Competências indicadas como não necessárias": "Als nicht erforderlich bezeichnete Kompetenzen",
   "Competências normalizadas": "Standardisierte Fertigkeiten",
@@ -2692,5 +2692,9 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Ich kann Kandidaten ohne eigene Stellenanzeige suchen. Für eine Zugriffsanfrage wähle ich eine aktive Stelle aus. Der Kandidat entscheidet, ob er sein Profil mit mir teilt. Die gewählte Stelle ändert die Suchergebnisse nicht.",
   "Profissão ou área": "Beruf oder Bereich",
   "Todas as opções": "Alle Optionen",
-  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Um Zugriff auf das Profil und die Kontaktdaten eines Kandidaten anzufragen, wähle ich eine meiner aktiven Stellen aus. Der Kandidat erhält die Anfrage und entscheidet, ob er sie annimmt."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Um Zugriff auf das Profil und die Kontaktdaten eines Kandidaten anzufragen, wähle ich eine meiner aktiven Stellen aus. Der Kandidat erhält die Anfrage und entscheidet, ob er sie annimmt.",
+  "Por calcular": "Noch nicht berechnet",
+  "Peso no total": "Anteil am Gesamtwert",
+  "O match fica disponível depois de confirmar os cinco campos profissionais do candidato e da vaga.": "Der Match wird verfügbar, sobald die fünf beruflichen Angaben für das Profil und die Stelle bestätigt sind.",
+  "Localização, salário, idiomas, formação e tipo de oportunidade são condições a confirmar à parte.": "Arbeitsort, Gehalt, Sprachen, Ausbildung und Art der Stelle müssen gesondert geprüft werden."
 }

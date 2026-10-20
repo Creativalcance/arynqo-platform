@@ -1,4 +1,7 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { formatMatchScore } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
 
@@ -17,7 +20,8 @@ type StudentProfile = {
 };
 
 type AIMatch = {
-  match_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
   skills_score: number | null;
   role_score: number | null;
   seniority_score: number | null;
@@ -38,31 +42,6 @@ type ApplicationInsertResponse = {
   id: string;
 };
 
-function ScoreItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
-  const safeValue = value ?? 0;
-
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-white/58"><LText text={label} /></p>
-        <p className="text-sm font-semibold text-cyan-200">{safeValue}%</p>
-      </div>
-
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500"
-          style={{ width: `${safeValue}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function TagList({
   title,
@@ -166,6 +145,7 @@ const { data: sessionData } = await supabase.auth.getSession();
         .select(
           `
           match_score,
+          matching_details,
           skills_score,
           role_score,
           seniority_score,
@@ -230,6 +210,7 @@ const { data: sessionData } = await supabase.auth.getSession();
         .select(
           `
           match_score,
+          matching_details,
           skills_score,
           role_score,
           seniority_score,
@@ -417,8 +398,8 @@ const { data: sessionData } = await supabase.auth.getSession();
     );
   }
 
-  const matchScore = aiMatch?.match_score ?? job.score;
-  const hasScore = matchScore > 0;
+  const matchScore = aiMatch ? aiMatch.match_score : job.hasAIMatch ? job.score : null;
+  const hasScore = matchScore !== null;
 
   return (
     <main className="min-h-screen bg-[#050816] text-white">
@@ -454,13 +435,11 @@ const { data: sessionData } = await supabase.auth.getSession();
               <p className="text-sm text-white/60"><LText text={"Compatibilidade"} /></p>
 
               <div className="mt-3 flex items-end gap-2">
-                <span className="text-5xl font-semibold tracking-tight">
-                  {hasScore ? matchScore : "—"}
+                <span className={`font-semibold tracking-tight ${matchScore === null ? "text-2xl" : "text-5xl"}`}>
+                  <LText text={formatMatchScore(matchScore)} />
                 </span>
 
-                {hasScore && (
-                  <span className="mb-2 text-sm text-cyan-300">%</span>
-                )}
+
               </div>
             </div>
 
@@ -534,17 +513,7 @@ const { data: sessionData } = await supabase.auth.getSession();
         )}
 
         {aiMatch && (
-          <section className="mt-5 grid gap-3">
-            <ScoreItem label="Skills" value={aiMatch.skills_score} />
-            <ScoreItem label="Área/Função" value={aiMatch.role_score} />
-            <ScoreItem label="Senioridade" value={aiMatch.seniority_score} />
-            <ScoreItem label="Localização" value={aiMatch.location_score} />
-            <ScoreItem label="Modelo" value={aiMatch.work_model_score} />
-            <ScoreItem
-              label="Tipo oportunidade"
-              value={aiMatch.opportunity_type_score}
-            />
-          </section>
+          <section className="mt-5"><MatchCriteria match={aiMatch} dark /></section>
         )}
 
         <div className="mt-5 grid gap-3">

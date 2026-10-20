@@ -1,4 +1,7 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { formatMatchScore } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement, useI18n } from "@/lib/i18n/client";
@@ -52,7 +55,8 @@ type StudentProfile = {
 };
 
 type AIMatch = {
-  match_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
   skills_score: number | null;
   role_score: number | null;
   seniority_score: number | null;
@@ -128,6 +132,7 @@ export default function JobPage({
         .select(
           `
           match_score,
+          matching_details,
           skills_score,
           role_score,
           seniority_score,
@@ -207,6 +212,7 @@ export default function JobPage({
         .select(
           `
           match_score,
+          matching_details,
           skills_score,
           role_score,
           seniority_score,
@@ -467,7 +473,7 @@ export default function JobPage({
                   <div className="flex items-end justify-between gap-4">
                     <div>
                       <p className="text-6xl font-black tracking-[-0.07em] text-[#1683FF]">
-                        {aiMatch.match_score}%
+                        <LText text={formatMatchScore(aiMatch.match_score)} />
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-500">
                         <LText text={"Compatibilidade estimada"} /></p>
@@ -476,28 +482,12 @@ export default function JobPage({
                     <div className="h-4 flex-1 overflow-hidden rounded-full bg-slate-100">
                       <div
                         className="h-full rounded-full bg-[#1683FF]"
-                        style={{ width: `${aiMatch.match_score}%` }}
+                        style={{ width: `${aiMatch.match_score ?? 0}%` }}
                       />
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-4 md:grid-cols-2">
-                    <ScoreItem label="Skills" value={aiMatch.skills_score} />
-                    <ScoreItem label="Área/Função" value={aiMatch.role_score} />
-                    <ScoreItem
-                      label="Senioridade"
-                      value={aiMatch.seniority_score}
-                    />
-                    <ScoreItem
-                      label="Localização"
-                      value={aiMatch.location_score}
-                    />
-                    <ScoreItem label="Modelo" value={aiMatch.work_model_score} />
-                    <ScoreItem
-                      label="Tipo oportunidade"
-                      value={aiMatch.opportunity_type_score}
-                    />
-                  </div>
+                  <div className="mt-6"><MatchCriteria match={aiMatch} /></div>
 
                   <MatchList
                     title="Pontos fortes"
@@ -794,31 +784,6 @@ function SummaryItem({
   );
 }
 
-function ScoreItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
-  const safeValue = value ?? 0;
-
-  return (
-    <div className="rounded-3xl bg-[#F7F9FC] p-5">
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold text-slate-600"><LText text={label} /></p>
-        <p className="text-lg font-black text-[#1683FF]">{safeValue}%</p>
-      </div>
-
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-        <div
-          className="h-full rounded-full bg-[#1683FF]"
-          style={{ width: `${safeValue}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function MatchList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) {

@@ -1,4 +1,7 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { formatMatchScore } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText } from "@/lib/i18n/client";
@@ -28,14 +31,15 @@ type Job = {
 type RawMatch = {
   id: string;
   job_id: string;
-  match_score: number;
-  skills_score: number;
-  role_score: number;
-  seniority_score: number;
-  location_score: number;
-  work_model_score: number;
-  salary_score: number;
-  education_language_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
+  skills_score: number | null;
+  role_score: number | null;
+  seniority_score: number | null;
+  location_score: number | null;
+  work_model_score: number | null;
+  salary_score: number | null;
+  education_language_score: number | null;
   ai_reason: string | null;
   strengths: string[] | null;
   gaps: string[] | null;
@@ -45,14 +49,15 @@ type RawMatch = {
 type Match = {
   id: string;
   job_id: string;
-  match_score: number;
-  skills_score: number;
-  role_score: number;
-  seniority_score: number;
-  location_score: number;
-  work_model_score: number;
-  salary_score: number;
-  education_language_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
+  skills_score: number | null;
+  role_score: number | null;
+  seniority_score: number | null;
+  location_score: number | null;
+  work_model_score: number | null;
+  salary_score: number | null;
+  education_language_score: number | null;
   ai_reason: string;
   strengths: string[];
   gaps: string[];
@@ -120,6 +125,7 @@ export default function CandidateMatchesPage() {
         id,
         job_id,
         match_score,
+        matching_details,
         skills_score,
         role_score,
         seniority_score,
@@ -130,7 +136,7 @@ export default function CandidateMatchesPage() {
         ai_reason,
         strengths,
         gaps,
-        jobs (
+        jobs!inner (
           id,
           title,
           area,
@@ -146,7 +152,11 @@ export default function CandidateMatchesPage() {
       `
       )
       .eq("student_id", profile.id)
-      .order("match_score", { ascending: false });
+      .eq("jobs.is_active", true)
+      .is("jobs.archived_at", null)
+      .is("jobs.deleted_at", null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`, { referencedTable: "jobs" })
+      .order("match_score", { ascending: false, nullsFirst: false });
 
     if (error) {
       console.error(error);
@@ -169,14 +179,15 @@ export default function CandidateMatchesPage() {
       return {
         id: match.id,
         job_id: match.job_id,
-        match_score: match.match_score || 0,
-        skills_score: match.skills_score || 0,
-        role_score: match.role_score || 0,
-        seniority_score: match.seniority_score || 0,
-        location_score: match.location_score || 0,
-        work_model_score: match.work_model_score || 0,
-        salary_score: match.salary_score || 0,
-        education_language_score: match.education_language_score || 0,
+        match_score: match.match_score,
+        matching_details: match.matching_details,
+        skills_score: match.skills_score,
+        role_score: match.role_score,
+        seniority_score: match.seniority_score,
+        location_score: match.location_score,
+        work_model_score: match.work_model_score,
+        salary_score: match.salary_score,
+        education_language_score: match.education_language_score,
         ai_reason: match.ai_reason || "Resultado anterior: recalcula para obter os critérios e a cobertura de informação.",
         strengths: match.strengths || [],
         gaps: match.gaps || [],
@@ -249,7 +260,7 @@ export default function CandidateMatchesPage() {
     setIsRegenerating(true);
 
     try {
-      await authenticatedFetch("/api/ai/generate-matches", {
+      const response = await authenticatedFetch("/api/ai/generate-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,6 +270,7 @@ export default function CandidateMatchesPage() {
         }),
       });
 
+      if (!response.ok) throw new Error("Não foi possível recalcular os matches.");
       await loadMatches();
     } catch (error) {
       console.error(error);
@@ -353,16 +365,11 @@ export default function CandidateMatchesPage() {
                           <LText text={"Índice de compatibilidade"} /></p>
 
                         <p className="mt-4 text-6xl font-semibold tracking-[-0.08em]">
-                          {match.match_score}%
+                          <LText text={formatMatchScore(match.match_score)} />
                         </p>
                       </div>
 
-                      <div className="mt-10 space-y-3 text-sm text-white/60">
-                        <p><LText text={"Skills: "} />{match.skills_score}%</p>
-                        <p><LText text={"Função: "} />{match.role_score}%</p>
-                        <p><LText text={"Localização: "} />{match.location_score}%</p>
-                        <p><LText text={"Modelo: "} />{match.work_model_score}%</p>
-                      </div>
+                      <div className="mt-10"><MatchCriteria match={match} dark /></div>
                     </div>
 
                     <div className="p-8">

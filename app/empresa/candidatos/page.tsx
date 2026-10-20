@@ -1,4 +1,7 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { averageMatchScore, formatMatchScore } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
@@ -69,7 +72,8 @@ type StudentSkillRow = {
 type AIMatch = {
   student_id: string;
   job_id: string;
-  match_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
   skills_score: number | null;
   role_score: number | null;
   seniority_score: number | null;
@@ -138,16 +142,7 @@ export default function EmpresaCandidatosPage() {
       (application) => application.status === "rejected"
     ).length;
 
-    const averageMatch =
-      applications.length > 0
-        ? Math.round(
-            applications.reduce(
-              (sum, application) =>
-                sum + (application.ai_match?.match_score || 0),
-              0
-            ) / applications.length
-          )
-        : 0;
+    const averageMatch = averageMatchScore(applications.map(application => application.ai_match?.match_score));
 
     return {
       total,
@@ -308,6 +303,7 @@ export default function EmpresaCandidatosPage() {
           student_id,
           job_id,
           match_score,
+          matching_details,
           skills_score,
           role_score,
           seniority_score,
@@ -481,7 +477,7 @@ export default function EmpresaCandidatosPage() {
           <StatCard label="Pendentes" value={stats.pending} />
           <StatCard label="Aceites" value={stats.accepted} />
           <StatCard label="Rejeitadas" value={stats.rejected} />
-          <StatCard label="Match médio" value={`${stats.averageMatch}%`} />
+          <StatCard label="Match médio" value={formatMatchScore(stats.averageMatch)} />
         </section>
 
         <section className="mb-8 flex flex-wrap gap-3">
@@ -554,7 +550,7 @@ export default function EmpresaCandidatosPage() {
 
                         <div className="mt-3 flex items-end gap-2">
                           <p className="text-5xl font-black tracking-[-0.07em]">
-                            {match.match_score}%
+                            <LText text={formatMatchScore(match.match_score)} />
                           </p>
                           <p className="mb-2 text-xs text-white/50">
                             <LText text={"compatibilidade"} /></p>
@@ -563,7 +559,7 @@ export default function EmpresaCandidatosPage() {
                         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
                           <div
                             className="h-full rounded-full bg-[#4BB3FD]"
-                            style={{ width: `${match.match_score}%` }}
+                            style={{ width: `${match.match_score ?? 0}%` }}
                           />
                         </div>
                       </div>
@@ -653,26 +649,7 @@ export default function EmpresaCandidatosPage() {
 
                     {match && (
                       <section className="mt-8 rounded-[28px] border border-[#DDE3EA] bg-[#F7F9FC] p-6">
-                        <div className="grid gap-4 md:grid-cols-3">
-                          <ScoreMini label="Skills" value={match.skills_score} />
-                          <ScoreMini label="Função" value={match.role_score} />
-                          <ScoreMini
-                            label="Senioridade"
-                            value={match.seniority_score}
-                          />
-                          <ScoreMini
-                            label="Localização"
-                            value={match.location_score}
-                          />
-                          <ScoreMini
-                            label="Modelo"
-                            value={match.work_model_score}
-                          />
-                          <ScoreMini
-                            label="Tipo"
-                            value={match.opportunity_type_score}
-                          />
-                        </div>
+                        <MatchCriteria match={match} />
 
                         <div className="mt-6 grid gap-5 lg:grid-cols-2">
                           <MatchBlock
@@ -846,34 +823,6 @@ function InfoItem({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ScoreMini({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
-  const safeValue = value ?? 0;
-
-  return (
-    <div className="rounded-2xl bg-white p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-          <LText text={label} />
-        </p>
-
-        <p className="text-sm font-black text-[#1683FF]">{safeValue}%</p>
-      </div>
-
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className="h-full rounded-full bg-[#1683FF]"
-          style={{ width: `${safeValue}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function MatchBlock({
   title,

@@ -64,12 +64,13 @@ export function useAppMatchGeneration(): UseAppMatchGenerationResult {
         return false;
       }
 
-      setGenerationMessage("Matches IA atualizados com sucesso.");
+      const result = await response.json();
+      setGenerationMessage(result.matches_pending ? "Atualizei os matches. Os pares com campos profissionais por confirmar ficam por calcular." : "Matches atualizados com sucesso.");
       setIsGeneratingMatches(false);
       return true;
     } catch (error) {
       console.error("Erro ao gerar matches:", error);
-      setGenerationMessage("Erro ao comunicar com a IA da ARYNQO.");
+      setGenerationMessage("Não consegui atualizar os matches.");
       setIsGeneratingMatches(false);
       return false;
     }

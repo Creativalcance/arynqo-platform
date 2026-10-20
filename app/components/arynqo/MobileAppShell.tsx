@@ -1,4 +1,5 @@
 "use client";
+import { formatMatchScore } from "@/lib/match-presentation";
 import { LText } from "@/lib/i18n/client";
 
 
@@ -26,11 +27,11 @@ function getFirstName(name: string | null, email: string | null) {
   return "Bem-vindo";
 }
 
-function getAverageScore(scores: number[]) {
-  const validScores = scores.filter((score) => score > 0);
+function getAverageScore(scores: Array<number | null>) {
+  const validScores = scores.filter((score): score is number => score !== null);
 
   if (validScores.length === 0) {
-    return 0;
+    return null;
   }
 
   const total = validScores.reduce((sum, score) => sum + score, 0);
@@ -264,9 +265,9 @@ export default function MobileAppShell() {
 
   const firstName = getFirstName(profile?.name ?? null, profile?.email ?? null);
 
-  const score = !hasSession ? 0 : getAverageScore(
+  const score = !hasSession ? null : getAverageScore(
     (appMode === "company" || appMode === "recruiter" || appMode === "admin"
-      ? featuredMatches : featuredJobs).map(item => item.score),
+      ? featuredMatches.map(item => item.score) : featuredJobs.filter(item => item.hasAIMatch).map(item => item.score)),
   );
 
   const showMatchesAsFeatured =
@@ -335,10 +336,10 @@ export default function MobileAppShell() {
 
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-5xl font-semibold tracking-tight">
-                  {score > 0 ? score : "—"}
+                  {score !== null ? score : "—"}
                 </span>
 
-                {score > 0 && (
+                {score !== null && (
                   <span className="mb-2 text-sm text-cyan-300">%</span>
                 )}
               </div>
@@ -353,11 +354,11 @@ export default function MobileAppShell() {
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500"
-              style={{ width: `${score > 0 ? score : 0}%` }}
+              style={{ width: `${score !== null ? score : 0}%` }}
             />
           </div>
 
-          {score === 0 && (
+          {score === null && (
             <p className="mt-4 text-sm leading-6 text-white/56">
               <LText text={"Ainda não existem matches IA calculados para este perfil."} /></p>
           )}
@@ -430,7 +431,7 @@ export default function MobileAppShell() {
 
                       <div className="rounded-2xl bg-emerald-400/10 px-3 py-2 text-center">
                         <p className="text-lg font-semibold text-emerald-300">
-                          {match.score}%
+                          <LText text={formatMatchScore(match.score)} />
                         </p>
 
                         <p className="text-[11px] text-emerald-100/70">

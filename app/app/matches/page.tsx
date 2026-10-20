@@ -1,4 +1,5 @@
 "use client";
+import { averageMatchScore, formatMatchScore } from "@/lib/match-presentation";
 import { LText } from "@/lib/i18n/client";
 
 import { useMemo, useState } from "react";
@@ -9,12 +10,13 @@ import { useAppMatchGeneration } from "../../hooks/useAppMatchGeneration";
 import { useAppProfile } from "../../hooks/useAppProfile";
 import { supabase } from "@/lib/supabase";
 
-type MatchType = "Todos" | "Alto" | "Médio" | "Baixo";
+type MatchType = "Todos" | "Alto" | "Médio" | "Baixo" | "Por calcular";
 type SwipeDirection = "left" | "right";
 
-const filters: MatchType[] = ["Todos", "Alto", "Médio", "Baixo"];
+const filters: MatchType[] = ["Todos", "Alto", "Médio", "Baixo", "Por calcular"];
 
-function getMatchLevel(score: number): Exclude<MatchType, "Todos"> {
+function getMatchLevel(score: number | null): Exclude<MatchType, "Todos"> {
+  if (score === null) return "Por calcular";
   if (score >= 85) {
     return "Alto";
   }
@@ -27,6 +29,7 @@ function getMatchLevel(score: number): Exclude<MatchType, "Todos"> {
 }
 
 function getLevelClass(level: Exclude<MatchType, "Todos">) {
+  if (level === "Por calcular") return "rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/70";
   if (level === "Alto") {
     return "rounded-full bg-emerald-400/10 px-2.5 py-1 text-[11px] font-medium text-emerald-200";
   }
@@ -103,12 +106,10 @@ export default function AppMatchesPage() {
 
   const averageScore = useMemo(() => {
     if (!hasSession || filteredMatches.length === 0) {
-      return 0;
+      return null;
     }
 
-    const total = filteredMatches.reduce((sum, match) => sum + match.score, 0);
-
-    return Math.round(total / filteredMatches.length);
+    return averageMatchScore(filteredMatches.map(match => match.score));
   }, [filteredMatches, hasSession]);
 
   const currentMatch = isTalentMode ? visibleMatches[currentIndex] : null;
@@ -386,7 +387,7 @@ export default function AppMatchesPage() {
             <div className="text-right">
               <p className="text-xs text-white/40"><LText text={"Média IA"} /></p>
               <p className="mt-1 text-2xl font-semibold text-cyan-200">
-                <LText text={averageScore > 0 ? `${averageScore}%` : "—"} />
+                <LText text={formatMatchScore(averageScore)} />
               </p>
             </div>
           </section>
@@ -435,7 +436,7 @@ export default function AppMatchesPage() {
 
                     <div className="rounded-3xl bg-emerald-400/10 px-4 py-3 text-center">
                       <p className="text-2xl font-semibold text-emerald-300">
-                        {currentMatch.score}%
+                        <LText text={formatMatchScore(currentMatch.score)} />
                       </p>
 
                       <p className="text-[11px] text-emerald-100/70"><LText text={"match"} /></p>
@@ -585,7 +586,7 @@ export default function AppMatchesPage() {
 
             <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
               <p className="text-2xl font-semibold text-cyan-200">
-                {averageScore}%
+                <LText text={formatMatchScore(averageScore)} />
               </p>
 
               <p className="text-[11px] text-white/45"><LText text={"média"} /></p>
@@ -654,7 +655,7 @@ export default function AppMatchesPage() {
 
                     <div className="rounded-2xl bg-emerald-400/10 px-3 py-2 text-center">
                       <p className="text-lg font-semibold text-emerald-300">
-                        {match.score}%
+                        <LText text={formatMatchScore(match.score)} />
                       </p>
 
                       <p className="text-[11px] text-emerald-100/70"><LText text={"match"} /></p>

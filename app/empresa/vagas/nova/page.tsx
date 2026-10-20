@@ -336,7 +336,7 @@ export default function NovaVagaPage() {
 
   async function recalculateJobMatches(jobId: string) {
     try {
-      await authenticatedFetch("/api/ai/recalculate-job-matches", {
+      const response = await authenticatedFetch("/api/ai/recalculate-job-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -345,8 +345,10 @@ export default function NovaVagaPage() {
           jobId,
         }),
       });
+      return response.ok;
     } catch (error) {
       console.error("Erro ao recalcular matches da vaga:", error);
+      return false;
     }
   }
 
@@ -399,7 +401,7 @@ export default function NovaVagaPage() {
     }
 
 
-    await recalculateJobMatches(createdJob.id);
+    if (publish && !await recalculateJobMatches(createdJob.id)) localizedAlert("Guardei a vaga, mas não consegui recalcular os matches. Posso tentar novamente na página de matches.");
 
     window.location.href = browserLocalizedPath("/empresa/vagas");
   }

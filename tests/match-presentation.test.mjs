@@ -9,7 +9,7 @@ test('Match displays use percentages and the Compatibilidade label',async()=>{
   assert.doesNotMatch(source,/Compatibilidade IA|\/100/,path);
  }
  const mobileDetail=await readFile('app/app/matches/[id]/page.tsx','utf8');
- assert.ok(mobileDetail.includes('width: `${match.score}%`'));
+ assert.ok(mobileDetail.includes('width: `${match.score ?? 0}%`'));
 });
 test('Company detail grids allow narrow screens and long content to shrink and wrap',async()=>{
  const source=await readFile('app/empresa/matches/page.tsx','utf8');
