@@ -2692,5 +2692,9 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "I can browse without posting a job. To request access, I choose an active job and the candidate decides whether to share their profile with me. The selected job does not change the search results.",
   "Profissão ou área": "Profession or field",
   "Todas as opções": "All options",
-  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "To request access to a candidate’s profile and contact details, I select one of my active jobs. The candidate receives the request and decides whether to accept it."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "To request access to a candidate’s profile and contact details, I select one of my active jobs. The candidate receives the request and decides whether to accept it.",
+  "Por calcular": "Not yet calculated",
+  "Peso no total": "Weight in total",
+  "O match fica disponível depois de confirmar os cinco campos profissionais do candidato e da vaga.": "The match becomes available once the five professional fields are confirmed for both the candidate and the job.",
+  "Localização, salário, idiomas, formação e tipo de oportunidade são condições a confirmar à parte.": "Location, salary, languages, education and opportunity type must be checked separately."
 }

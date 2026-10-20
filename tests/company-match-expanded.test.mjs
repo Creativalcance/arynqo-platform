@@ -10,14 +10,22 @@ import { renderToStaticMarkup } from 'react-dom/server';
 // Render the actual detail and its helpers without mounting the authenticated page.
 const source = readFileSync('app/empresa/matches/page.tsx', 'utf8');
 const ast = ts.createSourceFile('detail.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const names = new Set(['CandidateDetail', 'Badge', 'InfoPanel', 'ChipList', 'MatchMetric', 'ActionButton']);
+const names = new Set(['CandidateDetail', 'Badge', 'InfoPanel', 'ChipList', 'ActionButton']);
 const components = ast.statements.filter(node => ts.isFunctionDeclaration(node) && names.has(node.name?.text)).map(node => node.getText(ast)).join('\n');
 const compiled = ts.transpileModule(`${components}\nexport {CandidateDetail};`, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS } }).outputText;
 const messages = JSON.parse(readFileSync('lib/i18n/messages/pt.json', 'utf8'));
 const exports = {};
+const {formatMatchScore,matchMetrics} = await import('../lib/match-presentation.ts');
+const criterionSource=readFileSync('app/components/MatchCriteria.tsx','utf8');
+const criterionAst=ts.createSourceFile('criteria.tsx',criterionSource,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+const criterionFunctions=criterionAst.statements.filter(ts.isFunctionDeclaration).map(node=>node.getText(criterionAst)).join('\n');
+const criterionExports={};
+runInNewContext(ts.transpileModule(criterionFunctions,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS}}).outputText,{exports:criterionExports,require:createRequire(import.meta.url),matchMetrics,LText:({text})=>messages[text]||text});
+const {MatchCriteria}=criterionExports;
 runInNewContext(compiled, { exports, require: createRequire(import.meta.url),
   LText: ({ text }) => messages[text] || text,
   LElement: ({ as, ...props }) => React.createElement(as, props),
+  MatchCriteria, formatMatchScore,
   Link: props => React.createElement('a', props), workModelLabels: {},
 });
 const match = { id: 'match', student_id: 'student', job_id: 'job', match_score: 15,
@@ -53,4 +61,11 @@ test('expanded detail preserves candidate identity and contact permission gates'
   const closed = render({ match: { ...match, student: { ...match.student, contact_visibility: 'closed' } } });
   assert.ok(!closed.includes('/empresa/candidatos/student'));
   assert.ok(closed.includes('disabled=""'));
+});
+
+test('confirmed five-field breakdown and pending state render without unrelated zero metrics', () => {
+  const html = render({match:{...match,matching_details:{status:'evaluated',score:100,contributions:{profession:35,skills:35,seniority:15,model:10,area:5}}}});
+  for(const label of ['Profissão','Área profissional','Peso no total']) assert.ok(html.includes(label));
+  const pending=render({match:{...match,match_score:null,matching_details:{status:'incomplete',score:null,contributions:null}}});
+  assert.ok(pending.includes('Por calcular'));assert.ok(pending.includes('cinco campos'));assert.ok(!pending.includes('null%'));
 });

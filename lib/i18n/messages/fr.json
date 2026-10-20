@@ -2692,5 +2692,9 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Je peux explorer sans publier d’offre. Pour demander l’accès, je choisis une offre active et le candidat décide de partager ou non son profil avec moi. L’offre choisie ne modifie pas les résultats.",
   "Profissão ou área": "Profession ou domaine",
   "Todas as opções": "Toutes les options",
-  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Pour demander l’accès au profil et aux coordonnées d’un candidat, je sélectionne l’une de mes offres actives. Le candidat reçoit la demande et décide de l’accepter ou non."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Pour demander l’accès au profil et aux coordonnées d’un candidat, je sélectionne l’une de mes offres actives. Le candidat reçoit la demande et décide de l’accepter ou non.",
+  "Por calcular": "À calculer",
+  "Peso no total": "Poids dans le total",
+  "O match fica disponível depois de confirmar os cinco campos profissionais do candidato e da vaga.": "Le match est disponible une fois les cinq champs professionnels confirmés pour le candidat et l’offre.",
+  "Localização, salário, idiomas, formação e tipo de oportunidade são condições a confirmar à parte.": "Le lieu, le salaire, les langues, la formation et le type d’offre sont à vérifier séparément."
 }

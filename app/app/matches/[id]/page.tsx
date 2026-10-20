@@ -1,4 +1,6 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { formatMatchScore } from "@/lib/match-presentation";
 import { LText } from "@/lib/i18n/client";
 
 import Link from "@/lib/i18n/link";
@@ -6,7 +8,8 @@ import { useParams } from "next/navigation";
 import MobileBottomNav from "@/app/components/arynqo/MobileBottomNav";
 import { useAppMatches } from "../../../hooks/useAppMatches";
 
-function getMatchLevel(score: number) {
+function getMatchLevel(score: number | null) {
+  if (score === null) return "Por calcular";
   if (score >= 85) {
     return "Alto";
   }
@@ -18,31 +21,6 @@ function getMatchLevel(score: number) {
   return "Baixo";
 }
 
-function ScoreItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: number | null;
-}) {
-  const safeValue = value ?? 0;
-
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-white/58"><LText text={label} /></p>
-        <p className="text-sm font-semibold text-cyan-200">{safeValue}%</p>
-      </div>
-
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500"
-          style={{ width: `${safeValue}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function TagList({
   title,
@@ -155,11 +133,11 @@ export default function AppMatchDetailPage() {
               <p className="text-sm text-white/60"><LText text={"Compatibilidade"} /></p>
 
               <div className="mt-3 flex items-end gap-2">
-                <span className="text-5xl font-semibold tracking-tight">
-                  {match.score}
+                <span className={`font-semibold tracking-tight ${match.score === null ? "text-2xl" : "text-5xl"}`}>
+                  <LText text={formatMatchScore(match.score)} />
                 </span>
 
-                <span className="mb-2 text-sm text-cyan-300">%</span>
+
               </div>
             </div>
 
@@ -191,7 +169,7 @@ export default function AppMatchDetailPage() {
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
             <div
               className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500"
-              style={{ width: `${match.score}%` }}
+              style={{ width: `${match.score ?? 0}%` }}
             />
           </div>
 
@@ -202,22 +180,7 @@ export default function AppMatchDetailPage() {
           )}
         </section>
 
-        <section className="mt-5 grid gap-3">
-          <ScoreItem label="Skills" value={match.scores.skills} />
-          <ScoreItem label="Área/Função" value={match.scores.role} />
-          <ScoreItem label="Senioridade" value={match.scores.seniority} />
-          <ScoreItem label="Localização" value={match.scores.location} />
-          <ScoreItem label="Modelo de trabalho" value={match.scores.workModel} />
-          <ScoreItem label="Salário" value={match.scores.salary} />
-          <ScoreItem
-            label="Formação / Idiomas"
-            value={match.scores.educationLanguage}
-          />
-          <ScoreItem
-            label="Tipo oportunidade"
-            value={match.scores.opportunityType}
-          />
-        </section>
+        <section className="mt-5"><MatchCriteria match={match.criteria} dark /></section>
 
         <div className="mt-5 grid gap-3">
           <TagList title="Pontos fortes" items={match.strengths} tone="success" />

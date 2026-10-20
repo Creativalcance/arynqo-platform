@@ -18,7 +18,7 @@ function getBestMatchText(job: AppJobCard | undefined) {
     return "Não encontrámos vagas com os filtros selecionados.";
   }
 
-  if (!job.hasAIMatch || job.score <= 0) {
+  if (!job.hasAIMatch) {
     return `Melhor oportunidade encontrada: ${job.title}. Gera matches IA para calcular a compatibilidade real.`;
   }
 
@@ -26,7 +26,7 @@ function getBestMatchText(job: AppJobCard | undefined) {
 }
 
 function getScoreLabel(job: AppJobCard) {
-  if (!job.hasAIMatch || job.score <= 0) {
+  if (!job.hasAIMatch) {
     return "—";
   }
 

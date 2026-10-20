@@ -2692,5 +2692,9 @@
   "Posso explorar sem publicar uma vaga. Para pedir autorização, escolho uma vaga ativa e o candidato decide se quer partilhar o perfil comigo. A vaga escolhida não altera os resultados da pesquisa.": "Puedo explorar sin publicar una oferta. Para solicitar acceso, elijo una oferta activa y el candidato decide si comparte su perfil conmigo. La oferta elegida no cambia los resultados.",
   "Profissão ou área": "Profesión o área",
   "Todas as opções": "Todas las opciones",
-  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Para solicitar acceso al perfil y a los datos de contacto de un candidato, selecciono una de mis ofertas activas. El candidato recibe la solicitud y decide si la acepta."
+  "Para pedir acesso ao perfil e aos contactos de um candidato, seleciono uma das minhas vagas ativas. O candidato recebe o pedido e decide se o aceita.": "Para solicitar acceso al perfil y a los datos de contacto de un candidato, selecciono una de mis ofertas activas. El candidato recibe la solicitud y decide si la acepta.",
+  "Por calcular": "Por calcular",
+  "Peso no total": "Peso en el total",
+  "O match fica disponível depois de confirmar os cinco campos profissionais do candidato e da vaga.": "El match estará disponible al confirmar los cinco campos profesionales del candidato y de la oferta.",
+  "Localização, salário, idiomas, formação e tipo de oportunidade são condições a confirmar à parte.": "La ubicación, el salario, los idiomas, la formación y el tipo de oportunidad deben verificarse por separado."
 }

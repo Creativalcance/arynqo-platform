@@ -1,196 +1,54 @@
-import { calculateFiveFieldMatch } from "@/lib/matching-five";
-import { requireActor, enforceApiLimit, authorizeMatchScope, apiErrorResponse } from "@/lib/api-auth";
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { buildMatchRecord } from '@/lib/matching-five';
+import { ApiError, requireActor, enforceApiLimit, authorizeMatchScope, apiErrorResponse } from '@/lib/api-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import { loadReviewedSkillAliases } from '@/lib/reviewed-skill-aliases';
+import type { MatchingPreferences } from '@/lib/matching-preferences';
 
-export const runtime = "nodejs";
+export const runtime = 'nodejs';
+export const maxDuration = 300;
 
-import { loadReviewedSkillAliases } from "@/lib/reviewed-skill-aliases";
-import { calculateMatch, type StudentProfile, type Job } from "@/lib/matching-engine";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function getAdminClient() {
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error("Supabase admin credentials are missing.");
-  }
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
-}
-
+type Source = {id: string; matching_preferences: MatchingPreferences | null; matching_revision: number};
 export async function POST(request: NextRequest) {
   try {
     const actor = await requireActor(request);
-    const requestedScope = (await request.json().catch(() => ({}))) as {
-      studentId?: string;
-      jobId?: string;
+    const requestedScope = await request.json().catch(() => ({})) as {studentId?: string; jobId?: string};
+    if (!requestedScope || typeof requestedScope !== "object" || Array.isArray(requestedScope)) throw new ApiError(400, "Indica uma vaga ou um candidato.");
+    const scope = await authorizeMatchScope(actor, requestedScope);
+    await enforceApiLimit(actor, 'matching', 30, 60);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) throw new ApiError(503, 'Serviço temporariamente indisponível.');
+    const db = createClient(url, key, {auth: {persistSession: false, autoRefreshToken: false}});
+    const fields = 'id,matching_preferences,matching_revision';
+    const load = async (kind: 'student_profiles' | 'jobs', id?: string) => {
+      const rows: Source[] = [];
+      for (let offset = 0; ; offset += 500) {
+        let query = db.from(kind).select(fields).order('id').range(offset, offset + 499);
+        if (id) query = query.eq('id', id);
+        if (kind === 'jobs') query = query.eq('is_active', true).is('archived_at', null).is('deleted_at', null).or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+        const {data, error} = await query;
+        if (error) throw new ApiError(503, 'Não foi possível carregar os critérios dos matches.');
+        rows.push(...(data || []) as Source[]);
+        if (!data || data.length < 500) return rows;
+      }
     };
-
-    const body = await authorizeMatchScope(actor, requestedScope);
-    await enforceApiLimit(actor, "matching", 30, 60);
-    const supabase = getAdminClient();
-
-    let studentsQuery = supabase.from("student_profiles").select(`
-      id,
-      user_id,
-      matching_preferences,
-      matching_revision,
-      headline,
-      desired_area,
-      location,
-      seniority,
-      work_model,
-      expected_salary,
-      preferred_regions,
-      academic_education,
-      professional_experience,
-      languages,
-      spoken_languages,
-      written_languages,
-      tools,
-      soft_skills,
-      career_goals,
-      preferred_opportunity_type,
-      role_title,
-      role_family,
-      skills_normalized,
-      tools_normalized,
-      soft_skills_normalized,
-      regions,
-      salary_min,
-      salary_max,
-      ai_match_keywords,
-      talent_type,
-      student_skills ( skills ( name ) )
-    `);
-
-    if (body.studentId) {
-      studentsQuery = studentsQuery.eq("id", body.studentId);
+    const [students, jobs, aliases] = await Promise.all([load('student_profiles', scope.studentId), load('jobs', scope.jobId), loadReviewedSkillAliases(db)]);
+    if (scope.jobId && !jobs.length) throw new ApiError(409, 'Esta vaga já não está ativa para calcular matches.');
+    const records = students.flatMap(student => jobs.map(job => buildMatchRecord(student, job, aliases)));
+    let saved = 0;
+    for (let offset = 0; offset < records.length; offset += 100) {
+      const batch = records.slice(offset, offset + 100);
+      const {data, error} = await db.rpc('save_matching_results', {p_results: batch});
+      if (error) throw new ApiError(503, 'Não foi possível guardar os matches. Tenta novamente.');
+      if (data !== batch.length) throw new ApiError(409, 'O perfil ou a vaga mudou durante o cálculo. Recalcula os matches.');
+      saved += data;
     }
-
-    let jobsQuery = supabase
-      .from("jobs")
-      .select(`
-        id,
-        matching_preferences,
-        matching_revision,
-        title,
-        description,
-        area,
-        specializations,
-        required_skills,
-        preferred_skills,
-        location,
-        work_model,
-        work_mode,
-        opportunity_type,
-        contract_type,
-        seniority,
-        languages,
-        salary_range,
-        salary_min,
-        salary_max,
-        education_requirements,
-        experience_requirements,
-        candidate_pitch,
-        ai_summary,
-        role_title,
-        role_family,
-        regions,
-        ai_match_keywords
-      `)
-      .eq("is_active", true);
-
-    if (body.jobId) {
-      jobsQuery = jobsQuery.eq("id", body.jobId);
-    }
-
-    const [
-      { data: students, error: studentsError },
-      { data: jobs, error: jobsError },
-    ] = await Promise.all([studentsQuery, jobsQuery]);
-
-    if (studentsError) {
-      return NextResponse.json(
-        { error: studentsError.message },
-        { status: 500 }
-      );
-    }
-
-    if (jobsError) {
-      return NextResponse.json({ error: jobsError.message }, { status: 500 });
-    }
-
-    const reviewedAliases = await loadReviewedSkillAliases(supabase);
-    const matches = [];
-
-    for (const student of (students || []) as StudentProfile[]) {
-      for (const job of (jobs || []) as Job[]) {
-        const result = calculateMatch(student, job, reviewedAliases);
-
-        matches.push({
-          student_id: student.id,
-          job_id: job.id,
-          five_field_shadow: { ...calculateFiveFieldMatch(student.matching_preferences || null, job.matching_preferences || null, reviewedAliases), candidateRevision: student.matching_revision, jobRevision: job.matching_revision },
-          match_score: result.matchScore,
-          skills_score: result.skillsScore,
-          role_score: result.roleScore,
-          seniority_score: result.seniorityScore,
-          location_score: result.locationScore,
-          work_model_score: result.workModelScore,
-          salary_score: result.salaryScore,
-          education_language_score: result.educationLanguageScore,
-          opportunity_type_score: result.opportunityTypeScore,
-          match_category: result.matchCategory,
-          is_relevant: result.isRelevant,
-          strengths: result.strengths,
-          gaps: result.gaps,
-          matching_skills: result.matchingSkills,
-          missing_skills: result.missingSkills,
-          ai_recommendations: result.aiRecommendations,
-          ai_reason: result.aiReason,
-          updated_at: new Date().toISOString(),
-        });
-      }
-    }
-
-    if (matches.length > 0) {
-      const { error: upsertError } = await supabase
-        .from("ai_matches")
-        .upsert(matches, {
-          onConflict: "student_id,job_id",
-        });
-
-      if (upsertError) {
-        return NextResponse.json(
-          { error: upsertError.message },
-          { status: 500 }
-        );
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      matches_generated: matches.length,
-    });
+    return NextResponse.json({success: true, matches_generated: saved, matches_pending: records.filter(row => row.match_score === null).length});
   } catch (error) {
     const denied = apiErrorResponse(error);
     if (denied) return denied;
-    console.error("Erro ao gerar matches:", error);
-
-    return NextResponse.json(
-      {
-        error: "Erro ao gerar matches.",
-        details:
-          error instanceof Error ? error.message : JSON.stringify(error),
-      },
-      { status: 500 }
-    );
+    console.error('Erro ao gerar matches:', error);
+    return NextResponse.json({error: 'Não foi possível calcular os matches. Tenta novamente.'}, {status: 500});
   }
 }

@@ -1,4 +1,7 @@
 "use client";
+import { MatchCriteria } from "@/app/components/MatchCriteria";
+import { formatMatchScore } from "@/lib/match-presentation";
+import type { MatchingDetails } from "@/lib/matching-five";
 import { localizedAlert } from "@/lib/i18n/browser-feedback";
 import { browserLocalizedPath } from "@/lib/i18n/config";
 import { LText, LElement } from "@/lib/i18n/client";
@@ -57,7 +60,8 @@ type RawMatch = {
   id: string;
   student_id: string;
   job_id: string;
-  match_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
   match_category: MatchCategory | null;
   is_relevant: boolean | null;
   skills_score: number | null;
@@ -81,17 +85,18 @@ type Match = {
   id: string;
   student_id: string;
   job_id: string;
-  match_score: number;
+  match_score: number | null;
+  matching_details?: MatchingDetails | null;
   match_category: MatchCategory;
   is_relevant: boolean;
-  skills_score: number;
-  role_score: number;
-  seniority_score: number;
-  location_score: number;
-  work_model_score: number;
-  salary_score: number;
-  education_language_score: number;
-  opportunity_type_score: number;
+  skills_score: number | null;
+  role_score: number | null;
+  seniority_score: number | null;
+  location_score: number | null;
+  work_model_score: number | null;
+  salary_score: number | null;
+  education_language_score: number | null;
+  opportunity_type_score: number | null;
   ai_reason: string;
   strengths: string[];
   gaps: string[];
@@ -222,6 +227,9 @@ export default function CompanyMatchesPage() {
       )
       .eq("company_id", currentCompany.id)
       .eq("is_active", true)
+      .is("archived_at", null)
+      .is("deleted_at", null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
       .order("created_at", { ascending: false });
 
     if (jobsError) {
@@ -289,6 +297,7 @@ export default function CompanyMatchesPage() {
         student_id,
         job_id,
         match_score,
+        matching_details,
         match_category,
 is_relevant,
         skills_score,
@@ -324,7 +333,7 @@ is_relevant,
       `
       )
       .eq("job_id", jobId)
-      .order("match_score", { ascending: false });
+      .order("match_score", { ascending: false, nullsFirst: false });
 
     if (error) {
       console.error(error);
@@ -349,17 +358,18 @@ is_relevant,
   id: match.id,
   student_id: match.student_id,
   job_id: match.job_id,
-  match_score: match.match_score || 0,
+  match_score: match.match_score,
+        matching_details: match.matching_details,
   match_category: match.match_category || "low_compatibility",
   is_relevant: match.is_relevant === true,
-        skills_score: match.skills_score || 0,
-        role_score: match.role_score || 0,
-        seniority_score: match.seniority_score || 0,
-        location_score: match.location_score || 0,
-        work_model_score: match.work_model_score || 0,
-        salary_score: match.salary_score || 0,
-        education_language_score: match.education_language_score || 0,
-        opportunity_type_score: match.opportunity_type_score || 0,
+        skills_score: match.skills_score,
+        role_score: match.role_score,
+        seniority_score: match.seniority_score,
+        location_score: match.location_score,
+        work_model_score: match.work_model_score,
+        salary_score: match.salary_score,
+        education_language_score: match.education_language_score,
+        opportunity_type_score: match.opportunity_type_score,
         ai_reason:
           match.ai_reason ||
           "Resultado anterior: recalcula para obter os critérios e a cobertura de informação.",
@@ -662,7 +672,7 @@ const otherMatches = useMemo(() => {
     (match) =>
       match.is_relevant === true &&
       match.match_category === "low_compatibility" &&
-      match.match_score < 50 &&
+      (match.match_score ?? 0) < 50 &&
       !actions.some((action) => action.student_id === match.student_id && action.job_id === match.job_id && action.action_type === "rejected")
   );
 }, [matches, actions]);
@@ -920,12 +930,12 @@ const otherMatches = useMemo(() => {
 
                                 <span
                                   className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${
-                                    match.match_score >= recommendedThreshold
+                                    (match.match_score ?? 0) >= recommendedThreshold
                                       ? "bg-[#07111F]"
                                       : "bg-amber-500"
                                   }`}
                                 >
-                                  {match.match_score}%
+                                  <LText text={formatMatchScore(match.match_score)} />
                                 </span>
                               </div>
 
@@ -1149,7 +1159,7 @@ function CandidateDetail({
               <LText text={"Match"} /></p>
 
             <p className="mt-2 text-6xl font-semibold tracking-[-0.08em]">
-              {match.match_score}%
+              <LText text={formatMatchScore(match.match_score)} />
             </p>
 
             <p className="mt-2 text-xs text-white/50"><LText text={"Compatibilidade"} /></p>
@@ -1268,15 +1278,7 @@ function CandidateDetail({
           <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1683FF]">
             <LText text={"Breakdown"} /></h3>
 
-          <div className="mt-6 space-y-5">
-            <MatchMetric label="Skills" value={match.skills_score} />
-            <MatchMetric label="Função" value={match.role_score} />
-            <MatchMetric label="Senioridade" value={match.seniority_score} />
-            <MatchMetric label="Localização" value={match.location_score} />
-            <MatchMetric label="Modelo" value={match.work_model_score} />
-            <MatchMetric label="Tipo" value={match.opportunity_type_score} />
-            <MatchMetric label="Salário" value={match.salary_score} />
-          </div>
+          <div className="mt-6"><MatchCriteria match={match} /></div>
 
           <div className="mt-8 rounded-[24px] bg-[#F7F9FC] p-5">
             <p className="text-sm font-semibold text-[#07111F]">
@@ -1379,23 +1381,6 @@ function ChipList({
   );
 }
 
-function MatchMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500">
-        <span><LText text={label} /></span>
-        <span>{value}%</span>
-      </div>
-
-      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-        <div
-          className="h-full rounded-full bg-[#1683FF]"
-          style={{ width: `${value}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 function ActionButton({
   active,
