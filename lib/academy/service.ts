@@ -1,4 +1,4 @@
-import { fetchSource } from "./sources";
+import { fetchSources } from "./sources";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { locales, localeNames, type Locale } from "../i18n/config";
@@ -86,9 +86,7 @@ export async function runAcademyAutomation(retryId?: string, preview = false, re
       (post) =>
         typeof post.title === "string" && typeof post.content === "string",
     );
-    const sources = await Promise.all(
-      (topic.source_urls as string[]).map(fetchSource),
-    );
+    const sources = await fetchSources(topic.source_urls as string[]);
     checked(
       await db
         .from("academy_generation_runs")

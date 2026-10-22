@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchSource } from '../lib/academy/sources';
+import { fetchSource, fetchSources } from '../lib/academy/sources';
 const url = 'https://europass.europa.eu/en/learn-europe/plan-your-learning';
 const html = () => new Response('<p>' + 'Useful learning guidance. '.repeat(80) + '</p>', { headers: { 'content-type': 'text/html' } });
 test('transient source failure retries once', async t => {
@@ -29,4 +29,23 @@ test('persistent failures stop after two reads; access denials are not retried',
  t.mock.method(globalThis,'fetch',async()=>{calls++;return new Response('',{status:403})});
  await assert.rejects(fetchSource(url),/source_unavailable/);
  assert.equal(calls,1);
+});
+
+test('a failed secondary source does not discard the verified primary source', async t => {
+ t.mock.method(globalThis,'fetch',async(input: string | URL | Request)=>String(input)===url?html():new Response('',{status:403}));
+ const sources = await fetchSources([url, 'https://www.ilo.org/topics-and-sectors/skills-and-lifelong-learning']);
+ assert.equal(sources.length,1);
+ assert.equal(sources[0].url,url);
+ assert.ok(sources[0].text.length>500);
+});
+test('no generation without at least one verified source', async t => {
+ t.mock.method(globalThis,'fetch',async()=>new Response('',{status:503}));
+ await assert.rejects(fetchSources([url]),/source_unavailable/);
+ await assert.rejects(fetchSources([]),/invalid_source/);
+});
+test('a valid source does not mask an unsafe secondary source', async t => {
+ let calls=0;
+ t.mock.method(globalThis,'fetch',async()=>{calls++;return html()});
+ await assert.rejects(fetchSources([url,'http://localhost/private']),/invalid_source/);
+ assert.equal(calls,0);
 });
