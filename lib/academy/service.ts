@@ -1,3 +1,4 @@
+import { fetchSource } from "./sources";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { locales, localeNames, type Locale } from "../i18n/config";
@@ -7,8 +8,6 @@ import {
   articleLength,
   articleSlug,
   duplicateArticle,
-  plainSource,
-  safeSourceURL,
   validateArticle,
   type ArticleDraft,
 } from "./quality";
@@ -35,7 +34,7 @@ function checked<T>(result: { data: T; error: unknown }): T {
   if (result.error) throw new Error("academy_database_error");
   return result.data;
 }
-type Source = { url: string; text: string; checked_at: string };
+
 // Output errors affect one language. Database, source and transport failures
 // still stop the worker. Never automatically retry refusals/content filters.
 function isOutputError(error: unknown): error is Error {
@@ -43,38 +42,6 @@ function isOutputError(error: unknown): error is Error {
 }
 function canRepairOutput(error: Error) {
   return /^(invalid_(?:translation_)?length_|invalid_metadata_|missing_|provider_output_(length|empty|invalid_json)_)/.test(error.message);
-}
-async function fetchSource(url: string): Promise<Source> {
-  if (!safeSourceURL(url)) throw new Error("invalid_source");
-  // Do not follow redirects to unapproved hosts. Bound both time and response size.
-  const response = await fetch(url, {
-    redirect: "manual",
-    signal: AbortSignal.timeout(12000),
-    headers: { Accept: "text/html" },
-  });
-  if (
-    !response.ok ||
-    !response.headers.get("content-type")?.includes("text/html") ||
-    !response.body
-  )
-    throw new Error("source_unavailable");
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > 750000) throw new Error("source_too_large");
-      chunks.push(value);
-    }
-  } finally {
-    await reader.cancel();
-  }
-  const text = plainSource(new TextDecoder().decode(Buffer.concat(chunks)));
-  if (text.length < 500) throw new Error("source_empty");
-  return { url, text, checked_at: new Date().toISOString() };
 }
 export async function runAcademyAutomation(retryId?: string, preview = false, regeneration?: { sourceRunId: string; requestId: string }) {
   if (!process.env.OPENAI_API_KEY) throw new Error("academy_provider_missing");

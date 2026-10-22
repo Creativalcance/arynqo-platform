@@ -244,6 +244,20 @@ test("automation claims are exclusive, publication atomic, budget bounded and pr
     await db.query("update academy_automation_settings set monthly_request_limit=$1", [usageBefore + 6]);
     assert.equal((await db.query("select academy_claim_run($1,true) as claim", [recovered.id])).rows[0].claim.reason, "monthly_limit");
     assert.equal((await db.query("select attempts from academy_generation_runs where id=$1", [recovered.id])).rows[0].attempts, 4);
+    await db.exec("reset role");
+    await db.exec(await readFile(new URL('../supabase/migrations/20261022152714_academy_release_source_reservations.sql',import.meta.url),'utf8'));
+    await db.exec("set role service_role; update academy_automation_settings set monthly_request_limit=600");
+    const sourceRun = (await db.query("select academy_claim_run($1,true) as claim", [recovered.id])).rows[0].claim;
+    const beforeRefund = (await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests;
+    await db.query("select academy_fail_run($1,$2,'source_unavailable')", [sourceRun.id, exhausted.lease_token]);
+    assert.equal((await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests,beforeRefund,'stale lease cannot refund');
+    await db.query("select academy_fail_run($1,$2,'source_unavailable')", [sourceRun.id, sourceRun.lease_token]);
+    assert.equal((await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests,beforeRefund-6);
+    await db.query("select academy_fail_run($1,$2,'source_unavailable')", [sourceRun.id, sourceRun.lease_token]);
+    assert.equal((await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests,beforeRefund-6,'repeated failure does not refund twice');
+    const afterSource = (await db.query("select academy_claim_run($1,true) as claim", [sourceRun.id])).rows[0].claim;
+    await db.query("select academy_fail_run($1,$2,'provider_or_generation_failed')", [afterSource.id,afterSource.lease_token]);
+    assert.equal((await db.query("select reserved_requests from academy_monthly_usage")).rows[0].reserved_requests,beforeRefund,'provider failures retain their budget');
   } finally {
     await db.close();
   }
