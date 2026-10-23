@@ -1,6 +1,57 @@
 import { type Locale, locales, isLocale } from "../i18n/config";
 import { ARTICLE_CONTENT_LIMITS, ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  sourceUnavailable: [
+    "Não consegui ler nenhuma das fontes deste tema. Ainda não comecei a gerar o texto. Podes repetir a geração quando as fontes estiverem disponíveis.",
+    "I could not read any source for this topic. I have not started generating the text. You can retry when the sources are available.",
+    "Je n’ai pu lire aucune source pour ce sujet. Je n’ai pas encore commencé à générer le texte. Tu peux réessayer quand les sources seront disponibles.",
+    "No he podido leer ninguna fuente de este tema. Aún no he empezado a generar el texto. Puedes reintentarlo cuando las fuentes estén disponibles.",
+    "Ich konnte keine Quelle zu diesem Thema lesen. Ich habe noch keinen Text erstellt. Du kannst es erneut versuchen, sobald die Quellen verfügbar sind.",
+    "Non ho potuto leggere nessuna fonte per questo tema. Non ho ancora iniziato a generare il testo. Puoi riprovare quando le fonti saranno disponibili.",
+  ],
+  invalidSource: [
+    "Não consegui validar uma das fontes ou o seu redirecionamento. Confere os endereços do tema e usa apenas fontes oficiais permitidas.",
+    "I could not validate a source or its redirect. Check the topic’s addresses and use only approved official sources.",
+    "Je n’ai pas pu valider une source ou sa redirection. Vérifie les adresses du sujet et utilise uniquement des sources officielles autorisées.",
+    "No he podido validar una fuente o su redirección. Comprueba las direcciones del tema y usa solo fuentes oficiales permitidas.",
+    "Ich konnte eine Quelle oder ihre Weiterleitung nicht bestätigen. Prüfe die Adressen des Themas und verwende nur zugelassene offizielle Quellen.",
+    "Non ho potuto convalidare una fonte o il suo reindirizzamento. Controlla gli indirizzi del tema e usa solo fonti ufficiali consentite.",
+  ],
+  sourceUnreadable: [
+    "Não consegui extrair texto suficiente das fontes dentro dos limites de leitura. Confere as páginas antes de repetires a geração.",
+    "I could not extract enough source text within the reading limits. Check the pages before retrying generation.",
+    "Je n’ai pas pu extraire assez de texte des sources dans les limites de lecture. Vérifie les pages avant de relancer la génération.",
+    "No he podido extraer suficiente texto de las fuentes dentro de los límites de lectura. Comprueba las páginas antes de reintentar la generación.",
+    "Ich konnte innerhalb der Leselimits nicht genug Quellentext auslesen. Prüfe die Seiten, bevor du die Erstellung erneut startest.",
+    "Non ho potuto estrarre abbastanza testo dalle fonti entro i limiti di lettura. Controlla le pagine prima di riprovare la generazione.",
+  ],
+  newVersionAttempt: ["Tentativa de nova versão", "New version attempt", "Tentative de nouvelle version", "Intento de nueva versión", "Versuch einer neuen Fassung", "Tentativo di nuova versione"],
+  originalPublished: [
+    "O artigo original já está publicado. Esta tentativa de criar outra versão é independente e não altera o artigo publicado.",
+    "The original article is already published. This attempt to create another version is separate and does not change the published article.",
+    "L’article original est déjà publié. Cette tentative de créer une autre version est indépendante et ne modifie pas l’article publié.",
+    "El artículo original ya está publicado. Este intento de crear otra versión es independiente y no modifica el artículo publicado.",
+    "Der ursprüngliche Artikel ist bereits veröffentlicht. Dieser Versuch einer weiteren Fassung ist unabhängig und ändert den veröffentlichten Artikel nicht.",
+    "L’articolo originale è già pubblicato. Questo tentativo di creare un’altra versione è indipendente e non modifica l’articolo pubblicato.",
+  ],
+  originalAvailable: [
+    "O artigo original continua disponível. Esta tentativa de criar outra versão é independente.",
+    "The original article is still available. This attempt to create another version is separate.",
+    "L’article original reste disponible. Cette tentative de créer une autre version est indépendante.",
+    "El artículo original sigue disponible. Este intento de crear otra versión es independiente.",
+    "Der ursprüngliche Artikel ist weiterhin verfügbar. Dieser Versuch einer weiteren Fassung ist unabhängig.",
+    "L’articolo originale è ancora disponibile. Questo tentativo di creare un’altra versione è indipendente.",
+  ],
+  readOriginal: ["Ler artigo original", "Read original article", "Lire l’article original", "Leer artículo original", "Ursprünglichen Artikel lesen", "Leggi l’articolo originale"],
+  noDraftYet: [
+    "Ainda não tenho um rascunho para mostrar nesta tentativa.",
+    "I do not have a draft to show for this attempt yet.",
+    "Je n’ai pas encore de brouillon à afficher pour cette tentative.",
+    "Aún no tengo un borrador que mostrar para este intento.",
+    "Ich habe für diesen Versuch noch keinen Entwurf zum Anzeigen.",
+    "Non ho ancora una bozza da mostrare per questo tentativo.",
+  ],
+  retryGeneration: ["Repetir geração", "Retry generation", "Relancer la génération", "Reintentar generación", "Erstellung erneut versuchen", "Riprova la generazione"],
   translationLength: [
     "Não consegui validar a extensão da versão em {language}. Recebi {words} palavras e {characters} caracteres. Confere o texto com o original ou repete a versão em falta.",
     "I could not validate the length of the {language} version. I received {words} words and {characters} characters. Check the text against the original or retry the missing version.",
@@ -458,6 +509,10 @@ export function academyCopy(locale: Locale, key: AcademyCopyKey) {
 
 export function academyRunMessage(locale: Locale, code: string) {
   const messages: Record<string, AcademyCopyKey> = {
+    source_unavailable: "sourceUnavailable",
+    source_empty: "sourceUnreadable",
+    source_too_large: "sourceUnreadable",
+    invalid_source: "invalidSource",
     invalid_length: "invalidLength",
     invalid_metadata: "metadataTooLong",
     monthly_limit: "monthlyLimit",

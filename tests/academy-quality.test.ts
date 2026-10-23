@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { academyRunMessage } from "../lib/academy/admin-copy";
+
+test("source failures have actionable messages in every Academy language", () => {
+  for (const locale of ["pt", "en", "fr", "es", "de", "it"] as const) {
+    for (const code of ["source_unavailable", "source_empty", "source_too_large", "invalid_source"]) {
+      const message = academyRunMessage(locale, code);
+      assert.notEqual(message, code);
+      assert.ok(message.length > 60);
+    }
+  }
+  assert.match(academyRunMessage("pt", "source_unavailable"), /Ainda não comecei a gerar/);
+});
 import { locales } from "../lib/i18n/config";
 import {
   ARTICLE_CONTENT_SCHEMA,

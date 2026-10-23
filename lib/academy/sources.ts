@@ -3,7 +3,7 @@ import { plainSource, safeSourceURL } from "./quality";
 export type Source = { url: string; text: string; checked_at: string };
 export async function fetchSource(url: string): Promise<Source> {
   if (!safeSourceURL(url)) throw new Error("invalid_source");
-  // One retry for transient HTTP failures; redirects stay on the approved hosts.
+  // One retry within a shared deadline; redirects stay on the approved hosts.
   const signal = AbortSignal.timeout(24000);
   let current = url;
   let response: Response | undefined;
@@ -16,6 +16,10 @@ export async function fetchSource(url: string): Promise<Source> {
         headers: { Accept: "text/html" },
       });
     } catch (error) {
+      if (!retried && !signal.aborted) {
+        retried = true;
+        continue;
+      }
       console.warn("academy_source_failure", { host: new URL(current).hostname, reason: error instanceof Error ? error.name : "network" });
       throw new Error("source_unavailable");
     }
@@ -55,8 +59,12 @@ export async function fetchSource(url: string): Promise<Source> {
       if (total > 750000) throw new Error("source_too_large");
       chunks.push(value);
     }
+  } catch (error) {
+    if (error instanceof Error && error.message === "source_too_large") throw error;
+    console.warn("academy_source_failure", { host: new URL(current).hostname, reason: "body_read_failed" });
+    throw new Error("source_unavailable");
   } finally {
-    await reader.cancel();
+    await reader.cancel().catch(() => {});
   }
   const text = plainSource(new TextDecoder().decode(Buffer.concat(chunks)));
   if (text.length < 500) throw new Error("source_empty");

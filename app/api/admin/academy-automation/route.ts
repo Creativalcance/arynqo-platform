@@ -72,9 +72,17 @@ export async function GET(request: NextRequest) {
       db.from("academy_email_deliveries").select("id", { count: "exact", head: true }).eq("status", "sent"),
       db.from("academy_email_deliveries").select("id", { count: "exact", head: true }).in("status", ["failed", "uncertain"]),
     ]);
+    const history = check(runs) ?? [];
+    const parentIds = [...new Set(history.map(run => run.regenerated_from).filter((id): id is string => typeof id === "string"))];
+    // Resolve parents independently of the history limit: a regeneration may
+    // refer to an older article that is no longer among the latest 30 runs.
+    const parents = parentIds.length
+      ? check(await db.from("academy_generation_runs").select("id,post_id,status").in("id", parentIds)) ?? []
+      : [];
+    const parentsById = new Map(parents.map(parent => [parent.id, parent]));
     return NextResponse.json({
       settings: check(settings),
-      runs: check(runs),
+      runs: history.map(run => ({ ...run, original: parentsById.get(run.regenerated_from) ?? null })),
       topics: check(topics),
       usage: check(usage),
       emails: {
@@ -87,7 +95,7 @@ export async function GET(request: NextRequest) {
         provider: !!process.env.OPENAI_API_KEY,
         email: !!process.env.RESEND_API_KEY,
       },
-    });
+    }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return (
       apiErrorResponse(error) ||

@@ -152,6 +152,46 @@ test("admin can read full draft versions by post ID without relying on the lates
   assert.equal((await GET(request(postId))).status, 404);
 });
 
+test("failed regeneration history links its original even outside the latest 30 runs", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const parentId = "10000000-0000-0000-0000-000000000001";
+  const postId = "10000000-0000-0000-0000-000000000002";
+  let parentReads = 0;
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    assert.ok(!init?.method || init.method === "GET" || init.method === "HEAD", "reading history must never generate, publish or clear failures");
+    if (url.pathname === "/auth/v1/user") return Response.json({ id: parentId, is_anonymous: false });
+    if (url.pathname === "/rest/v1/profiles") return Response.json({ role: "admin", locale: "pt" });
+    if (url.pathname.endsWith("/academy_generation_runs")) {
+      if (url.searchParams.has("id")) {
+        assert.equal(url.searchParams.get("id"), `in.(${parentId})`);
+        assert.equal(url.searchParams.has("limit"), false);
+        parentReads++;
+        return Response.json([{ id: parentId, post_id: postId, status: "published" }]);
+      }
+      assert.equal(url.searchParams.get("limit"), "30");
+      return Response.json([{ id: "failed-run", post_id: null, status: "failed", error_code: "source_unavailable", regenerated_from: parentId }]);
+    }
+    if (url.pathname.endsWith("/academy_automation_settings")) return Response.json({ enabled: true });
+    if (url.pathname.endsWith("/academy_topics")) return Response.json([]);
+    if (url.pathname.endsWith("/academy_monthly_usage")) return Response.json([]);
+    if (url.pathname.endsWith("/academy_email_deliveries")) return new Response(null, { headers: { "content-range": "*/0" } });
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  });
+  const response = await GET(new NextRequest("https://test.invalid/api/admin/academy-automation", {
+    headers: { authorization: "Bearer test-token" },
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("cache-control"), "private, no-store");
+  const { runs } = await response.json();
+  assert.equal(parentReads, 1);
+  assert.equal(runs[0].error_code, "source_unavailable", "preserve the historical failure");
+  assert.equal(runs[0].post_id, null, "do not present the original as the regenerated draft");
+  assert.deepEqual(runs[0].original, { id: parentId, post_id: postId, status: "published" });
+});
+
 
 test("regeneration rejects a missing request ID before AI or database generation", async context => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";

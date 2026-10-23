@@ -15,11 +15,15 @@ type Failure = "length" | "empty" | "no_choices" | "invalid_json" | "short" | "m
 type Scenario = {
   name: string; saved?: Locale[]; regenerate?: boolean;
   failures?: Partial<Record<Locale, Failure>>; transient?: boolean; nearDeadline?: boolean; compactGerman?: boolean;
+  sourcesUnavailable?: boolean;
   expectedError?: string; expectedRequests: number; expectedStaged: Locale[];
 };
 const remaining: Locale[] = ["es", "de", "it"];
 const resumed: Locale[] = ["pt", "fr"];
 const scenarios: Scenario[] = [
+  { name: "source outage stops a new article before provider usage", sourcesUnavailable: true, expectedError: "source_unavailable", expectedRequests: 0, expectedStaged: [] },
+  { name: "regeneration still requires freshly read sources", regenerate: true, sourcesUnavailable: true, expectedError: "source_unavailable", expectedRequests: 0, expectedStaged: [] },
+  { name: "source outage cannot block saved-original translations", saved: ["pt", "en", "fr", "es", "it"], sourcesUnavailable: true, expectedRequests: 1, expectedStaged: ["de"] },
   { name: "complete", expectedRequests: 6, expectedStaged: [...locales] },
   { name: "regenerate", regenerate: true, expectedRequests: 6, expectedStaged: [...locales] },
   { name: "short original", failures: { pt: "short" }, expectedError: "invalid_length_pt_2_9", expectedRequests: 1, expectedStaged: [] },
@@ -47,10 +51,15 @@ for (const scenario of scenarios) {
     const saved = scenario.saved ?? [];
     const staged: { language: Locale; payload: { content: string; reading_time: string; review_required: boolean } }[] = [];
     const calls = new Map<Locale, number>();
-    let usage = 0, finished = 0, failure: string | undefined;
+    let usage = 0, finished = 0, sourceReads = 0, sourceWrites = 0, failure: string | undefined;
     let clock = Date.now();
     if (scenario.nearDeadline) context.mock.method(Date, "now", () => clock);
     context.mock.method(console, "warn", (event: string, diagnostic: Record<string, unknown>) => {
+      if (event === "academy_source_failure") {
+        assert.equal(scenario.sourcesUnavailable, true);
+        assert.equal(diagnostic.status, 403);
+        return;
+      }
       assert.equal(event, "academy_provider_output");
       assert.deepEqual(Object.keys(diagnostic).sort(), ["finish_reason", "input_tokens", "locale", "output_tokens", "reason", "run_id"]);
     });
@@ -73,10 +82,17 @@ for (const scenario of scenarios) {
       if (url.pathname.endsWith("/academy_topics"))
         return Response.json({ title: "Experience", category: "Skills", audience: "Todos", source_urls: ["https://europass.europa.eu/en/create-europass-cv"] });
       if (url.pathname.endsWith("/academy_posts")) return Response.json([]);
-      if (url.hostname === "europass.europa.eu")
+      if (url.hostname === "europass.europa.eu") {
+        sourceReads++;
+        if (scenario.sourcesUnavailable) return new Response(null, { status: 403 });
         return new Response(`<main>${"Describe relevant professional experience. ".repeat(30)}</main>`, { headers: { "content-type": "text/html" } });
+      }
       if (url.pathname.endsWith("/academy_generation_runs")) {
-        if (init?.method === "PATCH") return new Response(null, { status: 204 });
+        if (init?.method === "PATCH") {
+          sourceWrites++;
+          assert.ok(!saved.includes("pt"), "saved references and their verification dates must stay unchanged");
+          return new Response(null, { status: 204 });
+        }
         return Response.json([{ post_id: saved.length || staged.length ? "post-test" : null }]);
       }
       if (url.pathname.endsWith("/chat/completions")) {
@@ -126,6 +142,8 @@ for (const scenario of scenarios) {
     assert.equal(failure, scenario.expectedError);
     assert.equal(finished, scenario.expectedError ? 0 : 1, "partial articles must never finish or publish");
     assert.equal(usage, scenario.expectedRequests, "every response, including rejected output, records usage");
+    assert.equal(sourceReads, saved.includes("pt") ? 0 : 1);
+    assert.equal(sourceWrites, saved.includes("pt") || scenario.sourcesUnavailable ? 0 : 1);
     assert.ok([...calls.values()].reduce((a, b) => a + b, 0) <= 6, "never exceed the six reserved requests");
     assert.deepEqual(staged.map(row => row.language).sort(), [...scenario.expectedStaged].sort());
     assert.equal(result.post_id, saved.length || staged.length ? "post-test" : undefined, "partial draft remains accessible after failure");
