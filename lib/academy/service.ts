@@ -1,4 +1,4 @@
-import { fetchSources } from "./sources";
+import { fetchSources, type Source } from "./sources";
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 import { locales, localeNames, type Locale } from "../i18n/config";
@@ -73,39 +73,41 @@ export async function runAcademyAutomation(retryId?: string, preview = false, re
         .eq("id", claim.topic_id)
         .single(),
     );
-    const previous = (
-      checked(
-        await db
-          .from("academy_posts")
-          .select("title,excerpt,content")
-          .eq("status", "published")
-          .order("created_at", { ascending: false })
-          .limit(30),
-      ) || []
-    ).filter(
-      (post) =>
-        typeof post.title === "string" && typeof post.content === "string",
-    );
-    const sources = await fetchSources(topic.source_urls as string[]);
-    checked(
-      await db
-        .from("academy_generation_runs")
-        .update({
-          sources: sources.map(({ url, checked_at }) => ({ url, checked_at })),
-        })
-        .eq("id", runId)
-        .eq("lease_token", lease),
-    );
     const saved = claim.post_id
       ? checked(
-          await db
-            .from("academy_post_translations")
-            .select("*")
-            .eq("post_id", claim.post_id),
+          await db.from("academy_post_translations").select("*").eq("post_id", claim.post_id),
         )
       : [];
-    let portuguese = saved?.find((row) => row.locale === "pt") as
+    let portuguese = saved?.find((row) => row.locale === "pt" && row.quality_passed) as
       ArticleDraft | undefined;
+    // Translations use the saved original, not live source pages. Keep its
+    // references and check dates intact even if a publisher is now unavailable.
+    let sources: Source[] = [];
+    let previous: { title: string; content: string }[] = [];
+    if (!portuguese) {
+      previous = (
+        checked(
+          await db
+            .from("academy_posts")
+            .select("title,excerpt,content")
+            .eq("status", "published")
+            .order("created_at", { ascending: false })
+            .limit(30),
+        ) || []
+      ).filter(
+        (post) => typeof post.title === "string" && typeof post.content === "string",
+      );
+      sources = await fetchSources(topic.source_urls as string[]);
+      checked(
+        await db
+          .from("academy_generation_runs")
+          .update({
+            sources: sources.map(({ url, checked_at }) => ({ url, checked_at })),
+          })
+          .eq("id", runId)
+          .eq("lease_token", lease),
+      );
+    }
     // Each claim already reserves six provider requests. Saved languages leave
     // room for a single repair per failed language without exceeding that quota.
     let requests = 0;

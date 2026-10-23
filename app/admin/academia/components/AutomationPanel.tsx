@@ -10,6 +10,8 @@ type Version = { locale: Locale; quality_passed: boolean };
 type Run = {
   id: string;
   post_id: string | null;
+  regenerated_from: string | null;
+  original: { post_id: string | null; status: string } | null;
   status: string;
   attempts: number;
   lease_until: string | null;
@@ -112,6 +114,7 @@ export default function AutomationPanel({
       const result = await response.json();
       if (!response.ok) {
         await load();
+        if (result.post_id) await onGenerated(result.post_id);
         throw new Error(academyRunMessage(locale, result.error || c("error")));
       }
       setMessage(
@@ -123,6 +126,7 @@ export default function AutomationPanel({
       );
       await load();
       await onChanged();
+      if (result.post_id) await onGenerated(result.post_id);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : c("error"));
     } finally {
@@ -303,7 +307,7 @@ export default function AutomationPanel({
         {data.runs.map((run) => (
           <details key={run.id} open={run.status === "review" || run.status === "failed"} className="min-w-0 rounded-2xl border p-4">
             <summary className="cursor-pointer break-words font-semibold">
-              {run.academy_topics.title} ·{" "}
+              {run.academy_topics.title} · {run.regenerated_from ? `${c("newVersionAttempt")} · ` : ""}
               {c(
                 run.status === "review"
                   ? "reviewState"
@@ -319,7 +323,16 @@ export default function AutomationPanel({
                 {academyRunMessage(locale, run.error_code)}
               </p>
             )}
-            <p className="mt-3 text-sm text-slate-600">{c("reviewInstructions")}</p>
+            {run.regenerated_from && run.original?.post_id && (
+              <div className="mt-3 space-y-2 rounded-xl bg-blue-50 p-3 text-sm text-blue-950">
+                <p>{c(run.original.status === "published" ? "originalPublished" : "originalAvailable")}</p>
+                <button type="button" className={button} disabled={busy} onClick={() => onReview(run.original!.post_id!)}>
+                  {c("readOriginal")}
+                </button>
+              </div>
+            )}
+            <p className="mt-3 text-sm text-slate-600">{c(run.post_id ? "reviewInstructions" : "noDraftYet")}</p>
+            {run.post_id && (
             <div className="my-3 flex flex-wrap gap-2">
               {locales.map((language) => {
                 const version =
@@ -342,6 +355,7 @@ export default function AutomationPanel({
                 );
               })}
             </div>
+            )}
             <ul className="my-3 space-y-2 text-xs">
               {run.sources.map((source) => (
                 <li key={source.url}>
@@ -359,16 +373,16 @@ export default function AutomationPanel({
             </ul>
             {run.status === "failed" && (
               <button
-                disabled={busy}
+                disabled={busy || !data.ready.provider}
                 className={button}
                 onClick={() => action({ action: "retry", run_id: run.id })}
               >
-                {c("retry")}
+                {c(run.post_id ? "retry" : "retryGeneration")}
               </button>
             )}
             {["failed", "review", "published"].includes(run.status) && (
               <div className="mt-3">
-                <ArticleGenerationButton runId={run.id} disabled={busy || !data.ready.provider} onCompleted={onGenerated} />
+                <ArticleGenerationButton runId={run.id} disabled={busy || !data.ready.provider} onBusyChange={setBusy} onCompleted={onGenerated} />
               </div>
             )}
             {run.status === "review" && (
