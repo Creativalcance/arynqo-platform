@@ -28,6 +28,7 @@ function render(run) {
     if (name.startsWith('@/lib/')) return require(`../lib/${name.slice('@/lib/'.length)}`);
     if (name === './TopicCalendar') return { default: () => null };
     if (name === './ArticleGenerationButton') return { default: () => React.createElement('button', null, 'Gerar novamente') };
+    if (name === './ArticleDeleteButton') return { default: props => React.createElement('button', null, props.postId ? 'Eliminar artigo' : 'Eliminar tentativa') };
     return require(name);
   } });
   return renderToStaticMarkup(React.createElement(exports.default, { onChanged: async () => {}, onGenerated: async () => {}, onReview() {}, revision: 0 }));
@@ -42,7 +43,7 @@ const failed = {
 
 test('failed regeneration explains the source error and keeps access to the published original', () => {
   const html = render(failed);
-  for (const text of ['Tentativa de nova versão', 'Não consegui ler nenhuma das fontes', 'O artigo original já está publicado', 'Ler artigo original', 'Repetir geração', 'Gerar novamente']) assert.ok(html.includes(text), text);
+  for (const text of ['Tentativa de nova versão', 'Não consegui ler nenhuma das fontes', 'O artigo original já está publicado', 'Ler artigo original', 'Repetir geração', 'Gerar novamente', 'Eliminar tentativa']) assert.ok(html.includes(text), text);
   assert.ok(!html.includes('source_unavailable'));
   assert.ok(!html.includes('Ainda por gerar'), 'do not show six unusable language buttons without a draft');
 });
@@ -52,5 +53,6 @@ test('a partial draft still exposes saved versions and retries only missing vers
     error_code: 'provider_output_empty_en', academy_posts: { academy_post_translations: [{ locale: 'pt', quality_passed: true }] } });
   assert.ok(html.includes('Repetir versões em falta'));
   assert.ok(html.includes('Ler versão'));
+  assert.ok(html.includes('Eliminar artigo'));
   assert.ok(!html.includes('Ler artigo original'));
 });

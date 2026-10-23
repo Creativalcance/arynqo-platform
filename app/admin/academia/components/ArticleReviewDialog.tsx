@@ -3,6 +3,7 @@ import ArticleGenerationButton from "./ArticleGenerationButton";
 import { useEffect, useId, useRef, useState } from "react";
 import AcademyContent from "@/app/components/arynqo/AcademyContent";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
+import ArticleDeleteButton from "./ArticleDeleteButton";
 import { academyCopy, academyRunMessage, type AcademyCopyKey } from "@/lib/academy/admin-copy";
 import type { ArticleDraft } from "@/lib/academy/quality";
 import { useI18n } from "@/lib/i18n/client";
@@ -19,12 +20,13 @@ type ReviewData = {
 const button = "rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-blue-600 disabled:opacity-50";
 const fields = ["title", "excerpt", "seo_title", "seo_description", "content"] as const;
 
-export default function ArticleReviewDialog({ postId, initialLanguage, onClose, onSaved, onGenerated }: {
+export default function ArticleReviewDialog({ postId, initialLanguage, onClose, onSaved, onGenerated, onDeleted }: {
   postId: string;
   initialLanguage?: Locale;
   onClose: () => void;
   onSaved: () => Promise<void>;
   onGenerated: (postId?: string) => Promise<void>;
+  onDeleted: (postId?: string) => Promise<void>;
 }) {
   const { locale } = useI18n();
   const c = (key: AcademyCopyKey) => academyCopy(locale, key);
@@ -102,6 +104,8 @@ export default function ArticleReviewDialog({ postId, initialLanguage, onClose, 
           </div>
         ) : (
           <>
+            {!edit && <ArticleDeleteButton postId={postId} title={data.post.title} disabled={busy || data.editing_locked}
+              onBusyChange={setBusy} onDeleted={onDeleted} />}
             <p className="text-sm text-slate-600">{c("reviewInstructions")}</p>
             {!busy && data.run?.error_code && <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-950">{academyRunMessage(locale, data.run.error_code)}</p>}
             {data.run && ["failed", "review", "published"].includes(data.run.status) && !edit && (

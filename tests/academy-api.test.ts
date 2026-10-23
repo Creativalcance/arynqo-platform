@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NextRequest } from "next/server";
-import { GET, POST } from "../app/api/admin/academy-automation/route";
+import { GET, POST, DELETE } from "../app/api/admin/academy-automation/route";
 import { GET as cron } from "../app/api/cron/generate-academy-post/route";
 test("automation admin endpoints deny anonymous requests before any network call", async (context) => {
   context.mock.method(globalThis, "fetch", async () => {
     throw new Error("unexpected_network_call");
   });
+  assert.equal((await DELETE(new NextRequest("https://test.invalid/api/admin/academy-automation", { method: "DELETE" }))).status, 401);
   assert.equal(
     (
       await GET(
@@ -165,6 +166,7 @@ test("failed regeneration history links its original even outside the latest 30 
     if (url.pathname === "/auth/v1/user") return Response.json({ id: parentId, is_anonymous: false });
     if (url.pathname === "/rest/v1/profiles") return Response.json({ role: "admin", locale: "pt" });
     if (url.pathname.endsWith("/academy_generation_runs")) {
+      assert.equal(url.searchParams.get("status"), "neq.deleted");
       if (url.searchParams.has("id")) {
         assert.equal(url.searchParams.get("id"), `in.(${parentId})`);
         assert.equal(url.searchParams.has("limit"), false);
@@ -190,6 +192,46 @@ test("failed regeneration history links its original even outside the latest 30 
   assert.equal(runs[0].error_code, "source_unavailable", "preserve the historical failure");
   assert.equal(runs[0].post_id, null, "do not present the original as the regenerated draft");
   assert.deepEqual(runs[0].original, { id: parentId, post_id: postId, status: "published" });
+});
+
+test("only admins can delete one article or failed attempt; invalid targets never reach deletion", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const target = "10000000-0000-0000-0000-000000000002";
+  let role = "company", error: string | null = null;
+  const deletions: unknown[] = [];
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/auth/v1/user") return Response.json({ id: target, is_anonymous: false, user_metadata: { role: "admin" } });
+    if (url.pathname === "/rest/v1/profiles") return Response.json({ role, locale: "pt" });
+    if (url.pathname.endsWith("/consume_api_limit")) return new Response(null, { status: 204 });
+    if (url.pathname.endsWith("/academy_delete_content")) {
+      deletions.push(JSON.parse(String(init?.body)));
+      return error ? Response.json({ message: error, code: "P0001" }, { status: 400 }) : Response.json({ success: true, post_id: target });
+    }
+    throw new Error(`Unexpected operation: ${url.pathname}`);
+  });
+  const request = (body: unknown) => new NextRequest("https://test.invalid/api/admin/academy-automation", {
+    method: "DELETE", headers: { authorization: "Bearer test-token" }, body: JSON.stringify(body),
+  });
+  for (role of ["company", "student"]) assert.equal((await DELETE(request({ post_id: target }))).status,403);
+  role = "admin";
+  for (const body of [null, [], {}, { post_id: target, run_id: target }, { run_id: "bad" }, { post_id: "10000000----------------------------" }]) {
+    assert.equal((await DELETE(request(body))).status,400);
+  }
+  assert.equal(deletions.length,0);
+  assert.equal((await DELETE(request({post_id:target}))).status,200);
+  assert.equal((await DELETE(request({run_id:target}))).status,200);
+  assert.deepEqual(deletions,[{target_post:target,target_run:null},{target_post:null,target_run:target}]);
+  error="academy_delete_busy";
+  const busy=await DELETE(request({run_id:target}));
+  assert.equal(busy.status,409);
+  assert.equal((await busy.json()).error,"academy_delete_busy");
+  error="private database diagnostic";
+  const failure=await DELETE(request({post_id:target}));
+  assert.equal(failure.status,500);
+  assert.equal((await failure.json()).error,"academy_delete_failed");
 });
 
 

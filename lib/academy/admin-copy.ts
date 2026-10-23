@@ -1,6 +1,42 @@
 import { type Locale, locales, isLocale } from "../i18n/config";
 import { ARTICLE_CONTENT_LIMITS, ARTICLE_METADATA_LIMITS } from "./quality";
 const copy = {
+  deleteArticle: ["Eliminar artigo", "Delete article", "Supprimer l’article", "Eliminar artículo", "Artikel löschen", "Elimina articolo"],
+  deleteAttempt: ["Eliminar tentativa", "Delete attempt", "Supprimer la tentative", "Eliminar intento", "Versuch löschen", "Elimina tentativo"],
+  deleting: ["A eliminar…", "Deleting…", "Suppression…", "Eliminando…", "Wird gelöscht…", "Eliminazione…"],
+  deleted: ["Eliminei o conteúdo selecionado.", "I deleted the selected content.", "J’ai supprimé le contenu sélectionné.", "He eliminado el contenido seleccionado.", "Ich habe den ausgewählten Inhalt gelöscht.", "Ho eliminato il contenuto selezionato."],
+  deleteArticleConfirm: [
+    "Vou eliminar «{title}» e todas as suas versões. Se estiver publicado, deixa de estar disponível no site. Esta ação não pode ser anulada. Queres continuar?",
+    "I will delete “{title}” and all its language versions. If published, it will no longer be available on the site. This cannot be undone. Continue?",
+    "Je vais supprimer « {title} » et toutes ses versions. S’il est publié, il ne sera plus disponible sur le site. Cette action est irréversible. Continuer ?",
+    "Voy a eliminar «{title}» y todas sus versiones. Si está publicado, dejará de estar disponible en el sitio. Esta acción no se puede deshacer. ¿Continuar?",
+    "Ich werde „{title}“ und alle Sprachversionen löschen. Falls veröffentlicht, ist der Artikel danach nicht mehr auf der Website verfügbar. Dies kann nicht rückgängig gemacht werden. Fortfahren?",
+    "Eliminerò «{title}» e tutte le sue versioni. Se pubblicato, non sarà più disponibile sul sito. Questa azione è irreversibile. Vuoi continuare?",
+  ],
+  deleteAttemptConfirm: [
+    "Vou eliminar a tentativa «{title}» do histórico. O artigo original, caso exista, mantém-se. Esta ação não pode ser anulada. Queres continuar?",
+    "I will remove the “{title}” attempt from the history. The original article, if any, will be kept. This cannot be undone. Continue?",
+    "Je vais supprimer la tentative « {title} » de l’historique. L’article original, s’il existe, sera conservé. Cette action est irréversible. Continuer ?",
+    "Voy a eliminar el intento «{title}» del historial. El artículo original, si existe, se conserva. Esta acción no se puede deshacer. ¿Continuar?",
+    "Ich werde den Versuch „{title}“ aus dem Verlauf entfernen. Der ursprüngliche Artikel bleibt erhalten, falls vorhanden. Dies kann nicht rückgängig gemacht werden. Fortfahren?",
+    "Rimuoverò il tentativo «{title}» dalla cronologia. L’articolo originale, se presente, rimarrà disponibile. Questa azione è irreversibile. Vuoi continuare?",
+  ],
+  deleteError: [
+    "Não consegui confirmar a eliminação. Atualiza o painel para verificares o resultado antes de tentares novamente.",
+    "I could not confirm deletion. Refresh the panel to check the result before trying again.",
+    "Je n’ai pas pu confirmer la suppression. Actualise le panneau pour vérifier le résultat avant de réessayer.",
+    "No he podido confirmar la eliminación. Actualiza el panel para comprobar el resultado antes de reintentarlo.",
+    "Ich konnte die Löschung nicht bestätigen. Aktualisiere den Bereich, um das Ergebnis vor einem neuen Versuch zu prüfen.",
+    "Non ho potuto confermare l’eliminazione. Aggiorna il pannello per verificare il risultato prima di riprovare.",
+  ],
+  deleteBusy: [
+    "Ainda tenho uma operação em curso para este conteúdo. Aguarda um pouco e volta a tentar eliminar.",
+    "I still have an operation in progress for this content. Wait a moment, then try deleting again.",
+    "J’ai encore une opération en cours pour ce contenu. Attends un instant, puis réessaie de le supprimer.",
+    "Aún tengo una operación en curso para este contenido. Espera un momento y vuelve a intentar eliminarlo.",
+    "Für diesen Inhalt läuft noch ein Vorgang. Warte einen Moment und versuche dann erneut, ihn zu löschen.",
+    "Ho ancora un’operazione in corso per questo contenuto. Attendi un momento, poi riprova a eliminarlo.",
+  ],
   sourceUnavailable: [
     "Não consegui ler nenhuma das fontes deste tema. Ainda não comecei a gerar o texto. Podes repetir a geração quando as fontes estiverem disponíveis.",
     "I could not read any source for this topic. I have not started generating the text. You can retry when the sources are available.",
@@ -509,6 +545,9 @@ export function academyCopy(locale: Locale, key: AcademyCopyKey) {
 
 export function academyRunMessage(locale: Locale, code: string) {
   const messages: Record<string, AcademyCopyKey> = {
+    academy_delete_busy: "deleteBusy",
+    academy_delete_failed: "deleteError",
+    invalid_deletion: "deleteError",
     source_unavailable: "sourceUnavailable",
     source_empty: "sourceUnreadable",
     source_too_large: "sourceUnreadable",
