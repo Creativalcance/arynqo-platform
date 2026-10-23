@@ -21,7 +21,7 @@ function check<T>(result: { data: T; error: unknown }): T {
 }
 function uuid(value: unknown): value is string {
   return (
-    typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9-]{27}$/i.test(value)
+    typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)
   );
 }
 export async function GET(request: NextRequest) {
@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
         .select(
           "*,academy_topics(title),academy_posts(title,slug,academy_post_translations(locale,quality_passed))",
         )
+        .neq("status", "deleted")
         .order("created_at", { ascending: false })
         .limit(30),
       db
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
     // Resolve parents independently of the history limit: a regeneration may
     // refer to an older article that is no longer among the latest 30 runs.
     const parents = parentIds.length
-      ? check(await db.from("academy_generation_runs").select("id,post_id,status").in("id", parentIds)) ?? []
+      ? check(await db.from("academy_generation_runs").select("id,post_id,status").in("id", parentIds).neq("status", "deleted")) ?? []
       : [];
     const parentsById = new Map(parents.map(parent => [parent.id, parent]));
     return NextResponse.json({
@@ -101,6 +102,29 @@ export async function GET(request: NextRequest) {
       apiErrorResponse(error) ||
       NextResponse.json({ error: "Academy unavailable" }, { status: 503 })
     );
+  }
+}
+export async function DELETE(request: NextRequest) {
+  try {
+    const actor = await requireActor(request, ["admin"]);
+    await enforceApiLimit(actor, "academy_admin", 20);
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)
+      || (body.post_id !== undefined) === (body.run_id !== undefined)
+      || !uuid(body.post_id ?? body.run_id)) {
+      throw new ApiError(400, "invalid_deletion");
+    }
+    const { data, error } = await academyAdminClient().rpc("academy_delete_content", {
+      target_post: body.post_id ?? null, target_run: body.run_id ?? null,
+    });
+    if (error) {
+      if (error.message === "academy_delete_busy") throw new ApiError(409, "academy_delete_busy");
+      throw new ApiError(500, "academy_delete_failed");
+    }
+    if (!data?.success) throw new ApiError(500, "academy_delete_failed");
+    return NextResponse.json(data, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    return apiErrorResponse(error) || NextResponse.json({ error: "academy_delete_failed" }, { status: 503 });
   }
 }
 export async function POST(request: NextRequest) {

@@ -7,6 +7,7 @@ import { LText, LElement, useI18n } from "@/lib/i18n/client";
 
 import AutomationPanel from "./components/AutomationPanel";
 import ArticleReviewDialog from "./components/ArticleReviewDialog";
+import ArticleDeleteButton from "./components/ArticleDeleteButton";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 
 import Link from "@/lib/i18n/link";
@@ -65,6 +66,8 @@ export default function AdminAcademiaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletionMessage, setDeletionMessage] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   const [title, setTitle] = useState("");
@@ -187,6 +190,22 @@ const { data: sessionData } = await supabase.auth.getSession();
     if (postId) setReviewTarget(current => ({ postId, refresh: (current?.refresh ?? 0) + 1 }));
   }
 
+  async function deletionCompleted(postId?: string) {
+    if (postId) {
+      setPosts(current => current.filter(post => post.id !== postId));
+      setSelectedPostId(current => current === postId ? "" : current);
+      setReviewTarget(current => current?.postId === postId ? null : current);
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("post") === postId) {
+        url.searchParams.delete("post");
+        window.history.replaceState(null, "", url);
+      }
+    }
+    setDeletionMessage(academyCopy(locale, "deleted"));
+    setReviewRevision(value => value + 1);
+    await loadPosts();
+  }
+
   async function generatePost(generateFromTrend: boolean) {
     setIsGenerating(true);
 
@@ -239,7 +258,7 @@ const { data: sessionData } = await supabase.auth.getSession();
   }
 
   async function savePost() {
-    if (!selectedPostId) {
+    if (!selectedPostId || isDeleting) {
       return;
     }
     if (status === "published" && selectedPost?.status !== "published" && !localizedConfirm(academyCopy(locale, "publicationConfirm"))) return;
@@ -284,7 +303,7 @@ const { data: sessionData } = await supabase.auth.getSession();
   }
 
   async function quickUpdateStatus(nextStatus: AcademyPostStatus) {
-    if (!selectedPostId) {
+    if (!selectedPostId || isDeleting) {
       return;
     }
     if (nextStatus === "published" && selectedPost?.status !== "published" && !localizedConfirm(academyCopy(locale, "publicationConfirm"))) return;
@@ -386,6 +405,7 @@ const { data: sessionData } = await supabase.auth.getSession();
     <main className="min-h-screen bg-[#F7F9FC] px-6 py-10 text-[#07111F]">
       <div className="mx-auto max-w-7xl">
         <AutomationPanel
+          onDeleted={deletionCompleted}
           onChanged={loadPosts}
           onGenerated={generationCompleted}
           revision={reviewRevision}
@@ -393,6 +413,7 @@ const { data: sessionData } = await supabase.auth.getSession();
         />
         {reviewTarget && (
           <ArticleReviewDialog
+            onDeleted={deletionCompleted}
             key={`${reviewTarget.postId}:${reviewTarget.refresh ?? 0}`}
             postId={reviewTarget.postId}
             initialLanguage={reviewTarget.language}
@@ -565,6 +586,11 @@ const { data: sessionData } = await supabase.auth.getSession();
           </aside>
 
           <section className="rounded-[32px] border border-[#DDE3EA] bg-white p-6 shadow-[0_24px_80px_rgba(7,17,31,0.06)] md:p-8">
+            {deletionMessage && <p role="status" className="mb-4 text-sm text-slate-600">{deletionMessage}</p>}
+            {selectedPost && <div className="mb-4 flex justify-end">
+              <ArticleDeleteButton key={selectedPost.id} postId={selectedPost.id} title={selectedPost.title}
+                disabled={isSaving || isGenerating || isDeleting} onBusyChange={setIsDeleting} onDeleted={deletionCompleted} />
+            </div>}
             {selectedPost?.multilingual ? (
               <section className="rounded-3xl border bg-white p-6"><p className="text-sm leading-6">{academyCopy(locale,"originalNotice")}</p><button type="button" onClick={() => setReviewTarget({ postId: selectedPost.id })} className="mt-4 rounded-full bg-[#07111F] px-5 py-3 text-sm font-semibold text-white">{academyCopy(locale,"readVersions")}</button><div className="mt-4 flex gap-3"><button className="rounded-full border px-5 py-3" disabled={isSaving} onClick={()=>quickUpdateStatus("archived")}><LText text="Arquivar" /></button>{selectedPost.status==="archived"&&<button className="rounded-full border px-5 py-3" disabled={isSaving} onClick={()=>quickUpdateStatus("published")}>{academyCopy(locale,"publish")}</button>}</div></section>
             ) : selectedPost ? (

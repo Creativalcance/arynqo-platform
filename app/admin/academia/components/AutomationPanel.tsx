@@ -5,6 +5,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
 import { academyCopy, academyRunMessage, type AcademyCopyKey } from "@/lib/academy/admin-copy";
 import ArticleGenerationButton from "./ArticleGenerationButton";
+import ArticleDeleteButton from "./ArticleDeleteButton";
 import TopicCalendar, { type CalendarTopic } from "./TopicCalendar";
 type Version = { locale: Locale; quality_passed: boolean };
 type Run = {
@@ -46,12 +47,14 @@ export default function AutomationPanel({
   onChanged,
   onReview,
   onGenerated,
+  onDeleted,
   revision,
 }: {
   onChanged: () => Promise<void>;
   onReview: (postId: string, language?: Locale) => void;
   revision: number;
   onGenerated: (postId?: string) => Promise<void>;
+  onDeleted: (postId?: string) => Promise<void>;
 }) {
   const { locale } = useI18n();
   const c = useCallback(
@@ -385,6 +388,11 @@ export default function AutomationPanel({
                 <ArticleGenerationButton runId={run.id} disabled={busy || !data.ready.provider} onBusyChange={setBusy} onCompleted={onGenerated} />
               </div>
             )}
+            <div className="mt-3">
+              <ArticleDeleteButton {...(run.post_id ? { postId: run.post_id } : { runId: run.id })}
+                title={run.academy_posts?.title || run.academy_topics.title} disabled={busy}
+                onBusyChange={setBusy} onDeleted={async postId => { await onDeleted(postId); await load(); }} />
+            </div>
             {run.status === "review" && (
               <div className="mt-3 space-y-3">
                 <p className="text-sm text-slate-600">{c("publicationEmails")}</p>
