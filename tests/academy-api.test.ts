@@ -96,16 +96,39 @@ test("administrator can pause the schedule through the supported quota operation
   if(url.includes('/auth/v1/user'))return Response.json({id:'10000000-0000-0000-0000-000000000001',is_anonymous:false});
   if(url.includes('/rest/v1/profiles'))return Response.json({role:'admin',locale:'pt'});
   if(url.includes('/rpc/consume_api_limit')){const body=JSON.parse(String(init?.body));operations.push(body.p_operation);return new Response(null,{status:204});}
-  if(url.includes('/rest/v1/academy_automation_settings')){const body=JSON.parse(String(init?.body));assert.equal(body.enabled,false);assert.equal(body.auto_publish,false);assert.equal(body.monthly_request_limit,120);saved=true;return new Response(null,{status:204});}
+  if(url.includes('/rest/v1/academy_automation_settings')){const body=JSON.parse(String(init?.body));assert.equal(body.enabled,false);assert.equal(body.auto_publish,false);assert.equal(body.monthly_request_limit,300);saved=true;return Response.json({...body,next_due_at:"2026-10-26T09:00:00Z",interval_days:4});}
   throw new Error('unexpected_provider_or_database_call');
  });
- const request=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:false,monthly_request_limit:120})});
- assert.equal((await POST(request)).status,200);assert.deepEqual(operations,['academy_admin']);assert.equal(saved,true);
+ const request=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:false,monthly_request_limit:300})});
+ const response=await POST(request);assert.equal(response.status,200);assert.equal((await response.json()).settings.monthly_request_limit,300);assert.deepEqual(operations,['academy_admin']);assert.equal(saved,true);
  saved=false;
- const automatic=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:true,monthly_request_limit:120})});
+ const automatic=new NextRequest('https://test.invalid/api/admin/academy-automation',{method:'POST',headers:{authorization:'Bearer test-token'},body:JSON.stringify({action:'settings',enabled:false,auto_publish:true,monthly_request_limit:300})});
  assert.equal((await POST(automatic)).status,400);assert.equal(saved,false);
 });
 
+
+test("saving settings requires a returned row and rejects invalid limits before writing", async context => {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  let writes = 0;
+  context.mock.method(globalThis, "fetch", async (input: RequestInfo | URL) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/auth/v1/user") return Response.json({ id: "10000000-0000-0000-0000-000000000001", is_anonymous: false });
+    if (url.pathname === "/rest/v1/profiles") return Response.json({ role: "admin", locale: "pt" });
+    if (url.pathname.endsWith("/consume_api_limit")) return new Response(null, { status: 204 });
+    if (url.pathname.endsWith("/academy_automation_settings")) { writes++; return Response.json(null); }
+    throw new Error("unexpected_request");
+  });
+  const request = (limit: unknown) => new NextRequest("https://test.invalid/api/admin/academy-automation", {
+    method: "POST", headers: { authorization: "Bearer test-token" },
+    body: JSON.stringify({ action: "settings", enabled: false, auto_publish: false, monthly_request_limit: limit }),
+  });
+  for (const limit of [0, 601, 6.5, "300", null]) assert.equal((await POST(request(limit))).status, 400);
+  assert.equal(writes, 0);
+  assert.equal((await POST(request(300))).status, 500, "never acknowledge a save that returned no settings");
+  assert.equal(writes, 1);
+});
 
 test("admin can read full draft versions by post ID without relying on the latest 30 runs", async context => {
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://auth.test.invalid";
@@ -177,7 +200,7 @@ test("failed regeneration history links its original even outside the latest 30 
       return Response.json([{ id: "failed-run", post_id: null, status: "failed", error_code: "source_unavailable", regenerated_from: parentId }]);
     }
     if (url.pathname.endsWith("/academy_automation_settings")) return Response.json({ enabled: true });
-    if (url.pathname.endsWith("/academy_topics")) return Response.json([]);
+    if (url.pathname.endsWith("/academy_topics")) { assert.equal(url.searchParams.get("enabled"), "eq.true"); assert.equal(url.searchParams.get("order"), "priority.asc,created_at.asc,id.asc"); return Response.json([]); }
     if (url.pathname.endsWith("/academy_monthly_usage")) return Response.json([]);
     if (url.pathname.endsWith("/academy_email_deliveries")) return new Response(null, { headers: { "content-range": "*/0" } });
     throw new Error(`Unexpected request: ${url.pathname}`);

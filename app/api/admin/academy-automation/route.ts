@@ -62,7 +62,10 @@ export async function GET(request: NextRequest) {
       db
         .from("academy_topics")
         .select("*,academy_generation_runs(id)")
+        .eq("enabled", true)
         .order("priority")
+        .order("created_at")
+        .order("id")
         .limit(100),
       db
         .from("academy_monthly_usage")
@@ -152,7 +155,7 @@ export async function POST(request: NextRequest) {
           409,
           "Configura CRON_SECRET e OPENAI_API_KEY em produção antes de ativar.",
         );
-      check(
+      const saved = check(
         await db
           .from("academy_automation_settings")
           .update({
@@ -161,8 +164,12 @@ export async function POST(request: NextRequest) {
             monthly_request_limit: body.monthly_request_limit,
             updated_at: new Date().toISOString(),
           })
-          .eq("id", true),
+          .eq("id", true)
+          .select("enabled,auto_publish,monthly_request_limit,next_due_at,interval_days")
+          .single(),
       );
+      if (!saved) throw new ApiError(500, "Não foi possível guardar a configuração.");
+      return NextResponse.json({ success: true, settings: saved }, { headers: { "Cache-Control": "private, no-store" } });
     } else if (body.action === "preview" || body.action === "retry" || body.action === "regenerate") {
       if (body.action !== "preview" && !uuid(body.run_id))
         throw new ApiError(400, "Execução inválida.");
