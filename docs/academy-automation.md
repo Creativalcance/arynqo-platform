@@ -2,7 +2,7 @@
 
 ## Fluxo
 
-O cron existente `/api/cron/generate-academy-post` passa a consultar diariamente, às 09:00 UTC, o calendário persistente. Os temas têm intervalos nominais de 48 horas. O horário real depende do agendador Vercel e da duração da geração; não é uma garantia de publicação ao segundo. Não há recuperação em massa de temas atrasados.
+O cron existente `/api/cron/generate-academy-post` passa a consultar diariamente, às 09:00 UTC, o calendário persistente. Os temas têm intervalos de quatro dias, definidos por `academy_automation_settings.interval_days`. A verificação diária não cria artigos entre essas datas; evita-se o cron `*/4` no dia do mês, que encurta o intervalo nas mudanças de mês. O horário real depende do agendador Vercel e da duração da geração; não é uma garantia de publicação ao segundo. Não há recuperação em massa de temas atrasados.
 
 Um tema origina seis versões (pt, en, fr, es, de, it), com um slug comum e os prefixos de idioma existentes. O Português continua sem prefixo. O original, as versões, a utilização e a execução são guardados separadamente. Os artigos anteriores e o seu editor são preservados.
 
@@ -24,7 +24,7 @@ No projeto Vercel da ARYNQO, verificar:
 - `OPENAI_API_KEY` e `SUPABASE_SERVICE_ROLE_KEY`: exclusivamente servidor.
 - `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`: configuração pública existente.
 - `CRON_SECRET`: segredo aleatório forte, só em Production. O Vercel envia `Authorization: Bearer <CRON_SECRET>`. Não colocar o valor em código, URLs, logs ou chat.
-- Aplicar as migrações `academy_multilingual_automation`, `academy_api_limit_operation` e `academy_approval_email_outbox` antes de publicar este código.
+- Aplicar as migrações `academy_multilingual_automation`, `academy_api_limit_operation`, `academy_approval_email_outbox` e `academy_four_day_schedule` antes de publicar este código.
 - Fazer novo deployment após alterar variáveis; variáveis alteradas não atualizam deployments anteriores.
 - Confirmar que a função Node suporta `maxDuration=300` no projeto/plano utilizado. A disponibilidade e os limites reais devem ser verificados em produção.
 
@@ -33,7 +33,7 @@ No admin → Academy:
 1. Gerar seis rascunhos para validação e aguardar o email de revisão.
 2. Abrir «Ler versão» no histórico, ou selecionar o artigo na lista e usar «Ler e rever versões». Confirmar o texto completo, fontes, idioma e metadados de cada versão. O link do email abre diretamente esta leitura para artigos multilingues.
 3. Publicar após revisão se forem adequadas.
-4. Ativar calendário; definir limite mensal. A publicação automática está bloqueada na base de dados. O valor inicial é 120 pedidos. Este limite é de pedidos, **não um orçamento em euros**. Os custos dependem dos tokens e preços do fornecedor. O editor antigo tem o seu limite de utilização separado.
+4. Ativar calendário; definir limite mensal. A publicação automática está bloqueada na base de dados. O valor inicial é 300 pedidos. A migração `academy_four_day_schedule` aumenta o limite existente para pelo menos 300 e preserva os pedidos já reservados. A interface distingue alterações por guardar do limite aplicado e só permite gerar após guardar. O calendário mostra datas previstas para os temas ativos, pela mesma ordem usada pela geração. Este limite é de pedidos, **não um orçamento em euros**. Os custos dependem dos tokens e preços do fornecedor. O editor antigo tem o seu limite de utilização separado.
 5. Confirmar uma execução efetiva do cron e as seis páginas públicas.
 
 Pausar o calendário impede novas execuções automáticas e faz uma execução já iniciada terminar em revisão, sem publicação. A repetição automática está limitada a três tentativas por tema. Depois de corrigir a causa, o admin pode usar «Repetir versões em falta», mesmo após esse limite. Só uma repetição explícita com o ID da execução permite ultrapassar as três tentativas; gerar uma pré-visualização não o permite. O histórico de tentativas e tokens é preservado, cada tentativa mantém a reserva de seis pedidos e o limite mensal continua obrigatório. As versões completas são reutilizadas. Leases expiradas são recuperadas na próxima chamada. Aplicar a migração `academy_manual_retry` antes de publicar esta recuperação.

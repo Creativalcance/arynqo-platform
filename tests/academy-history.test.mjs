@@ -15,13 +15,13 @@ const compiled = ts.transpileModule(source, {
 
 function render(run) {
   const data = {
-    settings: { enabled: true, auto_publish: false, next_due_at: '2026-10-24T09:00:00Z', monthly_request_limit: 120 },
+    settings: { enabled: true, auto_publish: false, next_due_at: '2026-10-26T09:00:00Z', monthly_request_limit: 300, interval_days: 4 },
     ready: { cron: true, provider: true, email: true }, emails: {}, topics: [], usage: null, runs: [run],
   };
   let stateIndex = 0;
   const exports = {};
   runInNewContext(compiled, { exports, require(name) {
-    if (name === 'react') return { ...React, useEffect() {}, useCallback: fn => fn,
+    if (name === 'react') return { ...React, useEffect() {}, useCallback: fn => fn, useRef: value => ({ current: value }),
       useState: initial => [stateIndex++ === 0 ? data : initial, () => {}] };
     if (name === '@/lib/i18n/client') return { useI18n: () => ({ locale: 'pt' }) };
     if (name === '@/lib/authenticated-fetch') return { authenticatedFetch() { throw new Error('Unexpected network call'); } };

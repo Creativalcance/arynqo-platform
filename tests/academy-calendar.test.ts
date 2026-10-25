@@ -23,3 +23,20 @@ test("calendar handles empty calendars and legacy array-shaped relations", () =>
   assert.match(html, /Upcoming legacy topic/);
   assert.doesNotMatch(html, /Used legacy topic/);
 });
+
+test("calendar spaces only enabled unused topics by four days across month and year boundaries", () => {
+  const html = renderToStaticMarkup(createElement(TopicCalendar, {
+    nextDueAt: "2026-12-28T09:00:00Z", intervalDays: 4, locale: "pt",
+    topics: [
+      { id: "old", title: "Already used", academy_generation_runs: [{ id: "old-run" }] },
+      { id: "first", title: "First topic", academy_generation_runs: [] },
+      { id: "off", title: "Disabled topic", enabled: false, academy_generation_runs: [] },
+      { id: "next", title: "Next topic", academy_generation_runs: null },
+      { id: "last", title: "Last topic", academy_generation_runs: [] },
+    ],
+  }));
+  assert.deepEqual([...html.matchAll(/dateTime="([^"]+)"/g)].map(match => match[1]), [
+    "2026-12-28T09:00:00.000Z", "2027-01-01T09:00:00.000Z", "2027-01-05T09:00:00.000Z",
+  ]);
+  assert.doesNotMatch(html, /Already used|Disabled topic/);
+});

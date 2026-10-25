@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { authenticatedFetch } from "@/lib/authenticated-fetch";
 import { useI18n } from "@/lib/i18n/client";
 import { locales, localeNames, type Locale } from "@/lib/i18n/config";
@@ -34,6 +34,7 @@ type Data = {
     auto_publish: boolean;
     next_due_at: string;
     monthly_request_limit: number;
+    interval_days: number;
   };
   runs: Run[];
   topics: (CalendarTopic & {
@@ -64,7 +65,10 @@ export default function AutomationPanel({
   const [data, setData] = useState<Data | null>(null),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
-  const [enabled, setEnabled] = useState(false), [cap, setCap] = useState(120);
+  const [enabled, setEnabled] = useState(false), [cap, setCap] = useState(300);
+  const actionInFlight = useRef(false);
+  const settingsDirty = !!data && (enabled !== data.settings.enabled || cap !== data.settings.monthly_request_limit);
+  const validCap = Number.isInteger(cap) && cap >= 6 && cap <= 600;
   const [topic, setTopic] = useState(""),
     [category, setCategory] = useState("Carreira"),
     [audience, setAudience] = useState("Todos"),
@@ -103,6 +107,12 @@ export default function AutomationPanel({
     };
   }, [c, revision]);
   async function action(body: Record<string, unknown>) {
+    if (actionInFlight.current) return;
+    if (settingsDirty && (body.action === "preview" || body.action === "retry")) {
+      setMessage(c("unsavedSettings"));
+      return;
+    }
+    actionInFlight.current = true;
     setBusy(true);
     setMessage("");
     try {
@@ -116,13 +126,15 @@ export default function AutomationPanel({
       );
       const result = await response.json();
       if (!response.ok) {
-        await load();
+        if (body.action !== "settings") await load();
         if (result.post_id) await onGenerated(result.post_id);
         throw new Error(academyRunMessage(locale, result.error || c("error")));
       }
       setMessage(
         result.skipped
           ? academyRunMessage(locale, String(result.reason))
+          : body.action === "settings"
+            ? c("settingsSaved")
           : result.status === "review"
             ? c("held")
             : c("done"),
@@ -133,6 +145,7 @@ export default function AutomationPanel({
     } catch (error) {
       setMessage(error instanceof Error ? error.message : c("error"));
     } finally {
+      actionInFlight.current = false;
       setBusy(false);
     }
   }
@@ -161,7 +174,7 @@ export default function AutomationPanel({
     >
       <h2 className="text-2xl font-bold">{c("title")}</h2>
       <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600">
-        {c("intro")}
+        {c("intro").replaceAll("{days}", String(data.settings.interval_days))}
       </p>
       {!data.ready.cron && (
         <p className="mt-3 text-amber-800">{c("missing")}</p>
@@ -178,6 +191,7 @@ export default function AutomationPanel({
         <label className="flex items-center gap-3">
           <input
             type="checkbox"
+            disabled={busy}
             checked={enabled}
             onChange={(event) => setEnabled(event.target.checked)}
           />
@@ -188,8 +202,11 @@ export default function AutomationPanel({
           <input
             className={input}
             type="number"
+            disabled={busy}
             min={6}
             max={600}
+            step={1}
+            aria-invalid={!validCap}
             value={cap}
             onChange={(event) => setCap(Number(event.target.value))}
           />
@@ -206,13 +223,19 @@ export default function AutomationPanel({
             {c("usage")}: {data.usage?.reserved_requests || 0} /{" "}
             {data.settings.monthly_request_limit}
           </p>
+          <p>{c("remaining")}: {Math.max(0, data.settings.monthly_request_limit - (data.usage?.reserved_requests || 0))}</p>
         </div>
       </div>
       <p className="mt-3 text-xs text-slate-600">{c("budget")}</p>
+      {settingsDirty && <p role="status" className="mt-3 text-sm text-amber-800">{c("unsavedSettings")}</p>}
+      {!validCap && <p role="alert" className="mt-3 text-sm text-red-700">{c("invalidCap")}</p>}
+      {data.settings.monthly_request_limit - (data.usage?.reserved_requests || 0) < 6 && (
+        <p className="mt-3 text-sm text-amber-800">{c("monthlyLimit")}</p>
+      )}
       <div className="mt-4 flex flex-wrap gap-3">
         <button
-          disabled={busy}
-          className={button}
+          disabled={busy || !validCap || !settingsDirty}
+          className={button + (settingsDirty ? " border-blue-600 text-blue-700" : "")}
           onClick={() =>
             action({
               action: "settings",
@@ -225,7 +248,7 @@ export default function AutomationPanel({
           {c("save")}
         </button>
         <button
-          disabled={busy || !data.ready.provider}
+          disabled={busy || settingsDirty || !data.ready.provider}
           className={button}
           onClick={() => action({ action: "preview" })}
         >
@@ -246,7 +269,8 @@ export default function AutomationPanel({
         <summary className="cursor-pointer font-semibold">
           {c("calendar")}
         </summary>
-        <TopicCalendar topics={data.topics} />
+        <p className="mt-3 text-xs text-slate-600">{c("calendarDates")}</p>
+        <TopicCalendar topics={data.topics} nextDueAt={data.settings.next_due_at} intervalDays={data.settings.interval_days} locale={locale} />
         <div className="grid gap-3 md:grid-cols-2">
           <label>
             {c("titleField")}
@@ -376,7 +400,7 @@ export default function AutomationPanel({
             </ul>
             {run.status === "failed" && (
               <button
-                disabled={busy || !data.ready.provider}
+                disabled={busy || settingsDirty || !data.ready.provider}
                 className={button}
                 onClick={() => action({ action: "retry", run_id: run.id })}
               >
@@ -385,7 +409,7 @@ export default function AutomationPanel({
             )}
             {["failed", "review", "published"].includes(run.status) && (
               <div className="mt-3">
-                <ArticleGenerationButton runId={run.id} disabled={busy || !data.ready.provider} onBusyChange={setBusy} onCompleted={onGenerated} />
+                <ArticleGenerationButton runId={run.id} disabled={busy || settingsDirty || !data.ready.provider} onBusyChange={setBusy} onCompleted={onGenerated} />
               </div>
             )}
             <div className="mt-3">
